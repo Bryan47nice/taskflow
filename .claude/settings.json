@@ -1,0 +1,13 @@
+{
+  "enabledPlugins": {
+    "ui-ux-pro-max@nextlevelbuilder": true
+  },
+  "extraKnownMarketplaces": {
+    "nextlevelbuilder": {
+      "source": {
+        "source": "github",
+        "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
+      }
+    }
+  }
+}
