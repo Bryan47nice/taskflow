@@ -1,14 +1,37 @@
 {
   "manifest_version": 3,
   "name": "TaskFlow Capture",
-  "version": "1.0.0",
-  "description": "選取文字按 Alt+S，快速新增到 TaskFlow 網頁應用",
+  "version": "1.2.0",
+  "description": "選取文字按 Alt+S，或讓 @mention 訊息自動出現「加入 TaskFlow」按鈕",
   "permissions": [
     "activeTab",
-    "scripting"
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://chat.google.com/*",
+    "https://bryan47nice.github.io/*"
   ],
   "background": {
     "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://chat.google.com/*"],
+      "js": ["content/content.js"],
+      "css": ["content/content.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://bryan47nice.github.io/taskflow/*"],
+      "js": ["taskflow-bridge/bridge.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "TaskFlow Capture 設定"
   },
   "commands": {
     "capture-task": {
