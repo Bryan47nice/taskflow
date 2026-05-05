@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "TaskFlow Capture",
+  "version": "1.0.0",
+  "description": "選取文字按 Alt+S，快速新增到 TaskFlow 網頁應用",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "commands": {
+    "capture-task": {
+      "suggested_key": { "default": "Alt+S" },
+      "description": "擷取選取文字到 TaskFlow"
+    }
+  },
+  "icons": {}
+}

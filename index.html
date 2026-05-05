@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <title>TaskFlow</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="header-left">
+    <h1>TaskFlow</h1>
+    <span id="header-date"></span>
+  </div>
+  <div class="header-right">
+    <span id="work-hours"></span>
+    <span id="save-indicator" class="hidden">同步中…</span>
+    <button class="btn btn-secondary btn-journal" id="btn-journal">📋 產日誌</button>
+    <button class="btn btn-secondary" id="btn-review"><span class="btn-review-text">覆盤</span>📖</button>
+    <button class="btn-icon" id="btn-cal" title="Google 行事曆">📅</button>
+    <button class="btn-icon" id="btn-settings" title="設定">⚙️</button>
+  </div>
+</header>
+
+<!-- ── Calendar Panel ── -->
+<div id="cal-panel" class="cal-panel hidden">
+  <div class="cal-panel-hdr">
+    <span>📅 今日行事曆</span>
+    <button class="btn-icon" id="btn-cal-disconnect" title="中斷連線">✕</button>
+  </div>
+  <div id="cal-events-body"></div>
+</div>
+
+<!-- ── Mobile Tabs ── -->
+<nav class="mobile-tabs">
+  <button class="tab-btn" data-status="todo">待辦 <span class="tab-count">0</span></button>
+  <button class="tab-btn" data-status="in-progress">進行中 <span class="tab-count">0</span></button>
+  <button class="tab-btn" data-status="done">完成 <span class="tab-count">0</span></button>
+</nav>
+
+<!-- ── Kanban Board ── -->
+<main class="kanban-board">
+  <section class="kanban-col" data-status="todo">
+    <div class="col-header" data-status="todo">
+      <h2>待辦</h2>
+      <span class="count">0</span>
+    </div>
+    <div class="task-list" data-status="todo"></div>
+  </section>
+
+  <section class="kanban-col" data-status="in-progress">
+    <div class="col-header" data-status="in-progress">
+      <h2>進行中</h2>
+      <span class="count">0</span>
+    </div>
+    <div class="task-list" data-status="in-progress"></div>
+  </section>
+
+  <section class="kanban-col" data-status="done">
+    <div class="col-header" data-status="done">
+      <h2>完成</h2>
+      <span class="count">0</span>
+    </div>
+    <div class="task-list" data-status="done"></div>
+  </section>
+</main>
+
+<!-- ── FAB ── -->
+<button id="btn-fab" title="新增任務">+</button>
+
+<!-- ── Toast ── -->
+<div id="toast"></div>
+
+<!-- ── Loading overlay ── -->
+<div id="loading-overlay" class="hidden"><span>載入中…</span></div>
+
+<!-- ======================================== -->
+<!-- Modal: Settings                          -->
+<!-- ======================================== -->
+<div id="modal-settings" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>設定</h2>
+    </div>
+    <div class="modal-body">
+      <div>
+        <label>GitHub Personal Access Token（必填）</label>
+        <input type="password" id="s-pat" placeholder="ghp_xxxxxxxxxxxx">
+        <p class="settings-hint">需要 Contents: Read &amp; Write 權限</p>
+      </div>
+      <div>
+        <label>GitHub Repo（必填）</label>
+        <input type="text" id="s-repo" placeholder="Bryan47nice/My-Obsidian">
+        <p class="settings-hint">任務將存到此 repo 的 taskflow/tasks.json</p>
+      </div>
+      <div>
+        <label>每日工時（小時）</label>
+        <input type="number" id="s-hours" min="1" max="16" step="0.5" value="8">
+      </div>
+      <div>
+        <label>Claude API Key（選填，用於 AI 標題建議）</label>
+        <input type="password" id="s-claude-key" placeholder="sk-ant-xxxx">
+      </div>
+      <div>
+        <label>Google Calendar OAuth Client ID（選填）</label>
+        <input type="text" id="s-cal-id" placeholder="xxxxxx.apps.googleusercontent.com">
+      </div>
+      <p class="settings-status" id="s-status"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-settings-cancel">取消</button>
+      <button class="btn btn-primary" id="btn-settings-save">驗證並儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- Modal: Triage (4-step task entry)        -->
+<!-- ======================================== -->
+<div id="modal-triage" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>新增任務</h2>
+      <span id="t-step-indicator" class="step-indicator">1 / 4</span>
+    </div>
+    <div class="modal-body">
+
+      <!-- Step 1: Title -->
+      <div class="triage-step" data-step="1">
+        <div>
+          <label>任務名稱</label>
+          <input type="text" id="t-title" placeholder="這個任務要做什麼？" maxlength="100">
+        </div>
+        <button id="btn-ai-suggest">✨ AI 建議</button>
+      </div>
+
+      <!-- Step 2: Urgency -->
+      <div class="triage-step hidden" data-step="2">
+        <label>優先級 <span style="color:var(--text-muted);font-weight:400">（或按 1 / 2 / 3）</span></label>
+        <div class="btn-group">
+          <button class="urg-btn" data-value="low">😌 沒怎樣</button>
+          <button class="urg-btn" data-value="medium">😤 會很煩</button>
+          <button class="urg-btn" data-value="high">🚨 會出事</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Estimate -->
+      <div class="triage-step hidden" data-step="3">
+        <label>預估時間</label>
+        <div class="btn-group">
+          <button class="est-btn" data-value="15m">15m</button>
+          <button class="est-btn" data-value="30m">30m</button>
+          <button class="est-btn" data-value="1h">1h</button>
+          <button class="est-btn" data-value="2h">2h</button>
+          <button class="est-btn" data-value="3h">3h</button>
+          <button class="est-btn" data-value="4h+">4h+</button>
+          <button class="btn btn-secondary" id="btn-custom-est" style="padding:6px 12px;font-size:13px">自訂</button>
+        </div>
+        <input type="text" id="t-custom-est" class="hidden" placeholder="例：45min 或 90min">
+      </div>
+
+      <!-- Step 4: Deadline -->
+      <div class="triage-step hidden" data-step="4">
+        <label>截止</label>
+        <div class="btn-group">
+          <button class="dl-btn" data-value="today">今天</button>
+          <button class="dl-btn" data-value="tomorrow">明天</button>
+          <button class="dl-btn" data-value="backlog">Backlog</button>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer triage-nav">
+      <button class="btn btn-secondary" id="btn-triage-back">← 上一步</button>
+      <span id="t-step-indicator" class="step-indicator">1 / 4</span>
+      <button class="btn btn-primary" id="btn-triage-next">下一步 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- Modal: Task Detail + PDCA               -->
+<!-- ======================================== -->
+<div id="modal-pdca" class="modal hidden">
+  <div class="modal-box pdca-modal-box">
+    <div class="modal-header">
+      <h2>任務詳情</h2>
+      <button class="btn-icon" id="btn-pdca-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <p id="pdca-title"></p>
+        <div id="pdca-meta"></div>
+        <div id="pdca-body" class="hidden"></div>
+        <p id="pdca-source" class="hidden"></p>
+      </div>
+
+      <div>
+        <label>狀態</label>
+        <select id="pdca-status">
+          <option value="todo">待辦</option>
+          <option value="in-progress">進行中</option>
+          <option value="done">完成</option>
+        </select>
+      </div>
+
+      <div class="pdca-fields">
+        <div>
+          <label>Plan — 計畫做什麼</label>
+          <textarea id="pdca-plan" placeholder="預計如何處理？"></textarea>
+        </div>
+        <div>
+          <label>Do — 實際做了什麼</label>
+          <textarea id="pdca-do" placeholder="實際執行了哪些步驟？"></textarea>
+        </div>
+        <div>
+          <label>Check — 結果如何</label>
+          <textarea id="pdca-check" placeholder="達成了嗎？遇到什麼問題？"></textarea>
+        </div>
+        <div>
+          <label>Act — 後續行動</label>
+          <textarea id="pdca-act" placeholder="要調整什麼？有沒有衍生任務？"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="btn-pdca-delete">刪除</button>
+      <div style="flex:1"></div>
+      <button class="btn btn-secondary" id="btn-pdca-close-2" onclick="PDCA.hide()">取消</button>
+      <button class="btn btn-primary" id="btn-pdca-save">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- Modal: Review / Journal                  -->
+<!-- ======================================== -->
+<div id="modal-review" class="modal hidden">
+  <div class="modal-box review-modal-box">
+    <div class="modal-header">
+      <h2>覆盤日誌</h2>
+      <button class="btn-icon" id="btn-review-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="review-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Scripts (order matters) ── -->
+<script src="lib/github-api.js"></script>
+<script src="lib/honest-limit.js"></script>
+<script src="lib/claude-api.js"></script>
+<script src="lib/gcal-api.js"></script>
+<script src="components/settings.js"></script>
+<script src="components/kanban.js"></script>
+<script src="components/triage.js"></script>
+<script src="components/pdca.js"></script>
+<script src="components/review.js"></script>
+<script src="components/calendar.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
