@@ -414,6 +414,54 @@
   </div>
 </div>
 
+<!-- ======================================== -->
+<!-- Modal: Journal Editor                    -->
+<!-- ======================================== -->
+<div id="modal-journal-editor" class="modal hidden">
+  <div class="modal-box journal-editor-box">
+    <div class="modal-header">
+      <h2>今日日誌</h2>
+      <span id="journal-editor-date" style="font-size:12px;color:var(--text-muted);font-weight:400"></span>
+      <button class="btn-icon" id="btn-journal-editor-close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="journal-form">
+        <div class="journal-section">
+          <div class="journal-section-label">今日完成</div>
+          <textarea id="jf-done" rows="4" placeholder="每行一個項目&#10;例：整理 Q2 路線圖 (2h)"></textarea>
+        </div>
+        <div class="journal-section" id="jf-pdca-section">
+          <div class="journal-section-label">PDCA 覆盤 <span class="journal-section-hint">選填</span></div>
+          <div id="jf-pdca-tabs" class="journal-pdca-tabs"></div>
+          <div id="jf-pdca-fields" class="journal-pdca-fields hidden">
+            <div class="pdca-field-row"><label>Plan</label><textarea id="jf-pdca-plan" rows="2" placeholder="計畫做什麼"></textarea></div>
+            <div class="pdca-field-row"><label>Do</label><textarea id="jf-pdca-do" rows="2" placeholder="實際做了什麼"></textarea></div>
+            <div class="pdca-field-row"><label>Check</label><textarea id="jf-pdca-check" rows="2" placeholder="結果如何"></textarea></div>
+            <div class="pdca-field-row"><label>Act</label><textarea id="jf-pdca-act" rows="2" placeholder="後續行動"></textarea></div>
+          </div>
+        </div>
+        <div class="journal-section">
+          <div class="journal-section-label">明日計畫</div>
+          <textarea id="jf-todo" rows="3" placeholder="每行一個項目&#10;例：更新 README (30m)"></textarea>
+        </div>
+        <div class="journal-section">
+          <div class="journal-section-label">備注 <span class="journal-section-hint">選填</span></div>
+          <textarea id="jf-notes" rows="2" placeholder="其他補充…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-journal-editor-cancel">取消</button>
+      <button class="btn btn-primary" id="btn-journal-editor-upload">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:4px"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        上傳
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Scripts (order matters) ── -->
 <script src="components/theme.js"></script>
 <script src="lib/github-api.js"></script>

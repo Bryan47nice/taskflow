@@ -120,6 +120,39 @@
     return { sha: 'mock-sha-' + Date.now() };
   };
 
+  // Patch getRaw — used by journal viewer & upload (sha check)
+  GitHubAPI.getRaw = async function (_pat, _repo, path) {
+    console.log('[Mock] getRaw', path);
+    const journalKey = 'mock_journal_' + path.replace(/\//g, '_');
+    const content = localStorage.getItem(journalKey);
+    if (!content) throw new Error('404 Not Found (mock)');
+    return { content, sha: 'mock-raw-sha-001' };
+  };
+
+  // Patch putRaw — used by journal upload
+  GitHubAPI.putRaw = async function (_pat, _repo, path, content, _sha, _msg) {
+    console.log('[Mock] putRaw', path);
+    const journalKey = 'mock_journal_' + path.replace(/\//g, '_');
+    localStorage.setItem(journalKey, content);
+    return { sha: 'mock-raw-sha-' + Date.now() };
+  };
+
+  // Patch listDir — used by review journal list
+  GitHubAPI.listDir = async function (_pat, _repo, _path) {
+    console.log('[Mock] listDir', _path);
+    const today = STORAGE_KEY ? new Date().toISOString().slice(0, 10) : '';
+    const journalKey = 'mock_journal_taskflow_journal_' + today + '.md';
+    const files = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('mock_journal_taskflow_journal_')) {
+        const name = k.replace('mock_journal_taskflow_journal_', '');
+        files.push({ name, path: 'taskflow/journal/' + name });
+      }
+    }
+    return files;
+  };
+
   console.log('[Mock] GitHubAPI patched — mock mode active');
 
   // ── DOM 操作等 body ready ────────────────────────────────

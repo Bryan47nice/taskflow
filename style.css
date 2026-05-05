@@ -735,6 +735,56 @@ textarea { resize: vertical; min-height: 70px; }
 /* ── Review modal ── */
 .review-modal-box { max-width: 600px; }
 
+/* ── Journal editor modal ── */
+.journal-editor-box { max-width: 600px; width: 96vw; }
+.journal-editor-box .modal-header { gap: 8px; }
+#journal-editor-date { flex: 1; }
+
+.journal-form { display: flex; flex-direction: column; gap: 12px; }
+.journal-section { display: flex; flex-direction: column; gap: 6px; }
+.journal-section-label {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .6px;
+  color: var(--text-muted);
+  display: flex; align-items: center; gap: 6px;
+}
+.journal-section-hint {
+  font-size: 10px; font-weight: 400;
+  text-transform: none; letter-spacing: 0;
+  color: var(--text-muted); opacity: .7;
+}
+.journal-form textarea {
+  width: 100%; padding: 9px 12px;
+  font-family: var(--font-body); font-size: 13px; line-height: 1.6;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  background: var(--surface2); color: var(--text);
+  resize: vertical; transition: border-color .15s;
+}
+.journal-form textarea:focus { border-color: var(--primary); outline: none; }
+
+/* PDCA task tabs */
+.journal-pdca-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.journal-pdca-tab {
+  padding: 4px 12px; font-size: 12px; font-weight: 600;
+  border-radius: var(--radius); border: 1.5px solid var(--border);
+  background: var(--surface2); color: var(--text);
+  cursor: pointer; transition: all .15s; font-family: var(--font-body);
+  max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.journal-pdca-tab:hover { border-color: var(--primary); }
+.journal-pdca-tab.active { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
+.journal-pdca-fields { display: flex; flex-direction: column; gap: 8px; }
+.journal-pdca-fields.hidden { display: none; }
+.pdca-field-row { display: grid; grid-template-columns: 52px 1fr; gap: 8px; align-items: start; }
+.pdca-field-row label {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  padding-top: 10px; text-align: right;
+}
+.journal-pdca-no-tasks {
+  font-size: 12px; color: var(--text-muted); padding: 8px 0;
+}
+
 .journal-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
 .journal-item {
   text-align: left;
