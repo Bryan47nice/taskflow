@@ -302,7 +302,32 @@
     <div class="modal-body">
       <div>
         <p id="pdca-title"></p>
-        <div id="pdca-meta"></div>
+        <div class="pdca-meta-edit">
+          <div class="pdca-meta-row">
+            <label for="pdca-urgency">嚴重性</label>
+            <select id="pdca-urgency">
+              <option value="low">😌 一般</option>
+              <option value="medium">😤 重要</option>
+              <option value="high">🚨 緊急</option>
+            </select>
+          </div>
+          <div class="pdca-meta-row">
+            <label for="pdca-estimate">估時</label>
+            <input type="text" id="pdca-estimate" list="pdca-estimate-list" placeholder="30m">
+            <datalist id="pdca-estimate-list">
+              <option value="15m"><option value="30m"><option value="1h">
+              <option value="2h"><option value="3h"><option value="4h+">
+            </datalist>
+          </div>
+          <div class="pdca-meta-row">
+            <label for="pdca-deadline">截止</label>
+            <select id="pdca-deadline">
+              <option value="today">今天</option>
+              <option value="tomorrow">明天</option>
+              <option value="backlog">Backlog</option>
+            </select>
+          </div>
+        </div>
         <div id="pdca-body" class="hidden"></div>
         <p id="pdca-source" class="hidden"></p>
       </div>

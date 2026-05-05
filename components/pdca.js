@@ -14,17 +14,10 @@ const PDCA = {
     this._setDirty(false);
     const m = document.getElementById('modal-pdca');
 
-    const urgLabel = { high: '🚨 緊急', medium: '😤 重要', low: '😌 一般' }[task.urgency] || '';
-    const deadlineLabel = { today: '今天', tomorrow: '明天', backlog: 'Backlog' }[task.deadline] || task.deadline;
-    const statusLabel = { todo: '待辦', 'in-progress': '進行中', done: '完成' }[task.status] || '';
-
     document.getElementById('pdca-title').textContent = task.title;
-    document.getElementById('pdca-meta').innerHTML = `
-      <span class="badge badge-${task.urgency}">${urgLabel}</span>
-      <span class="badge">${task.estimate || ''}</span>
-      <span class="badge">${deadlineLabel}</span>
-      <span class="badge">${statusLabel}</span>
-    `;
+    document.getElementById('pdca-urgency').value = task.urgency || 'medium';
+    document.getElementById('pdca-estimate').value = task.estimate || '30m';
+    document.getElementById('pdca-deadline').value = task.deadline || 'today';
 
     // Body / links
     const bodyEl = document.getElementById('pdca-body');
@@ -83,6 +76,9 @@ const PDCA = {
     const updates = {
       pdca,
       status: newStatus,
+      urgency: document.getElementById('pdca-urgency').value,
+      estimate: document.getElementById('pdca-estimate').value.trim() || '30m',
+      deadline: document.getElementById('pdca-deadline').value,
       done: newStatus === 'done',
       completedAt: newStatus === 'done' && !this._task.completedAt ? new Date().toISOString() : this._task.completedAt
     };
@@ -136,6 +132,9 @@ const PDCA = {
     ['pdca-plan','pdca-do','pdca-check','pdca-act'].forEach(id => {
       document.getElementById(id).addEventListener('input', () => this._setDirty(true));
     });
-    document.getElementById('pdca-status').addEventListener('change', () => this._setDirty(true));
+    ['pdca-status','pdca-urgency','pdca-deadline'].forEach(id => {
+      document.getElementById(id).addEventListener('change', () => this._setDirty(true));
+    });
+    document.getElementById('pdca-estimate').addEventListener('input', () => this._setDirty(true));
   }
 };
