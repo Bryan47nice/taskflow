@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#4f46e5">
+  <meta name="theme-color" id="meta-theme-color" content="#F7F4F0">
   <title>TaskFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Calistoga&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -13,24 +15,86 @@
 <!-- ── Header ── -->
 <header>
   <div class="header-left">
-    <h1>TaskFlow</h1>
+    <h1 id="app-logo">TaskFlow</h1>
     <span id="header-date"></span>
   </div>
   <div class="header-right">
     <span id="work-hours"></span>
     <span id="save-indicator" class="hidden">同步中…</span>
-    <button class="btn btn-secondary btn-journal" id="btn-journal">📋 產日誌</button>
-    <button class="btn btn-secondary" id="btn-review"><span class="btn-review-text">覆盤</span>📖</button>
-    <button class="btn-icon" id="btn-cal" title="Google 行事曆">📅</button>
-    <button class="btn-icon" id="btn-settings" title="設定">⚙️</button>
+
+    <!-- 產日誌 -->
+    <button class="btn btn-secondary btn-journal" id="btn-journal">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      <span class="btn-journal-text">產日誌</span>
+    </button>
+
+    <!-- 覆盤 -->
+    <button class="btn btn-secondary" id="btn-review">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.49"/>
+      </svg>
+      <span class="btn-review-text">覆盤</span>
+    </button>
+
+    <!-- 行事曆 -->
+    <button class="btn-icon" id="btn-cal" title="Google 行事曆">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    </button>
+
+    <!-- 設定 -->
+    <button class="btn-icon" id="btn-settings" title="設定">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+
+    <!-- ★ 主題切換按鈕 -->
+    <div class="theme-wrap">
+      <button class="theme-btn" id="btn-theme" aria-label="切換主題">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <span id="theme-label" class="theme-btn-label">B·暖淺</span>
+        <svg class="theme-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+
+      <!-- Desktop 下拉選單 -->
+      <div class="theme-picker" id="theme-picker">
+        <div class="theme-picker-label">選擇主題</div>
+        <div class="theme-picker-row">
+          <button class="theme-opt active" data-theme-set="b-light">
+            <div class="theme-swatch" style="background:linear-gradient(135deg,#F7F4F0 50%,#C67B5C 50%)"></div>
+            <div class="theme-opt-name">暖·淺</div>
+          </button>
+          <button class="theme-opt" data-theme-set="b-dark">
+            <div class="theme-swatch" style="background:linear-gradient(135deg,#1C1510 50%,#D4956A 50%)"></div>
+            <div class="theme-opt-name">暖·深</div>
+          </button>
+          <button class="theme-opt" data-theme-set="c-light">
+            <div class="theme-swatch" style="background:linear-gradient(135deg,#F8F8F8 50%,#0A0A0A 50%)"></div>
+            <div class="theme-opt-name">銳·淺</div>
+          </button>
+          <button class="theme-opt" data-theme-set="c-dark">
+            <div class="theme-swatch" style="background:linear-gradient(135deg,#0D0D0D 50%,#FAFAFA 50%)"></div>
+            <div class="theme-opt-name">銳·深</div>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </header>
 
 <!-- ── Calendar Panel ── -->
 <div id="cal-panel" class="cal-panel hidden">
   <div class="cal-panel-hdr">
-    <span>📅 今日行事曆</span>
-    <button class="btn-icon" id="btn-cal-disconnect" title="中斷連線">✕</button>
+    <span>今日行事曆</span>
+    <button class="btn-icon" id="btn-cal-disconnect" title="中斷連線">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
   </div>
   <div id="cal-events-body"></div>
 </div>
@@ -77,6 +141,44 @@
 
 <!-- ── Loading overlay ── -->
 <div id="loading-overlay" class="hidden"><span>載入中…</span></div>
+
+<!-- ── Theme Bottom Sheet (mobile) ── -->
+<div class="theme-overlay hidden" id="theme-overlay">
+  <div class="theme-sheet">
+    <div class="theme-sheet-handle"></div>
+    <div class="theme-sheet-title">選擇主題</div>
+    <div class="theme-sheet-grid">
+      <button class="theme-sheet-opt active" data-theme-set="b-light">
+        <div class="theme-sheet-swatch" style="background:linear-gradient(135deg,#F7F4F0 50%,#C67B5C 50%)"></div>
+        <div>
+          <div class="theme-sheet-name">暖·淺色</div>
+          <div class="theme-sheet-sub">B Light</div>
+        </div>
+      </button>
+      <button class="theme-sheet-opt" data-theme-set="b-dark">
+        <div class="theme-sheet-swatch" style="background:linear-gradient(135deg,#1C1510 50%,#D4956A 50%)"></div>
+        <div>
+          <div class="theme-sheet-name">暖·深色</div>
+          <div class="theme-sheet-sub">B Dark</div>
+        </div>
+      </button>
+      <button class="theme-sheet-opt" data-theme-set="c-light">
+        <div class="theme-sheet-swatch" style="background:linear-gradient(135deg,#F8F8F8 50%,#0A0A0A 50%)"></div>
+        <div>
+          <div class="theme-sheet-name">銳·淺色</div>
+          <div class="theme-sheet-sub">C Light</div>
+        </div>
+      </button>
+      <button class="theme-sheet-opt" data-theme-set="c-dark">
+        <div class="theme-sheet-swatch" style="background:linear-gradient(135deg,#0D0D0D 50%,#FAFAFA 50%)"></div>
+        <div>
+          <div class="theme-sheet-name">銳·深色</div>
+          <div class="theme-sheet-sub">C Dark</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- ======================================== -->
 <!-- Modal: Settings                          -->
@@ -126,7 +228,9 @@
     <div class="modal-header">
       <h2>新增任務</h2>
       <span id="t-step-indicator" class="step-indicator">1 / 4</span>
-      <button class="btn-icon" id="btn-triage-cancel" title="取消">✕</button>
+      <button class="btn-icon" id="btn-triage-cancel" title="取消">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
     <div class="modal-body">
 
@@ -190,7 +294,9 @@
   <div class="modal-box pdca-modal-box">
     <div class="modal-header">
       <h2>任務詳情</h2>
-      <button class="btn-icon" id="btn-pdca-close">✕</button>
+      <button class="btn-icon" id="btn-pdca-close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
     <div class="modal-body">
       <div>
@@ -244,7 +350,9 @@
   <div class="modal-box review-modal-box">
     <div class="modal-header">
       <h2>覆盤日誌</h2>
-      <button class="btn-icon" id="btn-review-close">✕</button>
+      <button class="btn-icon" id="btn-review-close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
     <div class="modal-body">
       <div id="review-content"></div>
@@ -253,6 +361,7 @@
 </div>
 
 <!-- ── Scripts (order matters) ── -->
+<script src="components/theme.js"></script>
 <script src="lib/github-api.js"></script>
 <script src="lib/honest-limit.js"></script>
 <script src="lib/claude-api.js"></script>
