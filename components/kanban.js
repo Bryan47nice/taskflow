@@ -20,12 +20,27 @@ const Kanban = {
       });
     });
 
+    const EMPTY_HINTS = {
+      'todo': '還沒有待辦任務\n點右下角 ＋ 新增',
+      'in-progress': '沒有進行中的任務\n從待辦欄拖曳過來',
+      'done': '今天還沒完成任何任務\n加油！'
+    };
+
     ['todo', 'in-progress', 'done'].forEach(status => {
       const list = document.querySelector(`.task-list[data-status="${status}"]`);
       const countEl = document.querySelector(`.col-header[data-status="${status}"] .count`);
       if (!list) return;
       list.innerHTML = '';
-      cols[status].forEach(t => list.appendChild(this._card(t, today)));
+      if (cols[status].length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'task-list-empty';
+        empty.innerHTML = `
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg>
+          <p>${EMPTY_HINTS[status].replace('\n', '<br>')}</p>`;
+        list.appendChild(empty);
+      } else {
+        cols[status].forEach(t => list.appendChild(this._card(t, today)));
+      }
       if (countEl) countEl.textContent = cols[status].length;
     });
 
@@ -60,7 +75,7 @@ const Kanban = {
         ${hasPDCA ? '<span class="pdca-badge">PDCA</span>' : ''}
       </div>
       <div class="card-meta">
-        ${sourceIcon ? `<span class="source-icon" title="${this._esc(task.source?.type || '')}">${sourceIcon}</span>` : ''}
+        ${sourceIcon || ''}
         <span class="estimate">${this._esc(task.estimate || '')}</span>
         <span class="deadline ${task.deadline === 'today' ? 'deadline-today' : ''}">${deadlineLabel}</span>
       </div>
@@ -75,7 +90,9 @@ const Kanban = {
   },
 
   _sourceIcon(type) {
-    return { gchat: '💬', jira: '🔷', gmail: '📧', slack: '💼', notion: '📝', manual: '' }[type] || '';
+    const labels = { gchat: 'Chat', jira: 'Jira', gmail: 'Mail', slack: 'Slack', notion: 'Notion', manual: '' };
+    const label = labels[type];
+    return label ? `<span class="source-badge">${label}</span>` : '';
   },
 
   _esc(str) {
