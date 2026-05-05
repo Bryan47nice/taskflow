@@ -560,9 +560,9 @@ textarea { resize: vertical; min-height: 70px; }
 /* ── PDCA editable meta row ── */
 .pdca-meta-edit {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 .pdca-meta-row {
   display: flex; flex-direction: column; gap: 4px;
@@ -586,9 +586,64 @@ textarea { resize: vertical; min-height: 70px; }
 }
 .pdca-meta-row select:focus,
 .pdca-meta-row input[type="text"]:focus { border-color: var(--primary); outline: none; }
-@media (max-width: 400px) {
-  .pdca-meta-edit { grid-template-columns: 1fr 1fr; }
+
+/* ── PDCA deadline row ── */
+.pdca-deadline-row {
+  display: flex; flex-direction: column; gap: 4px;
+  margin-bottom: 8px;
 }
+.pdca-deadline-row > label {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+  color: var(--text-muted);
+}
+.pdca-dl-btns { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.pdca-dl-btn {
+  padding: 4px 10px; font-size: 11px; font-weight: 600;
+  border-radius: var(--radius); border: 1.5px solid var(--border);
+  background: var(--surface2); color: var(--text);
+  cursor: pointer; transition: all .15s; font-family: var(--font-body);
+}
+.pdca-dl-btn:hover { border-color: var(--primary); background: var(--primary-bg); }
+.dl-divider {
+  display: inline-block; width: 1px; height: 20px;
+  background: var(--border); margin: 0 4px; flex-shrink: 0;
+}
+.dl-btn-group { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.dl-btn-backlog { opacity: .7; }
+.dl-btn-backlog:hover, .dl-btn-backlog.selected { opacity: 1; }
+.pdca-dl-btn.selected { background: var(--primary-bg); border-color: var(--primary); color: var(--primary); }
+#pdca-deadline-input {
+  margin-top: 6px; width: 100%; padding: 5px 8px; font-size: 12px;
+  border-radius: var(--radius); border: 1.5px solid var(--border);
+  background: var(--surface2); color: var(--text);
+  font-family: var(--font-body); cursor: pointer; transition: border-color .15s;
+}
+#pdca-deadline-input:focus { border-color: var(--primary); outline: none; }
+
+/* ── Custom estimate wrap (Triage step 3) ── */
+.custom-est-wrap {
+  display: flex; align-items: center; gap: 8px; margin-top: 8px;
+}
+.custom-est-wrap input[type="number"],
+.custom-est-wrap select {
+  padding: 6px 10px; border-radius: var(--radius);
+  border: 1.5px solid var(--border); background: var(--surface2);
+  color: var(--text); font-family: var(--font-body); font-size: 14px;
+  transition: border-color .15s;
+}
+.custom-est-wrap input[type="number"] { width: 90px; }
+.custom-est-wrap input[type="number"]:focus,
+.custom-est-wrap select:focus { border-color: var(--primary); outline: none; }
+
+/* ── Triage deadline flatpickr input ── */
+#t-dl-date {
+  margin-top: 8px; width: 100%; padding: 7px 10px; font-size: 14px;
+  border-radius: var(--radius); border: 1.5px solid var(--border);
+  background: var(--surface2); color: var(--text);
+  font-family: var(--font-body); cursor: pointer; transition: border-color .15s;
+}
+#t-dl-date:focus { border-color: var(--primary); outline: none; }
 
 /* ── Settings modal ── */
 .settings-status { font-size: 12px; padding-top: 4px; }
@@ -865,3 +920,44 @@ body[data-theme="c-dark"] #toast { background: var(--surface); color: var(--text
 /* Loading overlay: 白底 → 深底 */
 body[data-theme="b-dark"] #loading-overlay,
 body[data-theme="c-dark"] #loading-overlay { background: rgba(0,0,0,.75); }
+
+/* ── Flatpickr dark theme overrides ── */
+body[data-theme="b-dark"] .flatpickr-calendar,
+body[data-theme="c-dark"] .flatpickr-calendar {
+  background: var(--surface); border-color: var(--border2);
+  color: var(--text); box-shadow: var(--shadow-lg);
+}
+body[data-theme="b-dark"] .flatpickr-day,
+body[data-theme="c-dark"] .flatpickr-day { color: var(--text); }
+body[data-theme="b-dark"] .flatpickr-day:hover,
+body[data-theme="c-dark"] .flatpickr-day:hover { background: var(--surface2); border-color: transparent; }
+body[data-theme="b-dark"] .flatpickr-day.selected,
+body[data-theme="b-dark"] .flatpickr-day.selected:hover,
+body[data-theme="c-dark"] .flatpickr-day.selected,
+body[data-theme="c-dark"] .flatpickr-day.selected:hover {
+  background: var(--primary); border-color: var(--primary); color: var(--bg);
+}
+body[data-theme="b-dark"] .flatpickr-months,
+body[data-theme="c-dark"] .flatpickr-months { background: var(--surface); }
+body[data-theme="b-dark"] .flatpickr-month,
+body[data-theme="c-dark"] .flatpickr-month { color: var(--text); }
+body[data-theme="b-dark"] .flatpickr-current-month input.cur-year,
+body[data-theme="b-dark"] .flatpickr-current-month .flatpickr-monthDropdown-months,
+body[data-theme="c-dark"] .flatpickr-current-month input.cur-year,
+body[data-theme="c-dark"] .flatpickr-current-month .flatpickr-monthDropdown-months {
+  color: var(--text); background: var(--surface);
+}
+body[data-theme="b-dark"] .flatpickr-weekdays,
+body[data-theme="c-dark"] .flatpickr-weekdays { background: var(--surface); }
+body[data-theme="b-dark"] span.flatpickr-weekday,
+body[data-theme="c-dark"] span.flatpickr-weekday { color: var(--text-muted); background: var(--surface); }
+body[data-theme="b-dark"] .flatpickr-day.flatpickr-disabled,
+body[data-theme="b-dark"] .flatpickr-day.flatpickr-disabled:hover,
+body[data-theme="c-dark"] .flatpickr-day.flatpickr-disabled,
+body[data-theme="c-dark"] .flatpickr-day.flatpickr-disabled:hover { color: var(--text-muted); opacity: .4; }
+body[data-theme="b-dark"] .flatpickr-prev-month svg,
+body[data-theme="b-dark"] .flatpickr-next-month svg,
+body[data-theme="c-dark"] .flatpickr-prev-month svg,
+body[data-theme="c-dark"] .flatpickr-next-month svg { fill: var(--text); }
+body[data-theme="b-dark"] .flatpickr-day.today,
+body[data-theme="c-dark"] .flatpickr-day.today { border-color: var(--primary); }

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskFlow — RWD 主題預覽</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Calistoga&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ══════════════════════════════
+   THEME TOKENS
+══════════════════════════════ */
+body[data-theme="b-light"] {
+  --bg: #F7F4F0; --surface: #FFFCF8; --surface2: #EDE9E3;
+  --border: #DDD5C8; --border2: #E8DDD2;
+  --text: #2D2420; --text-muted: #9C8B7A;
+  --accent: #C67B5C; --accent2: #D4A76A; --accent-bg: #F5EDE7;
+  --high: #C67B5C; --med: #D4A76A; --low: #8BAF7A;
+  --done-opacity: 0.6;
+  --font-title: 'Calistoga', serif; --font-body: 'Plus Jakarta Sans', sans-serif;
+  --radius: 8px; --radius-lg: 12px;
+  --shadow: 0 1px 4px rgba(0,0,0,.06); --shadow-lg: 0 6px 20px rgba(0,0,0,.1);
+  --tab-indicator: 2px solid var(--accent);
+}
+body[data-theme="b-dark"] {
+  --bg: #1C1510; --surface: #251C14; --surface2: #2E2218;
+  --border: #3A2E25; --border2: #4A3B2E;
+  --text: #F0E4D5; --text-muted: #7A6B5E;
+  --accent: #D4956A; --accent2: #C4914A; --accent-bg: #2E221A;
+  --high: #D4956A; --med: #C4914A; --low: #7AAF8A;
+  --done-opacity: 0.5;
+  --font-title: 'Calistoga', serif; --font-body: 'Plus Jakarta Sans', sans-serif;
+  --radius: 8px; --radius-lg: 12px;
+  --shadow: 0 1px 4px rgba(0,0,0,.3); --shadow-lg: 0 6px 20px rgba(0,0,0,.4);
+  --tab-indicator: 2px solid var(--accent);
+}
+body[data-theme="c-light"] {
+  --bg: #F8F8F8; --surface: #FFFFFF; --surface2: #EFEFEF;
+  --border: #E0E0E0; --border2: #D0D0D0;
+  --text: #0A0A0A; --text-muted: #888;
+  --accent: #0A0A0A; --accent2: #444; --accent-bg: #F0F0F0;
+  --high: #FF3333; --med: #F5A623; --low: #22C55E;
+  --done-opacity: 0.55;
+  --font-title: 'Inter', sans-serif; --font-body: 'Inter', sans-serif;
+  --radius: 4px; --radius-lg: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,.06); --shadow-lg: 0 4px 12px rgba(0,0,0,.08);
+  --tab-indicator: 2px solid var(--accent);
+}
+body[data-theme="c-dark"] {
+  --bg: #0D0D0D; --surface: #1A1A1A; --surface2: #141414;
+  --border: #2A2A2A; --border2: #333;
+  --text: #FAFAFA; --text-muted: #555;
+  --accent: #FAFAFA; --accent2: #CCC; --accent-bg: #1F1F1F;
+  --high: #FF4444; --med: #F5A623; --low: #22C55E;
+  --done-opacity: 0.45;
+  --font-title: 'Inter', sans-serif; --font-body: 'Inter', sans-serif;
+  --radius: 4px; --radius-lg: 8px;
+  --shadow: 0 1px 4px rgba(0,0,0,.4); --shadow-lg: 0 6px 20px rgba(0,0,0,.5);
+  --tab-indicator: 2px solid var(--accent);
+}
+
+/* ══════════════════════════════
+   BASE
+══════════════════════════════ */
+html { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100%;
+  transition: background .25s, color .25s;
+}
+
+/* ══════════════════════════════
+   HEADER — Desktop
+══════════════════════════════ */
+.app-header {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: background .25s, border-color .25s;
+}
+.app-logo {
+  font-family: var(--font-title);
+  font-size: 17px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+body[data-theme="c-light"] .app-logo,
+body[data-theme="c-dark"] .app-logo {
+  font-weight: 800; letter-spacing: -0.8px;
+  text-transform: uppercase; font-size: 14px;
+}
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.app-date {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.header-spacer { flex: 1; }
+.work-hours {
+  font-size: 11px; font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface2);
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.work-hours span { color: var(--accent); }
+.header-icon-btn {
+  width: 30px; height: 30px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-muted);
+  transition: all .15s; flex-shrink: 0;
+}
+.header-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+.header-icon-btn svg { width: 14px; height: 14px; }
+
+/* hide desktop-only items on mobile */
+.desktop-only { display: flex; }
+.mobile-only  { display: none; }
+
+/* ══════════════════════════════
+   THEME BUTTON + PICKER
+══════════════════════════════ */
+.theme-wrap { position: relative; flex-shrink: 0; }
+.theme-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px 5px 8px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 11px; font-weight: 600;
+  color: var(--text);
+  transition: all .15s;
+  white-space: nowrap;
+}
+.theme-btn:hover { border-color: var(--accent); background: var(--accent-bg); }
+.theme-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+.theme-btn .chevron { width: 10px; height: 10px; }
+
+.theme-picker {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  width: 228px;
+  z-index: 300;
+}
+.theme-picker.open { display: block; }
+.picker-label {
+  font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 2px 6px 8px;
+}
+.theme-row { display: flex; gap: 5px; }
+.theme-opt {
+  flex: 1; padding: 7px 5px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  cursor: pointer; text-align: center;
+  transition: all .15s;
+  background: transparent;
+}
+.theme-opt:hover { border-color: var(--accent); }
+.theme-opt.active { border-color: var(--accent); background: var(--accent-bg); }
+.swatch {
+  width: 100%; height: 20px;
+  border-radius: 3px; margin-bottom: 5px;
+}
+.opt-name { font-size: 9.5px; font-weight: 700; color: var(--text); font-family: var(--font-body); }
+.opt-sub  { font-size: 8px; color: var(--text-muted); font-family: var(--font-body); }
+
+/* ══════════════════════════════
+   CAPACITY BAR
+══════════════════════════════ */
+.capacity-wrap {
+  padding: 12px 20px 0;
+  max-width: 940px;
+  margin: 0 auto;
+}
+.capacity-bar {
+  padding: 9px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex; align-items: center; gap: 10px;
+}
+.cap-label { font-size: 10px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+.cap-track { flex: 1; height: 4px; background: var(--surface2); border-radius: 999px; overflow: hidden; }
+.cap-fill  { height: 100%; width: 45%; background: var(--accent); border-radius: 999px; transition: width .4s; }
+.cap-val   { font-size: 10px; font-weight: 700; color: var(--accent); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* ══════════════════════════════
+   MOBILE TABS
+══════════════════════════════ */
+.mobile-tabs {
+  display: none;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  padding: 0 4px;
+  position: sticky;
+  top: 52px;
+  z-index: 90;
+}
+.tab-btn {
+  flex: 1; padding: 11px 4px 10px;
+  background: none; border: none;
+  font-family: var(--font-body);
+  font-size: 12px; font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: color .15s, border-color .15s;
+}
+.tab-btn.active { color: var(--text); border-bottom: var(--tab-indicator); }
+.tab-count {
+  font-size: 9.5px; font-weight: 700;
+  background: var(--surface2);
+  color: var(--text-muted);
+  padding: 1px 5px; border-radius: 999px;
+}
+.tab-btn.active .tab-count {
+  background: var(--accent-bg); color: var(--accent);
+}
+body[data-theme="c-light"] .tab-count,
+body[data-theme="c-dark"] .tab-count { border-radius: 3px; }
+
+/* ══════════════════════════════
+   KANBAN — Desktop 3-col
+══════════════════════════════ */
+.kanban-outer {
+  display: flex; gap: 14px;
+  padding: 16px 20px 80px;
+  max-width: 940px;
+  margin: 0 auto;
+  overflow-x: auto;
+}
+.kanban-col { flex: 1; min-width: 240px; }
+.col-head {
+  display: flex; align-items: center; gap: 7px;
+  margin-bottom: 10px;
+}
+.col-title {
+  font-size: 10.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.9px;
+  color: var(--text-muted); font-family: var(--font-body);
+}
+.col-count-badge {
+  background: var(--surface2); color: var(--text-muted);
+  font-size: 9px; font-weight: 700;
+  padding: 1px 6px; border-radius: 999px; font-family: var(--font-body);
+}
+body[data-theme="c-light"] .col-count-badge,
+body[data-theme="c-dark"] .col-count-badge { border-radius: 3px; }
+
+/* ══════════════════════════════
+   TASK CARD
+══════════════════════════════ */
+.task-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 11px 13px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: box-shadow .15s, transform .15s;
+  position: relative;
+  overflow: hidden;
+}
+.task-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+.task-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+}
+.task-card.high::before { background: var(--high); }
+.task-card.med::before  { background: var(--med); }
+.task-card.low::before  { background: var(--low); }
+.task-card.done-card { opacity: var(--done-opacity); }
+.task-card.done-card .task-title-text {
+  text-decoration: line-through; color: var(--text-muted);
+}
+.task-title-text {
+  font-size: 13px; font-weight: 500;
+  color: var(--text); line-height: 1.45; margin-bottom: 7px;
+  font-family: var(--font-body);
+}
+body[data-theme="c-light"] .task-title-text,
+body[data-theme="c-dark"] .task-title-text { font-weight: 600; letter-spacing: -0.2px; }
+.task-foot { display: flex; align-items: center; gap: 6px; }
+.urgency-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.high-dot { background: var(--high); }
+.med-dot  { background: var(--med); }
+.low-dot  { background: var(--low); }
+.task-meta-text { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+.pdca-badge {
+  margin-left: auto;
+  font-size: 9px; font-weight: 700;
+  color: var(--text-muted); background: var(--surface2);
+  padding: 1px 5px; border-radius: 3px;
+}
+
+/* ══════════════════════════════
+   ADD BUTTON
+══════════════════════════════ */
+.add-task-btn {
+  width: 100%; padding: 8px 12px;
+  background: transparent;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 11.5px; font-weight: 600;
+  font-family: var(--font-body); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: all .15s; margin-top: 4px;
+}
+.add-task-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+
+/* ══════════════════════════════
+   FAB (mobile only)
+══════════════════════════════ */
+.fab {
+  display: none;
+  position: fixed; bottom: 24px; right: 20px;
+  width: 50px; height: 50px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: none; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  align-items: center; justify-content: center;
+  transition: transform .15s, box-shadow .15s;
+  z-index: 200;
+}
+.fab:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(0,0,0,.3); }
+.fab svg { width: 22px; height: 22px; stroke: var(--bg); }
+body[data-theme="c-light"] .fab svg { stroke: #fff; }
+
+/* ══════════════════════════════
+   MOBILE PICKER SHEET
+   (bottom sheet on mobile)
+══════════════════════════════ */
+.picker-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 400;
+  align-items: flex-end;
+  justify-content: center;
+}
+.picker-overlay.open { display: flex; }
+.picker-sheet {
+  background: var(--surface);
+  border-radius: 16px 16px 0 0;
+  padding: 16px 16px 32px;
+  width: 100%; max-width: 480px;
+}
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 999px;
+  margin: 0 auto 16px;
+}
+.sheet-title {
+  font-size: 13px; font-weight: 700;
+  color: var(--text); margin-bottom: 12px;
+  font-family: var(--font-body);
+}
+.sheet-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.sheet-opt {
+  padding: 12px 10px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  cursor: pointer; text-align: left;
+  transition: all .15s; background: transparent;
+  display: flex; align-items: center; gap: 10px;
+}
+.sheet-opt:hover, .sheet-opt.active {
+  border-color: var(--accent); background: var(--accent-bg);
+}
+.sheet-swatch {
+  width: 36px; height: 36px;
+  border-radius: var(--radius); flex-shrink: 0;
+}
+.sheet-name { font-size: 12px; font-weight: 700; color: var(--text); font-family: var(--font-body); }
+.sheet-sub  { font-size: 10px; color: var(--text-muted); font-family: var(--font-body); }
+
+/* ══════════════════════════════
+   RESPONSIVE BREAKPOINTS
+══════════════════════════════ */
+
+/* ── Tablet (≤ 768px) ── */
+@media (max-width: 768px) {
+  .kanban-outer {
+    padding: 14px 14px 80px;
+    gap: 12px;
+  }
+  .kanban-col { min-width: 200px; }
+}
+
+/* ── Mobile (≤ 600px) ── */
+@media (max-width: 600px) {
+
+  /* Header: logo + date + theme btn only */
+  .app-header { padding: 0 14px; gap: 8px; height: 48px; }
+  .desktop-only { display: none !important; }
+  .mobile-only  { display: flex !important; }
+
+  .app-logo { font-size: 15px; }
+  .app-date { font-size: 11px; }
+
+  /* Capacity bar */
+  .capacity-wrap { padding: 10px 14px 0; }
+
+  /* Tabs appear, kanban goes single-column */
+  .mobile-tabs { display: flex; }
+  .kanban-outer {
+    display: block;
+    padding: 14px 14px 80px;
+    overflow: visible;
+  }
+  .kanban-col { display: none; min-width: unset; }
+  .kanban-col.active { display: block; }
+  .col-head { display: none; } /* header shown in tabs */
+
+  /* FAB replaces inline add button */
+  .fab { display: flex; }
+  .add-task-btn { display: none; }
+
+  /* Theme picker → bottom sheet */
+  .theme-btn .btn-label { display: none; } /* hide text, keep icon */
+  .theme-btn { padding: 6px 8px; }
+  .theme-picker { display: none !important; } /* desktop picker hidden */
+}
+</style>
+</head>
+<body data-theme="b-light">
+
+<!-- ══════════════════════════════
+     HEADER
+══════════════════════════════ -->
+<header class="app-header">
+  <span class="app-logo" id="appLogo">TaskFlow</span>
+  <span class="app-date desktop-only">週二 · 5月5日</span>
+
+  <div class="header-spacer"></div>
+
+  <!-- Desktop: work hours -->
+  <div class="work-hours desktop-only">今日 <span>3.6h</span> / 8h</div>
+
+  <!-- Desktop: icon buttons -->
+  <button class="header-icon-btn desktop-only" title="日誌">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+  </button>
+  <button class="header-icon-btn desktop-only" title="設定">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+
+  <!-- ★ Theme Button (desktop dropdown / mobile sheet) -->
+  <div class="theme-wrap">
+    <button class="theme-btn" id="themeToggle" onclick="openThemePicker()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <span class="btn-label" id="themeLabel">B · 暖淺</span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+
+    <!-- Desktop dropdown -->
+    <div class="theme-picker" id="themePicker">
+      <div class="picker-label">選擇主題</div>
+      <div class="theme-row">
+        <div class="theme-opt active" id="opt-b-light" onclick="setTheme('b-light')">
+          <div class="swatch" style="background:linear-gradient(135deg,#F7F4F0 50%,#C67B5C 50%)"></div>
+          <div class="opt-name">暖 · 淺</div><div class="opt-sub">B Light</div>
+        </div>
+        <div class="theme-opt" id="opt-b-dark" onclick="setTheme('b-dark')">
+          <div class="swatch" style="background:linear-gradient(135deg,#1C1510 50%,#D4956A 50%)"></div>
+          <div class="opt-name">暖 · 深</div><div class="opt-sub">B Dark</div>
+        </div>
+        <div class="theme-opt" id="opt-c-light" onclick="setTheme('c-light')">
+          <div class="swatch" style="background:linear-gradient(135deg,#F8F8F8 50%,#0A0A0A 50%)"></div>
+          <div class="opt-name">銳 · 淺</div><div class="opt-sub">C Light</div>
+        </div>
+        <div class="theme-opt" id="opt-c-dark" onclick="setTheme('c-dark')">
+          <div class="swatch" style="background:linear-gradient(135deg,#0D0D0D 50%,#FAFAFA 50%)"></div>
+          <div class="opt-name">銳 · 深</div><div class="opt-sub">C Dark</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════
+     MOBILE TABS
+══════════════════════════════ -->
+<nav class="mobile-tabs" id="mobileTabs">
+  <button class="tab-btn active" onclick="switchTab(0,this)">待辦 <span class="tab-count">3</span></button>
+  <button class="tab-btn" onclick="switchTab(1,this)">進行中 <span class="tab-count">1</span></button>
+  <button class="tab-btn" onclick="switchTab(2,this)">完成 <span class="tab-count">2</span></button>
+</nav>
+
+<!-- ══════════════════════════════
+     CAPACITY BAR
+══════════════════════════════ -->
+<div class="capacity-wrap">
+  <div class="capacity-bar">
+    <span class="cap-label">今日負載</span>
+    <div class="cap-track"><div class="cap-fill"></div></div>
+    <span class="cap-val">3.6h / 8h</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     KANBAN
+══════════════════════════════ -->
+<div class="kanban-outer">
+
+  <!-- 待辦 -->
+  <div class="kanban-col active" id="col-0">
+    <div class="col-head"><span class="col-title">待辦</span><span class="col-count-badge">3</span></div>
+    <div class="task-card high">
+      <div class="task-title-text">撰寫 Q2 OKR 提案</div>
+      <div class="task-foot"><div class="urgency-dot high-dot"></div><span class="task-meta-text">高優先 · 2h · 今天</span><span class="pdca-badge">P</span></div>
+    </div>
+    <div class="task-card med">
+      <div class="task-title-text">審查設計稿回饋給設計師</div>
+      <div class="task-foot"><div class="urgency-dot med-dot"></div><span class="task-meta-text">中優先 · 1h · 明天</span><span class="pdca-badge">P</span></div>
+    </div>
+    <div class="task-card low">
+      <div class="task-title-text">更新產品 Roadmap 文件</div>
+      <div class="task-foot"><div class="urgency-dot low-dot"></div><span class="task-meta-text">低優先 · 0.5h · 本週</span><span class="pdca-badge">P</span></div>
+    </div>
+    <button class="add-task-btn">+ 新增任務</button>
+  </div>
+
+  <!-- 進行中 -->
+  <div class="kanban-col" id="col-1">
+    <div class="col-head"><span class="col-title">進行中</span><span class="col-count-badge">1</span></div>
+    <div class="task-card high">
+      <div class="task-title-text">Sprint 規劃會議準備簡報</div>
+      <div class="task-foot"><div class="urgency-dot high-dot"></div><span class="task-meta-text">高優先 · 1.5h · 今天</span><span class="pdca-badge">D</span></div>
+    </div>
+  </div>
+
+  <!-- 完成 -->
+  <div class="kanban-col" id="col-2">
+    <div class="col-head"><span class="col-title">完成</span><span class="col-count-badge">2</span></div>
+    <div class="task-card done-card low">
+      <div class="task-title-text">每週 1on1 面談記錄</div>
+      <div class="task-foot"><div class="urgency-dot low-dot"></div><span class="task-meta-text">低優先 · 1h · 今天</span><span class="pdca-badge">A</span></div>
+    </div>
+    <div class="task-card done-card med">
+      <div class="task-title-text">回覆 Slack 跨部門討論串</div>
+      <div class="task-foot"><div class="urgency-dot med-dot"></div><span class="task-meta-text">中優先 · 0.5h · 今天</span><span class="pdca-badge">C</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════
+     FAB (mobile)
+══════════════════════════════ -->
+<button class="fab" title="新增任務">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- ══════════════════════════════
+     MOBILE BOTTOM SHEET
+══════════════════════════════ -->
+<div class="picker-overlay" id="pickerOverlay" onclick="closeSheet(event)">
+  <div class="picker-sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">選擇主題</div>
+    <div class="sheet-grid">
+      <div class="sheet-opt active" id="sheet-b-light" onclick="setTheme('b-light')">
+        <div class="sheet-swatch" style="background:linear-gradient(135deg,#F7F4F0 50%,#C67B5C 50%)"></div>
+        <div><div class="sheet-name">暖 · 淺色</div><div class="sheet-sub">B Light</div></div>
+      </div>
+      <div class="sheet-opt" id="sheet-b-dark" onclick="setTheme('b-dark')">
+        <div class="sheet-swatch" style="background:linear-gradient(135deg,#1C1510 50%,#D4956A 50%)"></div>
+        <div><div class="sheet-name">暖 · 深色</div><div class="sheet-sub">B Dark</div></div>
+      </div>
+      <div class="sheet-opt" id="sheet-c-light" onclick="setTheme('c-light')">
+        <div class="sheet-swatch" style="background:linear-gradient(135deg,#F8F8F8 50%,#0A0A0A 50%)"></div>
+        <div><div class="sheet-name">銳 · 淺色</div><div class="sheet-sub">C Light</div></div>
+      </div>
+      <div class="sheet-opt" id="sheet-c-dark" onclick="setTheme('c-dark')">
+        <div class="sheet-swatch" style="background:linear-gradient(135deg,#0D0D0D 50%,#FAFAFA 50%)"></div>
+        <div><div class="sheet-name">銳 · 深色</div><div class="sheet-sub">C Dark</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const isMobile = () => window.innerWidth <= 600;
+
+const themeLabels = {
+  'b-light':'B · 暖淺','b-dark':'B · 暖深',
+  'c-light':'C · 銳淺','c-dark':'C · 銳深'
+};
+const cThemes = new Set(['c-light','c-dark']);
+
+function setTheme(theme) {
+  document.body.setAttribute('data-theme', theme);
+  document.getElementById('themeLabel').textContent = themeLabels[theme];
+  document.getElementById('appLogo').textContent = cThemes.has(theme) ? 'TASKFLOW' : 'TaskFlow';
+
+  // update desktop opts
+  document.querySelectorAll('.theme-opt').forEach(el => el.classList.remove('active'));
+  const dtOpt = document.getElementById('opt-' + theme);
+  if (dtOpt) dtOpt.classList.add('active');
+
+  // update sheet opts
+  document.querySelectorAll('.sheet-opt').forEach(el => el.classList.remove('active'));
+  const shOpt = document.getElementById('sheet-' + theme);
+  if (shOpt) shOpt.classList.add('active');
+
+  closePicker();
+  closeSheet();
+}
+
+function openThemePicker() {
+  if (isMobile()) {
+    document.getElementById('pickerOverlay').classList.add('open');
+  } else {
+    document.getElementById('themePicker').classList.toggle('open');
+  }
+}
+function closePicker() {
+  document.getElementById('themePicker').classList.remove('open');
+}
+function closeSheet(e) {
+  document.getElementById('pickerOverlay').classList.remove('open');
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.theme-wrap')) closePicker();
+});
+
+// Tab switching (mobile)
+function switchTab(idx, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.kanban-col').forEach((c, i) => {
+    c.classList.toggle('active', i === idx);
+  });
+}
+</script>
+</body>
+</html>
