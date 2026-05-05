@@ -40,7 +40,7 @@ body[data-theme="c-light"] {
 body[data-theme="c-dark"] {
   --bg: #0D0D0D; --surface: #1A1A1A; --surface2: #141414;
   --border: #2A2A2A; --border2: #333333;
-  --text: #FAFAFA; --text-muted: #555555;
+  --text: #FAFAFA; --text-muted: #777777;
   --primary: #FAFAFA; --primary-hover: #CCCCCC; --primary-bg: #1F1F1F;
   --high: #FF4444; --medium: #F5A623; --low: #22C55E;
   --radius: 4px; --col-width: 300px;
@@ -731,3 +731,62 @@ textarea { resize: vertical; min-height: 70px; }
   .mobile-tabs { display: none; }
   .kanban-col.col-hidden { display: flex !important; }
 }
+
+/* ═══════════════════════════════════════════════════════
+   Dark Theme Overrides — fix hardcoded light-bg colors
+   Applies to both b-dark and c-dark
+   ════════════════════════════════════════════════════ */
+
+/* FAB: c-dark primary 是白色，文字要黑 */
+body[data-theme="c-dark"] #btn-fab { color: #0D0D0D; }
+
+/* Danger button: 半透明紅底取代淺粉紅 */
+body[data-theme="b-dark"] .btn-danger,
+body[data-theme="c-dark"] .btn-danger { background: rgba(255,68,68,.12); border-color: rgba(255,68,68,.3); }
+body[data-theme="b-dark"] .btn-danger:hover,
+body[data-theme="c-dark"] .btn-danger:hover { background: rgba(255,68,68,.2); }
+
+/* Drag-over: 淺紫 → surface2 */
+body[data-theme="b-dark"] .task-list.drag-over,
+body[data-theme="c-dark"] .task-list.drag-over { background: var(--surface2); }
+
+/* Calendar meet badge: 淺藍 → primary-bg */
+body[data-theme="b-dark"] .cal-meet-badge,
+body[data-theme="c-dark"] .cal-meet-badge { background: var(--primary-bg); }
+
+/* Selected option buttons: 淺紫/粉/綠 → 主題色半透明 */
+body[data-theme="b-dark"] .urg-btn.selected,
+body[data-theme="b-dark"] .est-btn.selected,
+body[data-theme="b-dark"] .dl-btn.selected,
+body[data-theme="c-dark"] .urg-btn.selected,
+body[data-theme="c-dark"] .est-btn.selected,
+body[data-theme="c-dark"] .dl-btn.selected { background: var(--primary-bg); }
+
+body[data-theme="b-dark"] .urg-btn[data-value="high"].selected,
+body[data-theme="c-dark"] .urg-btn[data-value="high"].selected { background: rgba(255,68,68,.15); }
+body[data-theme="b-dark"] .urg-btn[data-value="low"].selected,
+body[data-theme="c-dark"] .urg-btn[data-value="low"].selected { background: rgba(34,197,94,.15); }
+
+/* AI Suggest button: 淺紫 → primary-bg */
+body[data-theme="b-dark"] #btn-ai-suggest,
+body[data-theme="c-dark"] #btn-ai-suggest { background: var(--primary-bg); }
+
+/* Urgency/priority badges: 淺色底 → 半透明 */
+body[data-theme="b-dark"] .badge-high,
+body[data-theme="c-dark"] .badge-high { background: rgba(255,68,68,.15); }
+body[data-theme="b-dark"] .badge-medium,
+body[data-theme="c-dark"] .badge-medium { background: rgba(245,166,35,.15); color: var(--medium); }
+body[data-theme="b-dark"] .badge-low,
+body[data-theme="c-dark"] .badge-low { background: rgba(34,197,94,.15); color: var(--low); }
+
+/* Journal item hover: 淺紫 → surface2 */
+body[data-theme="b-dark"] .journal-item:hover,
+body[data-theme="c-dark"] .journal-item:hover { background: var(--surface2); }
+
+/* Toast: 主題化，帶邊框增加對比 */
+body[data-theme="b-dark"] #toast,
+body[data-theme="c-dark"] #toast { background: var(--surface); color: var(--text); border: 1px solid var(--border2); }
+
+/* Loading overlay: 白底 → 深底 */
+body[data-theme="b-dark"] #loading-overlay,
+body[data-theme="c-dark"] #loading-overlay { background: rgba(0,0,0,.75); }
