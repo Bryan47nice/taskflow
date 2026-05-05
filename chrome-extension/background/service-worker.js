@@ -1,6 +1,6 @@
 // === TaskFlow Capture — service worker ===
 // Change this to your actual deployed URL (or file:// path for local testing)
-const APP_URL = 'https://Bryan47nice.github.io/My-Obsidian/index.html';
+const APP_URL = 'https://Bryan47nice.github.io/taskflow/index.html';
 
 chrome.commands.onCommand.addListener(async (command) => {
   if (command !== 'capture-task') return;
