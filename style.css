@@ -1,30 +1,62 @@
 /* === TaskFlow — RWD Styles === */
 
-:root {
-  --bg: #f0f2f5;
-  --surface: #ffffff;
-  --border: #e5e7eb;
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
-  --text: #111827;
-  --text-muted: #6b7280;
-  --high: #ef4444;
-  --medium: #f59e0b;
-  --low: #10b981;
-  --radius: 10px;
-  --shadow: 0 1px 4px rgba(0,0,0,.1);
-  --shadow-lg: 0 4px 20px rgba(0,0,0,.15);
-  --col-width: 300px;
+/* ── Theme: B Light (Human Warm) ── */
+body[data-theme="b-light"] {
+  --bg: #F7F4F0; --surface: #FFFCF8; --surface2: #EDE9E3;
+  --border: #DDD5C8; --border2: #E8DDD2;
+  --text: #2D2420; --text-muted: #9C8B7A;
+  --primary: #C67B5C; --primary-hover: #B56A4B; --primary-bg: #F5EDE7;
+  --high: #C67B5C; --medium: #D4A76A; --low: #8BAF7A;
+  --radius: 8px; --col-width: 300px;
+  --shadow: 0 1px 4px rgba(0,0,0,.06); --shadow-lg: 0 4px 20px rgba(0,0,0,.1);
+  --font-title: 'Calistoga', serif; --font-body: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ── Theme: B Dark (Human Warm Dark) ── */
+body[data-theme="b-dark"] {
+  --bg: #1C1510; --surface: #251C14; --surface2: #2E2218;
+  --border: #3A2E25; --border2: #4A3B2E;
+  --text: #F0E4D5; --text-muted: #7A6B5E;
+  --primary: #D4956A; --primary-hover: #C4845A; --primary-bg: #2E221A;
+  --high: #D4956A; --medium: #C4914A; --low: #7AAF8A;
+  --radius: 8px; --col-width: 300px;
+  --shadow: 0 1px 4px rgba(0,0,0,.3); --shadow-lg: 0 4px 20px rgba(0,0,0,.4);
+  --font-title: 'Calistoga', serif; --font-body: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ── Theme: C Light (Editorial Light) ── */
+body[data-theme="c-light"] {
+  --bg: #F8F8F8; --surface: #FFFFFF; --surface2: #EFEFEF;
+  --border: #E0E0E0; --border2: #D0D0D0;
+  --text: #0A0A0A; --text-muted: #888888;
+  --primary: #0A0A0A; --primary-hover: #333333; --primary-bg: #F0F0F0;
+  --high: #FF3333; --medium: #F5A623; --low: #22C55E;
+  --radius: 4px; --col-width: 300px;
+  --shadow: 0 1px 3px rgba(0,0,0,.06); --shadow-lg: 0 4px 12px rgba(0,0,0,.08);
+  --font-title: 'Inter', sans-serif; --font-body: 'Inter', sans-serif;
+}
+
+/* ── Theme: C Dark (Editorial Dark) ── */
+body[data-theme="c-dark"] {
+  --bg: #0D0D0D; --surface: #1A1A1A; --surface2: #141414;
+  --border: #2A2A2A; --border2: #333333;
+  --text: #FAFAFA; --text-muted: #555555;
+  --primary: #FAFAFA; --primary-hover: #CCCCCC; --primary-bg: #1F1F1F;
+  --high: #FF4444; --medium: #F5A623; --low: #22C55E;
+  --radius: 4px; --col-width: 300px;
+  --shadow: 0 1px 4px rgba(0,0,0,.4); --shadow-lg: 0 4px 20px rgba(0,0,0,.5);
+  --font-title: 'Inter', sans-serif; --font-body: 'Inter', sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
   min-height: 100vh;
+  transition: background .25s, color .25s;
 }
 
 /* ── Header ── */
@@ -47,8 +79,18 @@ header {
 h1 {
   font-size: 18px;
   font-weight: 700;
-  color: var(--primary);
+  color: var(--text);
   letter-spacing: -.3px;
+  font-family: var(--font-title, inherit);
+}
+
+/* C 主題：標題全大寫、更重 */
+body[data-theme="c-light"] h1,
+body[data-theme="c-dark"] h1 {
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  text-transform: uppercase;
+  font-size: 14px;
 }
 
 #header-date { color: var(--text-muted); font-size: 13px; }
@@ -87,12 +129,115 @@ h1 {
 }
 .btn-primary { background: var(--primary); color: #fff; }
 .btn-primary:hover { background: var(--primary-hover); }
+/* C 主題 primary 是黑/白，按鈕文字需要對比色 */
+body[data-theme="c-light"] .btn-primary { background: #0A0A0A; color: #fff; }
+body[data-theme="c-dark"]  .btn-primary { background: #FAFAFA; color: #0D0D0D; }
 .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--border); }
 .btn-danger { background: #fef2f2; color: var(--high); border: 1px solid #fecaca; }
 .btn-danger:hover { background: #fee2e2; }
-.btn-icon { background: transparent; border: none; cursor: pointer; padding: 6px; font-size: 18px; border-radius: 6px; }
-.btn-icon:hover { background: var(--bg); }
+.btn-icon { background: transparent; border: none; cursor: pointer; padding: 6px; font-size: 18px; border-radius: 6px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; }
+.btn-icon:hover { background: var(--surface2); color: var(--text); }
+
+/* ── Theme Button ── */
+.theme-wrap { position: relative; }
+
+.theme-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px 5px 8px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-body, inherit);
+  font-size: 11px; font-weight: 600;
+  color: var(--text);
+  transition: all .15s;
+  white-space: nowrap;
+}
+.theme-btn:hover { border-color: var(--primary); background: var(--primary-bg); }
+.theme-btn svg { flex-shrink: 0; }
+.theme-chevron { transition: transform .2s; }
+
+/* Desktop 下拉 */
+.theme-picker {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  width: 224px;
+  z-index: 300;
+}
+.theme-picker.open { display: block; }
+.theme-picker-label {
+  font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 2px 4px 8px;
+  font-family: var(--font-body, inherit);
+}
+.theme-picker-row { display: flex; gap: 6px; }
+.theme-opt {
+  flex: 1; padding: 7px 5px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  cursor: pointer; text-align: center;
+  background: transparent;
+  transition: all .15s;
+}
+.theme-opt:hover, .theme-opt.active {
+  border-color: var(--primary); background: var(--primary-bg);
+}
+.theme-swatch { width: 100%; height: 20px; border-radius: 3px; margin-bottom: 5px; }
+.theme-opt-name { font-size: 9.5px; font-weight: 700; color: var(--text); font-family: var(--font-body, inherit); }
+
+/* Mobile Bottom Sheet */
+.theme-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 400;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.theme-overlay.hidden { display: none; }
+.theme-sheet {
+  background: var(--surface);
+  border-radius: 16px 16px 0 0;
+  padding: 16px 16px 32px;
+  width: 100%; max-width: 480px;
+}
+.theme-sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 999px;
+  margin: 0 auto 16px;
+}
+.theme-sheet-title {
+  font-size: 13px; font-weight: 700;
+  color: var(--text); margin-bottom: 12px;
+  font-family: var(--font-body, inherit);
+}
+.theme-sheet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.theme-sheet-opt {
+  padding: 12px 10px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  cursor: pointer; text-align: left;
+  display: flex; align-items: center; gap: 10px;
+  background: transparent; transition: all .15s;
+}
+.theme-sheet-opt:hover, .theme-sheet-opt.active {
+  border-color: var(--primary); background: var(--primary-bg);
+}
+.theme-sheet-swatch { width: 36px; height: 36px; border-radius: var(--radius); flex-shrink: 0; }
+.theme-sheet-name { font-size: 12px; font-weight: 700; color: var(--text); font-family: var(--font-body, inherit); }
+.theme-sheet-sub  { font-size: 10px; color: var(--text-muted); font-family: var(--font-body, inherit); }
 
 /* ── Mobile tabs ── */
 .mobile-tabs {
@@ -117,12 +262,12 @@ h1 {
 }
 .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
 .tab-count {
-  background: var(--bg);
+  background: var(--surface2);
   border-radius: 10px;
   padding: 1px 6px;
   font-size: 11px;
 }
-.tab-btn.active .tab-count { background: #ede9fe; color: var(--primary); }
+.tab-btn.active .tab-count { background: var(--primary-bg); color: var(--primary); }
 
 /* ── Calendar Panel ── */
 .cal-panel {
@@ -265,7 +410,7 @@ h1 {
 
 .pdca-badge {
   font-size: 10px;
-  background: #ede9fe;
+  background: var(--primary-bg);
   color: var(--primary);
   border-radius: 4px;
   padding: 1px 5px;
@@ -554,19 +699,31 @@ textarea { resize: vertical; min-height: 70px; }
   /* Hide non-active columns */
   .kanban-col.col-hidden { display: none; }
 
-  #work-hours { max-width: 140px; font-size: 11px; }
-
   h1 { font-size: 16px; }
-
-  .btn-journal, .btn-review-text { display: none; }
-
-  #header-date { display: none; }
 
   .modal-box { max-height: 95vh; border-radius: 14px 14px 0 0; }
 
   .modal { align-items: flex-end; padding: 0; }
 
   .pdca-fields { grid-template-columns: 1fr; }
+}
+
+/* ── RWD: Mobile narrow (< 600px) — header 精簡 ── */
+@media (max-width: 600px) {
+  /* 隱藏 header 中較不重要的元素 */
+  #header-date { display: none; }
+  #work-hours { display: none; }
+  #save-indicator { display: none !important; }
+  .btn-journal { display: none; }
+  .btn-review-text { display: none; }
+
+  /* 主題按鈕只顯示 icon，隱藏文字 */
+  .theme-btn-label { display: none; }
+  .theme-chevron { display: none; }
+  .theme-btn { padding: 6px 7px; }
+
+  /* 主題下拉改用 bottom sheet — 隱藏 desktop dropdown */
+  .theme-picker { display: none !important; }
 }
 
 /* ── RWD: Tablet/Desktop ── */

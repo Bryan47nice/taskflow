@@ -7,6 +7,7 @@ const App = {
 
   // ── Init ──────────────────────────────────────────────────────────
   async init() {
+    Theme.init();
     this.settings = this._loadSettings();
 
     Settings.init();
