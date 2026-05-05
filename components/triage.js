@@ -68,7 +68,17 @@ const Triage = {
   _next() {
     if (this._step === 1) {
       const title = document.getElementById('t-title').value.trim();
-      if (!title) { this._shake('t-title'); return; }
+      if (!title) {
+        this._shake('t-title');
+        const errEl = document.getElementById('t-title-error');
+        if (errEl) errEl.textContent = '請輸入任務名稱';
+        document.getElementById('t-title').classList.add('input-error');
+        document.getElementById('t-title').focus();
+        return;
+      }
+      const errEl = document.getElementById('t-title-error');
+      if (errEl) errEl.textContent = '';
+      document.getElementById('t-title').classList.remove('input-error');
       this._data.title = title;
     }
     if (this._step < 4) this._goStep(this._step + 1);
@@ -134,15 +144,24 @@ const Triage = {
       });
     });
 
-    // Keyboard 1/2/3 for urgency step
+    // Global keyboard shortcuts for triage modal
     document.addEventListener('keydown', e => {
       if (document.getElementById('modal-triage').classList.contains('hidden')) return;
       if (e.key === 'Escape') { this.hide(); return; }
+      // Step 2: 1/2/3 for urgency (auto-advance)
       if (this._step === 2 && ['1','2','3'].includes(e.key)) {
         const map = { '1': 'low', '2': 'medium', '3': 'high' };
         this._data.urgency = map[e.key];
         this._renderUrgency();
         setTimeout(() => this._next(), 200);
+        return;
+      }
+      // Steps 3 & 4: Enter advances (skip if custom estimate field focused)
+      if (e.key === 'Enter' && (this._step === 3 || this._step === 4)) {
+        const active = document.activeElement;
+        if (active && active.id === 't-custom-est') return; // let user type
+        e.preventDefault();
+        this._next();
       }
     });
 

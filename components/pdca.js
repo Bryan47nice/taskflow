@@ -1,9 +1,17 @@
 // === Task Detail + PDCA Modal ===
 const PDCA = {
   _task: null,
+  _dirty: false,
+
+  _setDirty(val) {
+    this._dirty = val;
+    const dot = document.getElementById('pdca-dirty-dot');
+    if (dot) dot.classList.toggle('visible', val);
+  },
 
   show(task) {
     this._task = task;
+    this._setDirty(false);
     const m = document.getElementById('modal-pdca');
 
     const urgLabel = { high: '🚨 緊急', medium: '😤 重要', low: '😌 一般' }[task.urgency] || '';
@@ -54,9 +62,13 @@ const PDCA = {
     m.classList.remove('hidden');
   },
 
-  hide() {
+  hide(force = false) {
+    if (!force && this._dirty) {
+      if (!confirm('有未儲存的變更，確定要關閉嗎？')) return;
+    }
     document.getElementById('modal-pdca').classList.add('hidden');
     this._task = null;
+    this._setDirty(false);
   },
 
   async save() {
@@ -75,7 +87,8 @@ const PDCA = {
       completedAt: newStatus === 'done' && !this._task.completedAt ? new Date().toISOString() : this._task.completedAt
     };
     await App.updateTask(this._task.id, updates);
-    this.hide();
+    this._setDirty(false);
+    this.hide(true);
     App.showToast('已儲存');
   },
 
@@ -118,5 +131,11 @@ const PDCA = {
         this.hide();
       }
     });
+
+    // Dirty tracking — mark unsaved on any field change
+    ['pdca-plan','pdca-do','pdca-check','pdca-act'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => this._setDirty(true));
+    });
+    document.getElementById('pdca-status').addEventListener('change', () => this._setDirty(true));
   }
 };

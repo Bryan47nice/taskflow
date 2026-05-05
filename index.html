@@ -238,7 +238,8 @@
       <div class="triage-step" data-step="1">
         <div>
           <label>任務名稱</label>
-          <input type="text" id="t-title" placeholder="這個任務要做什麼？" maxlength="100">
+          <input type="text" id="t-title" placeholder="這個任務要做什麼？" maxlength="100" autocomplete="off">
+          <p class="field-error" id="t-title-error" aria-live="polite"></p>
         </div>
         <button id="btn-ai-suggest">✨ AI 建議</button>
       </div>
@@ -281,7 +282,6 @@
     </div>
     <div class="modal-footer triage-nav">
       <button class="btn btn-secondary" id="btn-triage-back">← 上一步</button>
-      <span id="t-step-indicator" class="step-indicator">1 / 4</span>
       <button class="btn btn-primary" id="btn-triage-next">下一步 →</button>
     </div>
   </div>
@@ -294,6 +294,7 @@
   <div class="modal-box pdca-modal-box">
     <div class="modal-header">
       <h2>任務詳情</h2>
+      <span class="dirty-dot" id="pdca-dirty-dot" title="有未儲存的變更"></span>
       <button class="btn-icon" id="btn-pdca-close">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
