@@ -557,6 +557,39 @@ input[type="text"], input[type="number"], input[type="password"], textarea, sele
 input:focus, textarea:focus, select:focus { border-color: var(--primary); }
 textarea { resize: vertical; min-height: 70px; }
 
+/* ── PDCA editable meta row ── */
+.pdca-meta-edit {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.pdca-meta-row {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.pdca-meta-row > label {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+  color: var(--text-muted);
+}
+.pdca-meta-row select,
+.pdca-meta-row input[type="text"] {
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-family: var(--font-body);
+  width: 100%;
+  transition: border-color .15s;
+}
+.pdca-meta-row select:focus,
+.pdca-meta-row input[type="text"]:focus { border-color: var(--primary); outline: none; }
+@media (max-width: 400px) {
+  .pdca-meta-edit { grid-template-columns: 1fr 1fr; }
+}
+
 /* ── Settings modal ── */
 .settings-status { font-size: 12px; padding-top: 4px; }
 .settings-status.error { color: var(--high); }
