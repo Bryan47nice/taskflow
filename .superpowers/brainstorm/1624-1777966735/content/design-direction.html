@@ -1,0 +1,228 @@
+<style>
+  .dir-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 16px;
+  }
+  .dir-card {
+    border: 2px solid transparent;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .dir-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+  .dir-card.selected { border-color: #6366f1 !important; box-shadow: 0 0 0 4px rgba(99,102,241,.2); }
+
+  /* Direction A: Flat Precision */
+  .dir-a .preview {
+    background: #FAFAFA;
+    padding: 16px;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    min-height: 220px;
+  }
+  .dir-a .app-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 10px; border-bottom: 1px solid #E4E4E7; margin-bottom: 12px;
+  }
+  .dir-a .app-title { font-size: 13px; font-weight: 700; color: #18181B; letter-spacing: -0.3px; }
+  .dir-a .badge { background: #2563EB; color: #fff; font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+  .dir-a .col-label { font-size: 9px; font-weight: 600; color: #71717A; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .dir-a .task { background: #fff; border: 1px solid #E4E4E7; border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; }
+  .dir-a .task-title { font-size: 11px; font-weight: 500; color: #18181B; margin-bottom: 4px; }
+  .dir-a .task-meta { display: flex; gap: 4px; align-items: center; }
+  .dir-a .dot-high { width: 6px; height: 6px; border-radius: 50%; background: #EF4444; flex-shrink: 0; }
+  .dir-a .dot-med { width: 6px; height: 6px; border-radius: 50%; background: #F59E0B; flex-shrink: 0; }
+  .dir-a .task-tag { font-size: 9px; color: #71717A; }
+  .dir-a .add-btn {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 600; color: #2563EB;
+    background: none; border: none; cursor: pointer; padding: 0;
+  }
+  .dir-a .icon-sq { width: 12px; height: 12px; border: 1.5px solid #2563EB; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 9px; }
+
+  /* Direction B: Human Warm */
+  .dir-b .preview {
+    background: #F7F4F0;
+    padding: 16px;
+    font-family: 'Georgia', serif;
+    min-height: 220px;
+  }
+  .dir-b .app-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 10px; border-bottom: 1px solid #DDD5C8; margin-bottom: 12px;
+  }
+  .dir-b .app-title { font-size: 13px; font-weight: 700; color: #2D2420; letter-spacing: -0.2px; font-family: 'Georgia', serif; }
+  .dir-b .badge { background: #C67B5C; color: #fff; font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 10px; font-family: sans-serif; }
+  .dir-b .col-label { font-size: 9px; font-weight: 600; color: #9C8B7A; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; font-family: sans-serif; }
+  .dir-b .task { background: #FFFCF8; border: 1px solid #E8DDD2; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; border-left: 3px solid #C67B5C; }
+  .dir-b .task-title { font-size: 11px; font-weight: 500; color: #2D2420; margin-bottom: 4px; font-family: sans-serif; }
+  .dir-b .task-meta { display: flex; gap: 4px; align-items: center; }
+  .dir-b .dot-high { width: 6px; height: 6px; border-radius: 50%; background: #C67B5C; flex-shrink: 0; }
+  .dir-b .dot-med { width: 6px; height: 6px; border-radius: 50%; background: #D4A76A; flex-shrink: 0; }
+  .dir-b .task-tag { font-size: 9px; color: #9C8B7A; font-family: sans-serif; }
+  .dir-b .add-btn {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 600; color: #C67B5C;
+    background: none; border: none; cursor: pointer; padding: 0; font-family: sans-serif;
+  }
+
+  /* Direction C: Dark Editorial */
+  .dir-c .preview {
+    background: #111111;
+    padding: 16px;
+    font-family: 'Inter', 'Helvetica Neue', sans-serif;
+    min-height: 220px;
+  }
+  .dir-c .app-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 10px; border-bottom: 1px solid #2A2A2A; margin-bottom: 12px;
+  }
+  .dir-c .app-title { font-size: 13px; font-weight: 800; color: #FAFAFA; letter-spacing: -0.5px; }
+  .dir-c .badge { background: #FAFAFA; color: #111; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
+  .dir-c .col-label { font-size: 9px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .dir-c .task { background: #1A1A1A; border: 1px solid #2A2A2A; border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; }
+  .dir-c .task-title { font-size: 11px; font-weight: 500; color: #E4E4E4; margin-bottom: 4px; }
+  .dir-c .task-meta { display: flex; gap: 4px; align-items: center; }
+  .dir-c .dot-high { width: 6px; height: 6px; border-radius: 50%; background: #FF4444; flex-shrink: 0; }
+  .dir-c .dot-med { width: 6px; height: 6px; border-radius: 50%; background: #F5A623; flex-shrink: 0; }
+  .dir-c .task-tag { font-size: 9px; color: #555; }
+  .dir-c .add-btn {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 10px; font-weight: 600; color: #FAFAFA;
+    background: none; border: none; cursor: pointer; padding: 0;
+  }
+
+  .dir-label {
+    padding: 12px 16px;
+    border-top: 1px solid rgba(0,0,0,.07);
+  }
+  .dir-name { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+  .dir-desc { font-size: 11px; color: #6b7280; line-height: 1.5; }
+
+  .current-badge {
+    display: inline-block;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .diagnosis {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 12px;
+    color: #7f1d1d;
+    line-height: 1.6;
+  }
+  .diagnosis strong { color: #991b1b; }
+  .tag-pill {
+    display: inline-block;
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin: 2px 2px 0 0;
+  }
+</style>
+
+<h2>哪個設計方向能去掉 AI 感？</h2>
+<p class="subtitle">點選你最有感覺的方向（可以多選）</p>
+
+<div class="diagnosis">
+  <strong>🔍 現有設計的 AI 感來源：</strong><br>
+  <span class="tag-pill">emoji 當 icon</span>
+  <span class="tag-pill">Generic 靛藍色 #4f46e5</span>
+  <span class="tag-pill">系統字體 無個性</span>
+  <span class="tag-pill">圓角到處 border-radius: 10px</span>
+  <span class="tag-pill">無品牌個性</span>
+</div>
+
+<div class="dir-grid">
+
+  <!-- Option A -->
+  <div class="dir-card dir-a" data-choice="a" onclick="toggleSelect(this)">
+    <div class="preview">
+      <div class="app-header">
+        <span class="app-title">TaskFlow</span>
+        <span class="badge">今日 3 項</span>
+      </div>
+      <div class="col-label">待辦</div>
+      <div class="task">
+        <div class="task-title">撰寫 Q2 OKR 提案</div>
+        <div class="task-meta"><div class="dot-high"></div><span class="task-tag">高 · 2h · 今天</span></div>
+      </div>
+      <div class="task">
+        <div class="task-title">審查設計稿回饋</div>
+        <div class="task-meta"><div class="dot-med"></div><span class="task-tag">中 · 1h · 明天</span></div>
+      </div>
+      <div class="add-btn">
+        <div class="icon-sq">+</div> 新增任務
+      </div>
+    </div>
+    <div class="dir-label">
+      <div class="dir-name">A — Flat Precision</div>
+      <div class="dir-desc">黑白 + 單一藍色 accent。SVG icon 取代 emoji。Plus Jakarta Sans 字型。乾淨、專業、像真正的工具。</div>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="dir-card dir-b" data-choice="b" onclick="toggleSelect(this)">
+    <div class="preview">
+      <div class="app-header">
+        <span class="app-title">TaskFlow</span>
+        <span class="badge">今日 3 項</span>
+      </div>
+      <div class="col-label">待辦</div>
+      <div class="task">
+        <div class="task-title">撰寫 Q2 OKR 提案</div>
+        <div class="task-meta"><div class="dot-high"></div><span class="task-tag">高 · 2h · 今天</span></div>
+      </div>
+      <div class="task">
+        <div class="task-title">審查設計稿回饋</div>
+        <div class="task-meta"><div class="dot-med"></div><span class="task-tag">中 · 1h · 明天</span></div>
+      </div>
+      <div class="add-btn">+ 新增任務</div>
+    </div>
+    <div class="dir-label">
+      <div class="dir-name">B — Human Warm</div>
+      <div class="dir-desc">米白底 + 陶土紅。Calistoga 標題字型帶手感溫度。像是一本有質感的個人筆記本。</div>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="dir-card dir-c" data-choice="c" onclick="toggleSelect(this)">
+    <div class="preview">
+      <div class="app-header">
+        <span class="app-title">TASKFLOW</span>
+        <span class="badge">3</span>
+      </div>
+      <div class="col-label">待辦</div>
+      <div class="task">
+        <div class="task-title">撰寫 Q2 OKR 提案</div>
+        <div class="task-meta"><div class="dot-high"></div><span class="task-tag">高 · 2h · 今天</span></div>
+      </div>
+      <div class="task">
+        <div class="task-title">審查設計稿回饋</div>
+        <div class="task-meta"><div class="dot-med"></div><span class="task-tag">中 · 1h · 明天</span></div>
+      </div>
+      <div class="add-btn">+ 新增任務</div>
+    </div>
+    <div class="dir-label">
+      <div class="dir-name">C — Dark Editorial</div>
+      <div class="dir-desc">深黑底 + 純白文字。超高字重對比。給夜間工作的 PM，像終端機的深邃感。</div>
+    </div>
+  </div>
+
+</div>

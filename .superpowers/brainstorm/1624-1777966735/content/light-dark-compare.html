@@ -1,0 +1,428 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Calistoga&family=Inter:wght@400;500;600;700;800&display=swap');
+
+.grid-2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.variant-card {
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2.5px solid transparent;
+  transition: all 0.2s ease;
+}
+.variant-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,.18); }
+.variant-card.selected { border-color: #6366f1 !important; box-shadow: 0 0 0 4px rgba(99,102,241,.25); }
+
+.variant-label {
+  padding: 10px 14px 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.v-name { font-size: 13px; font-weight: 700; }
+.v-sub { font-size: 11px; opacity: 0.6; }
+.mode-chip {
+  font-size: 9px; font-weight: 700; padding: 2px 7px;
+  border-radius: 999px; text-transform: uppercase; letter-spacing: 0.6px;
+  margin-left: auto; flex-shrink: 0;
+}
+
+/* ======= B LIGHT ======= */
+.b-light { background: #F7F4F0; }
+.b-light .variant-label { background: #EDE9E3; border-top: 1px solid #DDD5C8; }
+.b-light .v-name { color: #2D2420; font-family: 'Calistoga', serif; }
+.b-light .v-sub { color: #9C8B7A; font-family: 'Plus Jakarta Sans', sans-serif; }
+.b-light .mode-chip { background: #fff; color: #9C8B7A; border: 1px solid #DDD5C8; }
+
+.b-light .kanban-wrap { padding: 14px; }
+.b-light .kb-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #DDD5C8;
+}
+.b-light .kb-title { font-family: 'Calistoga', serif; font-size: 15px; color: #2D2420; }
+.b-light .kb-meta { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10px; color: #9C8B7A; }
+.b-light .kb-date { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 11px; font-weight: 600; color: #C67B5C; }
+.b-light .col-header {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 9px; font-weight: 700; color: #9C8B7A;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 5px;
+}
+.b-light .col-count {
+  background: #DDD5C8; color: #9C8B7A;
+  font-size: 8px; font-weight: 700;
+  padding: 1px 5px; border-radius: 999px;
+}
+.b-light .task {
+  background: #FFFCF8; border: 1px solid #E8DDD2;
+  border-radius: 8px; padding: 9px 11px; margin-bottom: 7px;
+  border-left: 3px solid #C67B5C;
+}
+.b-light .task.med { border-left-color: #D4A76A; }
+.b-light .t-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11.5px; font-weight: 500; color: #2D2420; margin-bottom: 5px; line-height: 1.4;
+}
+.b-light .t-meta {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 9.5px; color: #9C8B7A; display: flex; align-items: center; gap: 6px;
+}
+.b-light .dot { width: 5px; height: 5px; border-radius: 50%; }
+.b-light .dot-h { background: #C67B5C; }
+.b-light .dot-m { background: #D4A76A; }
+.b-light .btn-add {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 10.5px; font-weight: 600; color: #C67B5C;
+  display: flex; align-items: center; gap: 4px; margin-top: 6px;
+  background: none; border: none; padding: 0; cursor: pointer;
+}
+.b-light .icon-add {
+  width: 15px; height: 15px; border-radius: 4px;
+  border: 1.5px solid #C67B5C;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; line-height: 1; color: #C67B5C;
+}
+.b-light .hour-bar {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid #DDD5C8;
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; color: #9C8B7A;
+}
+.b-light .bar-track {
+  flex: 1; height: 4px; background: #DDD5C8; border-radius: 999px; overflow: hidden;
+}
+.b-light .bar-fill { height: 100%; width: 45%; background: #C67B5C; border-radius: 999px; }
+
+/* ======= B DARK ======= */
+.b-dark { background: #1C1510; }
+.b-dark .variant-label { background: #241A13; border-top: 1px solid #3A2E25; }
+.b-dark .v-name { color: #F5EDE3; font-family: 'Calistoga', serif; }
+.b-dark .v-sub { color: #7A6B5E; font-family: 'Plus Jakarta Sans', sans-serif; }
+.b-dark .mode-chip { background: #3A2E25; color: #7A6B5E; }
+
+.b-dark .kanban-wrap { padding: 14px; }
+.b-dark .kb-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #3A2E25;
+}
+.b-dark .kb-title { font-family: 'Calistoga', serif; font-size: 15px; color: #F5EDE3; }
+.b-dark .kb-meta { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 10px; color: #7A6B5E; }
+.b-dark .kb-date { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 11px; font-weight: 600; color: #D4956A; }
+.b-dark .col-header {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 9px; font-weight: 700; color: #7A6B5E;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 5px;
+}
+.b-dark .col-count {
+  background: #3A2E25; color: #7A6B5E;
+  font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 999px;
+}
+.b-dark .task {
+  background: #251C14; border: 1px solid #3A2E25;
+  border-radius: 8px; padding: 9px 11px; margin-bottom: 7px;
+  border-left: 3px solid #D4956A;
+}
+.b-dark .task.med { border-left-color: #C4914A; }
+.b-dark .t-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11.5px; font-weight: 500; color: #F0E4D5; margin-bottom: 5px; line-height: 1.4;
+}
+.b-dark .t-meta {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 9.5px; color: #7A6B5E; display: flex; align-items: center; gap: 6px;
+}
+.b-dark .dot { width: 5px; height: 5px; border-radius: 50%; }
+.b-dark .dot-h { background: #D4956A; }
+.b-dark .dot-m { background: #C4914A; }
+.b-dark .btn-add {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 10.5px; font-weight: 600; color: #D4956A;
+  display: flex; align-items: center; gap: 4px; margin-top: 6px;
+  background: none; border: none; padding: 0; cursor: pointer;
+}
+.b-dark .icon-add {
+  width: 15px; height: 15px; border-radius: 4px;
+  border: 1.5px solid #D4956A;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; line-height: 1; color: #D4956A;
+}
+.b-dark .hour-bar {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid #3A2E25;
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; color: #7A6B5E;
+}
+.b-dark .bar-track { flex: 1; height: 4px; background: #3A2E25; border-radius: 999px; overflow: hidden; }
+.b-dark .bar-fill { height: 100%; width: 45%; background: #D4956A; border-radius: 999px; }
+
+/* ======= C LIGHT ======= */
+.c-light { background: #F8F8F8; }
+.c-light .variant-label { background: #EFEFEF; border-top: 1px solid #E0E0E0; }
+.c-light .v-name { color: #0A0A0A; font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.4px; }
+.c-light .v-sub { color: #888; font-family: 'Inter', sans-serif; }
+.c-light .mode-chip { background: #fff; color: #888; border: 1px solid #E0E0E0; }
+
+.c-light .kanban-wrap { padding: 14px; }
+.c-light .kb-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid #0A0A0A;
+}
+.c-light .kb-title {
+  font-family: 'Inter', sans-serif; font-size: 14px;
+  font-weight: 800; color: #0A0A0A; letter-spacing: -0.6px; text-transform: uppercase;
+}
+.c-light .kb-meta { font-family: 'Inter', sans-serif; font-size: 10px; color: #888; font-weight: 500; }
+.c-light .kb-date { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; color: #0A0A0A; }
+.c-light .col-header {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px; font-weight: 700; color: #888;
+  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 5px;
+}
+.c-light .col-count {
+  background: #0A0A0A; color: #F8F8F8;
+  font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
+}
+.c-light .task {
+  background: #fff; border: 1px solid #E0E0E0;
+  border-radius: 4px; padding: 9px 11px; margin-bottom: 7px;
+}
+.c-light .task.high { border-left: 3px solid #FF3333; }
+.c-light .task.med { border-left: 3px solid #F5A623; }
+.c-light .t-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 11.5px; font-weight: 600; color: #0A0A0A; margin-bottom: 5px; line-height: 1.4;
+  letter-spacing: -0.2px;
+}
+.c-light .t-meta {
+  font-family: 'Inter', sans-serif;
+  font-size: 9.5px; color: #888; display: flex; align-items: center; gap: 6px; font-weight: 500;
+}
+.c-light .dot { width: 5px; height: 5px; border-radius: 50%; }
+.c-light .dot-h { background: #FF3333; }
+.c-light .dot-m { background: #F5A623; }
+.c-light .btn-add {
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px; font-weight: 700; color: #0A0A0A;
+  display: flex; align-items: center; gap: 5px; margin-top: 8px;
+  background: #0A0A0A; border: none; padding: 6px 10px;
+  border-radius: 4px; cursor: pointer; color: #F8F8F8; width: fit-content;
+}
+.c-light .hour-bar {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid #E0E0E0;
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Inter', sans-serif; font-size: 9px; color: #888; font-weight: 500;
+}
+.c-light .bar-track { flex: 1; height: 3px; background: #E0E0E0; border-radius: 999px; overflow: hidden; }
+.c-light .bar-fill { height: 100%; width: 45%; background: #0A0A0A; border-radius: 999px; }
+
+/* ======= C DARK ======= */
+.c-dark { background: #0D0D0D; }
+.c-dark .variant-label { background: #141414; border-top: 1px solid #2A2A2A; }
+.c-dark .v-name { color: #FAFAFA; font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.4px; }
+.c-dark .v-sub { color: #555; font-family: 'Inter', sans-serif; }
+.c-dark .mode-chip { background: #2A2A2A; color: #555; }
+
+.c-dark .kanban-wrap { padding: 14px; }
+.c-dark .kb-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #2A2A2A;
+}
+.c-dark .kb-title {
+  font-family: 'Inter', sans-serif; font-size: 14px;
+  font-weight: 800; color: #FAFAFA; letter-spacing: -0.6px; text-transform: uppercase;
+}
+.c-dark .kb-meta { font-family: 'Inter', sans-serif; font-size: 10px; color: #555; font-weight: 500; }
+.c-dark .kb-date { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; color: #FAFAFA; }
+.c-dark .col-header {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px; font-weight: 700; color: #555;
+  text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 5px;
+}
+.c-dark .col-count {
+  background: #2A2A2A; color: #888;
+  font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
+}
+.c-dark .task {
+  background: #1A1A1A; border: 1px solid #2A2A2A;
+  border-radius: 4px; padding: 9px 11px; margin-bottom: 7px;
+}
+.c-dark .task.high { border-left: 3px solid #FF4444; }
+.c-dark .task.med { border-left: 3px solid #F5A623; }
+.c-dark .t-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 11.5px; font-weight: 600; color: #E8E8E8; margin-bottom: 5px; line-height: 1.4;
+  letter-spacing: -0.2px;
+}
+.c-dark .t-meta {
+  font-family: 'Inter', sans-serif;
+  font-size: 9.5px; color: #555; display: flex; align-items: center; gap: 6px; font-weight: 500;
+}
+.c-dark .dot { width: 5px; height: 5px; border-radius: 50%; }
+.c-dark .dot-h { background: #FF4444; }
+.c-dark .dot-m { background: #F5A623; }
+.c-dark .btn-add {
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px; font-weight: 700;
+  display: flex; align-items: center; gap: 5px; margin-top: 8px;
+  background: #FAFAFA; border: none; padding: 6px 10px;
+  border-radius: 4px; cursor: pointer; color: #0D0D0D; width: fit-content;
+}
+.c-dark .hour-bar {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid #2A2A2A;
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Inter', sans-serif; font-size: 9px; color: #555; font-weight: 500;
+}
+.c-dark .bar-track { flex: 1; height: 3px; background: #2A2A2A; border-radius: 999px; overflow: hidden; }
+.c-dark .bar-fill { height: 100%; width: 45%; background: #FAFAFA; border-radius: 999px; }
+
+.section-label {
+  font-size: 11px; font-weight: 700; color: #9ca3af;
+  text-transform: uppercase; letter-spacing: 1px;
+  margin: 0 0 8px 2px;
+}
+</style>
+
+<h2>B vs C — 深色 & 淺色版本</h2>
+<p class="subtitle">點選你最有感覺的版本（可多選）</p>
+
+<div class="section-label">B — Human Warm · Calistoga 字型 · 有溫度的筆記本感</div>
+<div class="grid-2x2" style="margin-bottom: 24px;">
+
+  <!-- B Light -->
+  <div class="variant-card b-light" data-choice="b-light" onclick="toggleSelect(this)">
+    <div class="kanban-wrap">
+      <div class="kb-header">
+        <span class="kb-title">TaskFlow</span>
+        <span class="kb-date">週二 · 5/5</span>
+      </div>
+      <div class="col-header">待辦 <span class="col-count">2</span></div>
+      <div class="task">
+        <div class="t-title">撰寫 Q2 OKR 提案</div>
+        <div class="t-meta"><div class="dot dot-h"></div>高優先 · 2h · 今天</div>
+      </div>
+      <div class="task med">
+        <div class="t-title">審查設計稿回饋</div>
+        <div class="t-meta"><div class="dot dot-m"></div>中優先 · 1h · 明天</div>
+      </div>
+      <div class="btn-add"><div class="icon-add">+</div> 新增任務</div>
+      <div class="hour-bar">
+        <span>今日負載 45%</span>
+        <div class="bar-track"><div class="bar-fill"></div></div>
+        <span>3.6h / 8h</span>
+      </div>
+    </div>
+    <div class="variant-label b-light">
+      <div>
+        <div class="v-name">B — 淺色</div>
+        <div class="v-sub">米白 #F7F4F0 · 陶土紅 accent</div>
+      </div>
+      <span class="mode-chip">Light</span>
+    </div>
+  </div>
+
+  <!-- B Dark -->
+  <div class="variant-card b-dark" data-choice="b-dark" onclick="toggleSelect(this)">
+    <div class="kanban-wrap">
+      <div class="kb-header">
+        <span class="kb-title">TaskFlow</span>
+        <span class="kb-date">週二 · 5/5</span>
+      </div>
+      <div class="col-header">待辦 <span class="col-count">2</span></div>
+      <div class="task">
+        <div class="t-title">撰寫 Q2 OKR 提案</div>
+        <div class="t-meta"><div class="dot dot-h"></div>高優先 · 2h · 今天</div>
+      </div>
+      <div class="task med">
+        <div class="t-title">審查設計稿回饋</div>
+        <div class="t-meta"><div class="dot dot-m"></div>中優先 · 1h · 明天</div>
+      </div>
+      <div class="btn-add"><div class="icon-add">+</div> 新增任務</div>
+      <div class="hour-bar">
+        <span>今日負載 45%</span>
+        <div class="bar-track"><div class="bar-fill"></div></div>
+        <span>3.6h / 8h</span>
+      </div>
+    </div>
+    <div class="variant-label b-dark">
+      <div>
+        <div class="v-name">B — 深色</div>
+        <div class="v-sub">深棕黑 #1C1510 · 暖橘金 accent</div>
+      </div>
+      <span class="mode-chip">Dark</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="section-label">C — Dark Editorial · Inter 800 · 終端機深邃感</div>
+<div class="grid-2x2">
+
+  <!-- C Light -->
+  <div class="variant-card c-light" data-choice="c-light" onclick="toggleSelect(this)">
+    <div class="kanban-wrap">
+      <div class="kb-header">
+        <span class="kb-title">TASKFLOW</span>
+        <span class="kb-date">05 / 05</span>
+      </div>
+      <div class="col-header">待辦 <span class="col-count">2</span></div>
+      <div class="task high">
+        <div class="t-title">撰寫 Q2 OKR 提案</div>
+        <div class="t-meta"><div class="dot dot-h"></div>高優先 · 2h · 今天</div>
+      </div>
+      <div class="task med">
+        <div class="t-title">審查設計稿回饋</div>
+        <div class="t-meta"><div class="dot dot-m"></div>中優先 · 1h · 明天</div>
+      </div>
+      <div class="btn-add">+ 新增任務</div>
+      <div class="hour-bar">
+        <span>今日負載</span>
+        <div class="bar-track"><div class="bar-fill"></div></div>
+        <span>45%</span>
+      </div>
+    </div>
+    <div class="variant-label c-light">
+      <div>
+        <div class="v-name">C — 淺色</div>
+        <div class="v-sub">#F8F8F8 底 · 純黑高對比</div>
+      </div>
+      <span class="mode-chip">Light</span>
+    </div>
+  </div>
+
+  <!-- C Dark -->
+  <div class="variant-card c-dark" data-choice="c-dark" onclick="toggleSelect(this)">
+    <div class="kanban-wrap">
+      <div class="kb-header">
+        <span class="kb-title">TASKFLOW</span>
+        <span class="kb-date">05 / 05</span>
+      </div>
+      <div class="col-header">待辦 <span class="col-count">2</span></div>
+      <div class="task high">
+        <div class="t-title">撰寫 Q2 OKR 提案</div>
+        <div class="t-meta"><div class="dot dot-h"></div>高優先 · 2h · 今天</div>
+      </div>
+      <div class="task med">
+        <div class="t-title">審查設計稿回饋</div>
+        <div class="t-meta"><div class="dot dot-m"></div>中優先 · 1h · 明天</div>
+      </div>
+      <div class="btn-add">+ 新增任務</div>
+      <div class="hour-bar">
+        <span>今日負載</span>
+        <div class="bar-track"><div class="bar-fill"></div></div>
+        <span>45%</span>
+      </div>
+    </div>
+    <div class="variant-label c-dark">
+      <div>
+        <div class="v-name">C — 深色</div>
+        <div class="v-sub">#0D0D0D 底 · 純白高對比</div>
+      </div>
+      <span class="mode-chip">Dark</span>
+    </div>
+  </div>
+
+</div>

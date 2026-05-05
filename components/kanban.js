@@ -63,7 +63,7 @@ const Kanban = {
       if (!task.deadline) return '';
       if (task.deadline === 'today') return '今天';
       if (task.deadline === 'tomorrow') return '明天';
-      if (task.deadline === 'backlog') return 'Backlog';
+      if (task.deadline === 'backlog') return '無期限';
       // Custom date YYYY-MM-DD → M/D
       const parts = task.deadline.split('-');
       if (parts.length === 3) return `${parseInt(parts[1])}/${parseInt(parts[2])}`;

@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TaskFlow — 主題預覽</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Calistoga&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─── THEME TOKENS ─── */
+body[data-theme="b-light"] {
+  --bg:          #F7F4F0;
+  --surface:     #FFFCF8;
+  --surface2:    #EDE9E3;
+  --border:      #DDD5C8;
+  --border2:     #E8DDD2;
+  --text:        #2D2420;
+  --text-muted:  #9C8B7A;
+  --accent:      #C67B5C;
+  --accent2:     #D4A76A;
+  --accent-bg:   #F5EDE7;
+  --high:        #C67B5C;
+  --med:         #D4A76A;
+  --low:         #8BAF7A;
+  --done-bg:     #F0EDE8;
+  --font-title:  'Calistoga', serif;
+  --font-body:   'Plus Jakarta Sans', sans-serif;
+  --radius:      8px;
+  --shadow:      0 1px 4px rgba(0,0,0,.06);
+  --shadow-lg:   0 4px 16px rgba(0,0,0,.1);
+}
+body[data-theme="b-dark"] {
+  --bg:          #1C1510;
+  --surface:     #251C14;
+  --surface2:    #2E2218;
+  --border:      #3A2E25;
+  --border2:     #4A3B2E;
+  --text:        #F0E4D5;
+  --text-muted:  #7A6B5E;
+  --accent:      #D4956A;
+  --accent2:     #C4914A;
+  --accent-bg:   #2E221A;
+  --high:        #D4956A;
+  --med:         #C4914A;
+  --low:         #7AAF8A;
+  --done-bg:     #221A12;
+  --font-title:  'Calistoga', serif;
+  --font-body:   'Plus Jakarta Sans', sans-serif;
+  --radius:      8px;
+  --shadow:      0 1px 4px rgba(0,0,0,.3);
+  --shadow-lg:   0 4px 16px rgba(0,0,0,.4);
+}
+body[data-theme="c-light"] {
+  --bg:          #F8F8F8;
+  --surface:     #FFFFFF;
+  --surface2:    #EFEFEF;
+  --border:      #E0E0E0;
+  --border2:     #D0D0D0;
+  --text:        #0A0A0A;
+  --text-muted:  #888888;
+  --accent:      #0A0A0A;
+  --accent2:     #444444;
+  --accent-bg:   #F0F0F0;
+  --high:        #FF3333;
+  --med:         #F5A623;
+  --low:         #22C55E;
+  --done-bg:     #F4F4F4;
+  --font-title:  'Inter', sans-serif;
+  --font-body:   'Inter', sans-serif;
+  --radius:      4px;
+  --shadow:      0 1px 3px rgba(0,0,0,.06);
+  --shadow-lg:   0 4px 12px rgba(0,0,0,.08);
+}
+body[data-theme="c-dark"] {
+  --bg:          #0D0D0D;
+  --surface:     #1A1A1A;
+  --surface2:    #141414;
+  --border:      #2A2A2A;
+  --border2:     #333333;
+  --text:        #FAFAFA;
+  --text-muted:  #555555;
+  --accent:      #FAFAFA;
+  --accent2:     #CCCCCC;
+  --accent-bg:   #1F1F1F;
+  --high:        #FF4444;
+  --med:         #F5A623;
+  --low:         #22C55E;
+  --done-bg:     #111111;
+  --font-title:  'Inter', sans-serif;
+  --font-body:   'Inter', sans-serif;
+  --radius:      4px;
+  --shadow:      0 1px 4px rgba(0,0,0,.4);
+  --shadow-lg:   0 4px 16px rgba(0,0,0,.5);
+}
+
+/* ─── BASE LAYOUT ─── */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* ─── HEADER ─── */
+.app-header {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: background 0.25s, border-color 0.25s;
+}
+.app-logo {
+  font-family: var(--font-title);
+  font-size: 17px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  flex-shrink: 0;
+}
+body[data-theme="c-light"] .app-logo,
+body[data-theme="c-dark"] .app-logo {
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+.app-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-weight: 500;
+}
+.header-spacer { flex: 1; }
+.work-hours {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  background: var(--surface2);
+  padding: 4px 10px;
+  border-radius: var(--radius);
+}
+.work-hours span { color: var(--accent); }
+
+/* ─── 主題切換按鈕 ─── */
+.theme-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px 5px 8px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  transition: all 0.15s;
+}
+.theme-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.theme-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+/* ─── 主題選單 ─── */
+.theme-picker {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+  width: 220px;
+  z-index: 200;
+}
+.theme-picker.open { display: block; }
+
+.picker-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 4px 8px 6px;
+}
+.theme-row {
+  display: flex;
+  gap: 4px;
+  padding: 0 2px 4px;
+}
+.theme-opt {
+  flex: 1;
+  padding: 8px 6px;
+  border-radius: calc(var(--radius));
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  background: transparent;
+}
+.theme-opt:hover { border-color: var(--accent); }
+.theme-opt.active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.swatch {
+  width: 100%;
+  height: 22px;
+  border-radius: 3px;
+  margin-bottom: 5px;
+}
+.opt-name {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.2;
+}
+.opt-sub {
+  font-size: 8px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+}
+
+.header-icon-btn {
+  width: 30px; height: 30px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-muted);
+  transition: all 0.15s;
+}
+.header-icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+.header-icon-btn svg { width: 14px; height: 14px; }
+
+/* ─── KANBAN ─── */
+.kanban-outer {
+  padding: 20px;
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.kanban-col {
+  flex: 1;
+  min-width: 230px;
+}
+.col-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+.col-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+}
+.col-count-badge {
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+}
+body[data-theme="c-light"] .col-count-badge,
+body[data-theme="c-dark"] .col-count-badge {
+  border-radius: 3px;
+}
+
+/* ─── TASK CARD ─── */
+.task-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 11px 13px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+  position: relative;
+}
+.task-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+.task-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+.task-card.high::before { background: var(--high); }
+.task-card.med::before  { background: var(--med); }
+.task-card.low::before  { background: var(--low); }
+
+.task-title-text {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.45;
+  margin-bottom: 7px;
+  font-family: var(--font-body);
+}
+body[data-theme="c-light"] .task-title-text,
+body[data-theme="c-dark"] .task-title-text {
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+.task-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.urgency-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.high-dot { background: var(--high); }
+.med-dot  { background: var(--med); }
+.low-dot  { background: var(--low); }
+.task-meta-text {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-weight: 500;
+}
+.pdca-badge {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--surface2);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--font-body);
+}
+
+/* ─── ADD BUTTON ─── */
+.add-task-btn {
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.15s;
+  margin-top: 4px;
+}
+.add-task-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+/* ─── PROGRESS BAR ─── */
+.capacity-bar {
+  margin: 0 20px 16px;
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cap-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  flex-shrink: 0;
+}
+.cap-track {
+  flex: 1;
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.cap-fill {
+  height: 100%;
+  width: 45%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.cap-val {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--font-body);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── DONE COL ─── */
+.kanban-col.done .task-card {
+  background: var(--done-bg);
+  opacity: 0.7;
+}
+.task-card.done-card .task-title-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+</style>
+</head>
+<body data-theme="b-light">
+
+<!-- ═══ HEADER ═══ -->
+<header class="app-header">
+  <span class="app-logo">TaskFlow</span>
+  <span class="app-date">週二 · 5月5日</span>
+  <div class="header-spacer"></div>
+
+  <div class="work-hours">今日 <span>3.6h</span> / 8h</div>
+
+  <!-- 日誌按鈕 -->
+  <button class="header-icon-btn" title="日誌">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+    </svg>
+  </button>
+
+  <!-- 設定按鈕 -->
+  <button class="header-icon-btn" title="設定">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+  </button>
+
+  <!-- ★ 主題切換按鈕 -->
+  <div style="position:relative;">
+    <button class="theme-btn" id="themeToggle" onclick="togglePicker()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <span id="themeLabel">B · 暖</span>
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+
+    <!-- 下拉選單 -->
+    <div class="theme-picker" id="themePicker">
+      <div class="picker-label">選擇主題</div>
+      <div class="theme-row">
+        <div class="theme-opt active" id="opt-b-light" onclick="setTheme('b-light')">
+          <div class="swatch" style="background: linear-gradient(135deg, #F7F4F0 50%, #C67B5C 50%);"></div>
+          <div class="opt-name">暖 · 淺</div>
+          <div class="opt-sub">B Light</div>
+        </div>
+        <div class="theme-opt" id="opt-b-dark" onclick="setTheme('b-dark')">
+          <div class="swatch" style="background: linear-gradient(135deg, #1C1510 50%, #D4956A 50%);"></div>
+          <div class="opt-name">暖 · 深</div>
+          <div class="opt-sub">B Dark</div>
+        </div>
+        <div class="theme-opt" id="opt-c-light" onclick="setTheme('c-light')">
+          <div class="swatch" style="background: linear-gradient(135deg, #F8F8F8 50%, #0A0A0A 50%);"></div>
+          <div class="opt-name">銳 · 淺</div>
+          <div class="opt-sub">C Light</div>
+        </div>
+        <div class="theme-opt" id="opt-c-dark" onclick="setTheme('c-dark')">
+          <div class="swatch" style="background: linear-gradient(135deg, #0D0D0D 50%, #FAFAFA 50%);"></div>
+          <div class="opt-name">銳 · 深</div>
+          <div class="opt-sub">C Dark</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ CAPACITY BAR ═══ -->
+<div style="padding: 14px 20px 0; max-width: 900px; margin: 0 auto;">
+  <div class="capacity-bar" style="margin: 0;">
+    <span class="cap-label">今日負載</span>
+    <div class="cap-track"><div class="cap-fill"></div></div>
+    <span class="cap-val">3.6h / 8h</span>
+  </div>
+</div>
+
+<!-- ═══ KANBAN ═══ -->
+<div class="kanban-outer">
+
+  <!-- 待辦 -->
+  <div class="kanban-col">
+    <div class="col-head">
+      <span class="col-title">待辦</span>
+      <span class="col-count-badge">3</span>
+    </div>
+    <div class="task-card high">
+      <div class="task-title-text">撰寫 Q2 OKR 提案</div>
+      <div class="task-foot">
+        <div class="urgency-dot high-dot"></div>
+        <span class="task-meta-text">高優先 · 2h · 今天</span>
+        <span class="pdca-badge">P</span>
+      </div>
+    </div>
+    <div class="task-card med">
+      <div class="task-title-text">審查設計稿回饋給設計師</div>
+      <div class="task-foot">
+        <div class="urgency-dot med-dot"></div>
+        <span class="task-meta-text">中優先 · 1h · 明天</span>
+        <span class="pdca-badge">P</span>
+      </div>
+    </div>
+    <div class="task-card low">
+      <div class="task-title-text">更新產品 Roadmap 文件</div>
+      <div class="task-foot">
+        <div class="urgency-dot low-dot"></div>
+        <span class="task-meta-text">低優先 · 0.5h · 本週</span>
+        <span class="pdca-badge">P</span>
+      </div>
+    </div>
+    <button class="add-task-btn">+ 新增任務</button>
+  </div>
+
+  <!-- 進行中 -->
+  <div class="kanban-col">
+    <div class="col-head">
+      <span class="col-title">進行中</span>
+      <span class="col-count-badge">1</span>
+    </div>
+    <div class="task-card high">
+      <div class="task-title-text">Sprint 規劃會議準備簡報</div>
+      <div class="task-foot">
+        <div class="urgency-dot high-dot"></div>
+        <span class="task-meta-text">高優先 · 1.5h · 今天</span>
+        <span class="pdca-badge">D</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 完成 -->
+  <div class="kanban-col done">
+    <div class="col-head">
+      <span class="col-title">完成</span>
+      <span class="col-count-badge">2</span>
+    </div>
+    <div class="task-card done-card low">
+      <div class="task-title-text">每週 1on1 面談記錄</div>
+      <div class="task-foot">
+        <div class="urgency-dot low-dot"></div>
+        <span class="task-meta-text">低優先 · 1h · 今天</span>
+        <span class="pdca-badge">A</span>
+      </div>
+    </div>
+    <div class="task-card done-card med">
+      <div class="task-title-text">回覆 Slack 跨部門討論串</div>
+      <div class="task-foot">
+        <div class="urgency-dot med-dot"></div>
+        <span class="task-meta-text">中優先 · 0.5h · 今天</span>
+        <span class="pdca-badge">C</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const themeLabels = {
+  'b-light': 'B · 暖淺',
+  'b-dark':  'B · 暖深',
+  'c-light': 'C · 銳淺',
+  'c-dark':  'C · 銳深'
+};
+
+function setTheme(theme) {
+  document.body.setAttribute('data-theme', theme);
+  document.getElementById('themeLabel').textContent = themeLabels[theme];
+  document.querySelectorAll('.theme-opt').forEach(el => el.classList.remove('active'));
+  document.getElementById('opt-' + theme).classList.add('active');
+  closePicker();
+
+  // Update logo case for C themes
+  const logo = document.querySelector('.app-logo');
+  if (theme.startsWith('c')) {
+    logo.textContent = 'TASKFLOW';
+  } else {
+    logo.textContent = 'TaskFlow';
+  }
+}
+
+function togglePicker() {
+  document.getElementById('themePicker').classList.toggle('open');
+}
+
+function closePicker() {
+  document.getElementById('themePicker').classList.remove('open');
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#themeToggle') && !e.target.closest('#themePicker')) {
+    closePicker();
+  }
+});
+</script>
+
+</body>
+</html>

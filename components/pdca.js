@@ -19,11 +19,8 @@ const PDCA = {
     document.getElementById('pdca-title').textContent = task.title;
     document.getElementById('pdca-urgency').value = task.urgency || 'medium';
 
-    // Estimate (select)
-    const estSel = document.getElementById('pdca-estimate');
-    const estVal = task.estimate || '30m';
-    const estOpts = [...estSel.options].map(o => o.value);
-    estSel.value = estOpts.includes(estVal) ? estVal : '30m';
+    // Estimate — show custom input if value not in preset list
+    this._setEstimate(task.estimate || '30m');
 
     // Deadline button group
     this._deadlineVal = task.deadline || 'today';
@@ -65,14 +62,55 @@ const PDCA = {
     m.classList.remove('hidden');
   },
 
+  // ── Estimate helpers ──────────────────────────────────────────────
+
+  _PRESET_ESTIMATES: ['15m','30m','45m','1h','1.5h','2h','3h','4h+'],
+
+  _setEstimate(val) {
+    const sel = document.getElementById('pdca-estimate');
+    const customWrap = document.getElementById('pdca-estimate-custom');
+    if (this._PRESET_ESTIMATES.includes(val)) {
+      sel.value = val;
+      customWrap.classList.add('hidden');
+      document.getElementById('pdca-est-num').value = '';
+    } else {
+      // Custom value e.g. "45m" or "2h" not in presets
+      sel.value = '_custom';
+      customWrap.classList.remove('hidden');
+      const num = parseInt(val, 10);
+      const unit = val.endsWith('h') ? 'h' : 'm';
+      document.getElementById('pdca-est-num').value = num || '';
+      document.getElementById('pdca-est-unit').value = unit;
+    }
+  },
+
+  _getEstimate() {
+    const sel = document.getElementById('pdca-estimate');
+    if (sel.value !== '_custom') return sel.value;
+    const num = parseInt(document.getElementById('pdca-est-num').value, 10);
+    const unit = document.getElementById('pdca-est-unit').value;
+    return (num > 0) ? `${num}${unit}` : '30m';
+  },
+
+  // ── Deadline helpers ──────────────────────────────────────────────
+
   _renderDeadlineBtns() {
-    const isDate = !['today', 'tomorrow', 'backlog'].includes(this._deadlineVal);
+    const val = this._deadlineVal;
+    const isCustomDate = !['today', 'tomorrow', 'backlog', '_date'].includes(val);
+    const showInput = isCustomDate || val === '_date';
+
     document.querySelectorAll('.pdca-dl-btn').forEach(btn => {
-      btn.classList.toggle('selected', isDate ? btn.dataset.value === '_date' : btn.dataset.value === this._deadlineVal);
+      const v = btn.dataset.value;
+      if (v === '_date') {
+        btn.classList.toggle('selected', showInput);
+      } else {
+        btn.classList.toggle('selected', v === val);
+      }
     });
+
     const inp = document.getElementById('pdca-deadline-input');
-    inp.classList.toggle('hidden', !isDate);
-    if (isDate && this._dlPicker) this._dlPicker.setDate(this._deadlineVal, false);
+    inp.classList.toggle('hidden', !showInput);
+    if (isCustomDate && this._dlPicker) this._dlPicker.setDate(val, false);
   },
 
   hide(force = false) {
@@ -93,12 +131,14 @@ const PDCA = {
       act: document.getElementById('pdca-act').value
     };
     const newStatus = document.getElementById('pdca-status').value;
+    // If user clicked "指定日期" but never picked a date, fall back to 'today'
+    const deadlineSave = this._deadlineVal === '_date' ? 'today' : this._deadlineVal;
     const updates = {
       pdca,
       status: newStatus,
       urgency: document.getElementById('pdca-urgency').value,
-      estimate: document.getElementById('pdca-estimate').value,
-      deadline: this._deadlineVal,
+      estimate: this._getEstimate(),
+      deadline: deadlineSave,
       done: newStatus === 'done',
       completedAt: newStatus === 'done' && !this._task.completedAt ? new Date().toISOString() : this._task.completedAt
     };
@@ -156,8 +196,16 @@ const PDCA = {
     ['pdca-status','pdca-urgency'].forEach(id => {
       document.getElementById(id).addEventListener('change', () => this._setDirty(true));
     });
-    // Estimate select
-    document.getElementById('pdca-estimate').addEventListener('change', () => this._setDirty(true));
+    // Estimate select — show/hide custom wrap
+    document.getElementById('pdca-estimate').addEventListener('change', () => {
+      const isCustom = document.getElementById('pdca-estimate').value === '_custom';
+      document.getElementById('pdca-estimate-custom').classList.toggle('hidden', !isCustom);
+      if (isCustom) document.getElementById('pdca-est-num').focus();
+      this._setDirty(true);
+    });
+    // Custom estimate inputs
+    document.getElementById('pdca-est-num').addEventListener('input', () => this._setDirty(true));
+    document.getElementById('pdca-est-unit').addEventListener('change', () => this._setDirty(true));
 
     // Flatpickr for deadline date picker
     this._dlPicker = flatpickr('#pdca-deadline-input', {
@@ -175,7 +223,9 @@ const PDCA = {
     document.querySelectorAll('.pdca-dl-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         if (btn.dataset.value === '_date') {
-          document.getElementById('pdca-deadline-input').classList.remove('hidden');
+          // Mark '_date' as active immediately, then open picker
+          this._deadlineVal = '_date';
+          this._renderDeadlineBtns();
           this._dlPicker.open();
         } else {
           this._deadlineVal = btn.dataset.value;

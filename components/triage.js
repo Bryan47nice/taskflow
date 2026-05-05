@@ -173,7 +173,7 @@ const Triage = {
       if (e.key === 'Escape') { this.hide(); return; }
       // Step 2: 1/2/3 for urgency (auto-advance)
       if (this._step === 2 && ['1','2','3'].includes(e.key)) {
-        const map = { '1': 'low', '2': 'medium', '3': 'high' };
+        const map = { '1': 'high', '2': 'medium', '3': 'low' };  // 1=P0, 2=P1, 3=P2
         this._data.urgency = map[e.key];
         this._renderUrgency();
         setTimeout(() => this._next(), 200);

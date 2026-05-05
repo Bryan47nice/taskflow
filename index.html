@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" id="meta-theme-color" content="#F7F4F0">
   <title>TaskFlow</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Calistoga&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
@@ -250,9 +251,9 @@
       <div class="triage-step hidden" data-step="2">
         <label>優先級 <span style="color:var(--text-muted);font-weight:400">（或按 1 / 2 / 3）</span></label>
         <div class="btn-group">
-          <button class="urg-btn" data-value="low">😌 沒怎樣</button>
-          <button class="urg-btn" data-value="medium">😤 會很煩</button>
-          <button class="urg-btn" data-value="high">🚨 會出事</button>
+          <button class="urg-btn" data-value="high">🚨 P0</button>
+          <button class="urg-btn" data-value="medium">😤 P1</button>
+          <button class="urg-btn" data-value="low">😌 P2</button>
         </div>
       </div>
 
@@ -280,11 +281,12 @@
       <!-- Step 4: Deadline -->
       <div class="triage-step hidden" data-step="4">
         <label>截止</label>
-        <div class="btn-group">
+        <div class="btn-group dl-btn-group">
           <button class="dl-btn" data-value="today">今天</button>
           <button class="dl-btn" data-value="tomorrow">明天</button>
-          <button class="dl-btn" data-value="backlog">Backlog</button>
           <button class="dl-btn" data-value="_date" id="btn-dl-date">指定日期</button>
+          <span class="dl-divider"></span>
+          <button class="dl-btn dl-btn-backlog" data-value="backlog">無期限</button>
         </div>
         <input type="text" id="t-dl-date" class="hidden" readonly placeholder="選擇日期">
       </div>
@@ -316,9 +318,9 @@
           <div class="pdca-meta-row">
             <label for="pdca-urgency">嚴重性</label>
             <select id="pdca-urgency">
-              <option value="low">😌 一般</option>
-              <option value="medium">😤 重要</option>
-              <option value="high">🚨 緊急</option>
+              <option value="high">🚨 P0</option>
+              <option value="medium">😤 P1</option>
+              <option value="low">😌 P2</option>
             </select>
           </div>
           <div class="pdca-meta-row">
@@ -332,7 +334,15 @@
               <option value="2h">2 小時</option>
               <option value="3h">3 小時</option>
               <option value="4h+">4 小時以上</option>
+              <option value="_custom">自訂…</option>
             </select>
+            <div id="pdca-estimate-custom" class="hidden custom-est-wrap" style="margin-top:6px">
+              <input type="number" id="pdca-est-num" min="5" max="480" step="5" placeholder="時長">
+              <select id="pdca-est-unit">
+                <option value="m">分鐘</option>
+                <option value="h">小時</option>
+              </select>
+            </div>
           </div>
         </div>
         <div class="pdca-deadline-row">
@@ -340,8 +350,9 @@
           <div class="pdca-dl-btns">
             <button class="pdca-dl-btn" data-value="today">今天</button>
             <button class="pdca-dl-btn" data-value="tomorrow">明天</button>
-            <button class="pdca-dl-btn" data-value="backlog">Backlog</button>
             <button class="pdca-dl-btn" data-value="_date" id="btn-pdca-dl-date">指定日期</button>
+            <span class="dl-divider"></span>
+            <button class="pdca-dl-btn dl-btn-backlog" data-value="backlog">無期限</button>
           </div>
           <input type="text" id="pdca-deadline-input" class="hidden" readonly placeholder="選擇日期">
         </div>
