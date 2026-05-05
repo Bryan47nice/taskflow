@@ -59,11 +59,16 @@ const Kanban = {
     div.dataset.id = task.id;
     div.draggable = true;
 
-    const deadlineLabel = {
-      today: '今天',
-      tomorrow: '明天',
-      backlog: 'Backlog'
-    }[task.deadline] || task.deadline || '';
+    const deadlineLabel = (() => {
+      if (!task.deadline) return '';
+      if (task.deadline === 'today') return '今天';
+      if (task.deadline === 'tomorrow') return '明天';
+      if (task.deadline === 'backlog') return 'Backlog';
+      // Custom date YYYY-MM-DD → M/D
+      const parts = task.deadline.split('-');
+      if (parts.length === 3) return `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+      return task.deadline;
+    })();
 
     const sourceIcon = this._sourceIcon(task.source?.type);
     const hasPDCA = task.pdca && Object.values(task.pdca).some(v => v?.trim());

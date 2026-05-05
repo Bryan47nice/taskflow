@@ -165,7 +165,7 @@ const App = {
     document.getElementById('header-date').textContent = today;
 
     const stats = { ...this.getStats(), dailyHours: this.settings.dailyHours || 8 };
-    const todayTasks = this.tasks.filter(t => t.deadline === 'today' || t.dayKey === today);
+    const todayTasks = this.tasks.filter(t => t.deadline === 'today' || t.dayKey === today || t.deadline === today);
     let available = HonestLimit.calculateAvailable(todayTasks, stats);
     const meetMin = Calendar.getMeetingMinutes();
     if (meetMin > 0) available = Math.max(0, available - meetMin);

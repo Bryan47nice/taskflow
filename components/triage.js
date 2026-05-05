@@ -3,6 +3,7 @@ const Triage = {
   _step: 1,
   _data: {},
   _onSave: null,
+  _dlPicker: null,
 
   show(prefill = {}, onSave) {
     this._onSave = onSave;
@@ -18,6 +19,21 @@ const Triage = {
       } : null,
       body: prefill.text || ''
     };
+
+    // Init deadline flatpickr once
+    if (!this._dlPicker) {
+      this._dlPicker = flatpickr('#t-dl-date', {
+        minDate: 'today',
+        dateFormat: 'Y-m-d',
+        onChange: ([date]) => {
+          if (!date) return;
+          this._data.deadline = date.toISOString().slice(0, 10);
+          document.querySelectorAll('.dl-btn').forEach(b => b.classList.remove('selected'));
+          document.querySelector('.dl-btn[data-value="_date"]').classList.add('selected');
+        }
+      });
+    }
+
     this._goStep(1);
     document.getElementById('modal-triage').classList.remove('hidden');
     setTimeout(() => document.getElementById('t-title')?.focus(), 50);
@@ -53,16 +69,23 @@ const Triage = {
     document.querySelectorAll('.est-btn').forEach(btn => {
       btn.classList.toggle('selected', btn.dataset.value === this._data.estimate);
     });
-    // Show custom input if current value is custom
+    // Reset custom wrap when rendering
     const isStandard = ['15m','30m','1h','2h','3h','4h+'].includes(this._data.estimate);
-    document.getElementById('t-custom-est').value = isStandard ? '' : this._data.estimate;
-    document.getElementById('t-custom-est').classList.toggle('hidden', isStandard);
+    const wrap = document.getElementById('t-custom-est-wrap');
+    if (isStandard) {
+      wrap.classList.add('hidden');
+      document.getElementById('t-custom-est-num').value = '';
+    } else {
+      wrap.classList.remove('hidden');
+    }
   },
 
   _renderDeadline() {
+    const isDate = !['today','tomorrow','backlog'].includes(this._data.deadline);
     document.querySelectorAll('.dl-btn').forEach(btn => {
-      btn.classList.toggle('selected', btn.dataset.value === this._data.deadline);
+      btn.classList.toggle('selected', isDate ? btn.dataset.value === '_date' : btn.dataset.value === this._data.deadline);
     });
+    if (isDate && this._dlPicker) this._dlPicker.setDate(this._data.deadline, false);
   },
 
   _next() {
@@ -156,10 +179,10 @@ const Triage = {
         setTimeout(() => this._next(), 200);
         return;
       }
-      // Steps 3 & 4: Enter advances (skip if custom estimate field focused)
+      // Steps 3 & 4: Enter advances (skip if custom estimate num field focused)
       if (e.key === 'Enter' && (this._step === 3 || this._step === 4)) {
         const active = document.activeElement;
-        if (active && active.id === 't-custom-est') return; // let user type
+        if (active && active.id === 't-custom-est-num') return; // let user type
         e.preventDefault();
         this._next();
       }
@@ -170,29 +193,37 @@ const Triage = {
       btn.addEventListener('click', () => {
         this._data.estimate = btn.dataset.value;
         this._renderEstimate();
-        document.getElementById('t-custom-est').classList.add('hidden');
       });
     });
 
-    // Custom estimate
+    // Custom estimate — number + unit
     document.getElementById('btn-custom-est').addEventListener('click', () => {
-      document.getElementById('t-custom-est').classList.remove('hidden');
-      document.getElementById('t-custom-est').focus();
+      document.getElementById('t-custom-est-wrap').classList.remove('hidden');
+      document.getElementById('t-custom-est-num').focus();
     });
-    document.getElementById('t-custom-est').addEventListener('input', e => {
-      const v = e.target.value.trim();
-      if (v) {
-        // Normalize: "45" → "45min", "45min" → "45min"
-        const num = v.replace(/[^0-9]/g, '');
-        if (num) this._data.estimate = `${num}min`;
-      }
+    ['t-custom-est-num', 't-custom-est-unit'].forEach(id => {
+      const evtType = id === 't-custom-est-num' ? 'input' : 'change';
+      document.getElementById(id).addEventListener(evtType, () => {
+        const num = parseInt(document.getElementById('t-custom-est-num').value, 10);
+        const unit = document.getElementById('t-custom-est-unit').value;
+        if (num > 0) {
+          this._data.estimate = `${num}${unit}`;
+          // Deselect preset buttons
+          document.querySelectorAll('.est-btn').forEach(b => b.classList.remove('selected'));
+        }
+      });
     });
 
     // Deadline buttons
     document.querySelectorAll('.dl-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        this._data.deadline = btn.dataset.value;
-        this._renderDeadline();
+        if (btn.dataset.value === '_date') {
+          document.getElementById('t-dl-date').classList.remove('hidden');
+          if (this._dlPicker) this._dlPicker.open();
+        } else {
+          this._data.deadline = btn.dataset.value;
+          this._renderDeadline();
+        }
       });
     });
 

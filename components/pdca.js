@@ -2,6 +2,8 @@
 const PDCA = {
   _task: null,
   _dirty: false,
+  _deadlineVal: 'today',
+  _dlPicker: null,
 
   _setDirty(val) {
     this._dirty = val;
@@ -16,8 +18,16 @@ const PDCA = {
 
     document.getElementById('pdca-title').textContent = task.title;
     document.getElementById('pdca-urgency').value = task.urgency || 'medium';
-    document.getElementById('pdca-estimate').value = task.estimate || '30m';
-    document.getElementById('pdca-deadline').value = task.deadline || 'today';
+
+    // Estimate (select)
+    const estSel = document.getElementById('pdca-estimate');
+    const estVal = task.estimate || '30m';
+    const estOpts = [...estSel.options].map(o => o.value);
+    estSel.value = estOpts.includes(estVal) ? estVal : '30m';
+
+    // Deadline button group
+    this._deadlineVal = task.deadline || 'today';
+    this._renderDeadlineBtns();
 
     // Body / links
     const bodyEl = document.getElementById('pdca-body');
@@ -55,6 +65,16 @@ const PDCA = {
     m.classList.remove('hidden');
   },
 
+  _renderDeadlineBtns() {
+    const isDate = !['today', 'tomorrow', 'backlog'].includes(this._deadlineVal);
+    document.querySelectorAll('.pdca-dl-btn').forEach(btn => {
+      btn.classList.toggle('selected', isDate ? btn.dataset.value === '_date' : btn.dataset.value === this._deadlineVal);
+    });
+    const inp = document.getElementById('pdca-deadline-input');
+    inp.classList.toggle('hidden', !isDate);
+    if (isDate && this._dlPicker) this._dlPicker.setDate(this._deadlineVal, false);
+  },
+
   hide(force = false) {
     if (!force && this._dirty) {
       if (!confirm('有未儲存的變更，確定要關閉嗎？')) return;
@@ -77,8 +97,8 @@ const PDCA = {
       pdca,
       status: newStatus,
       urgency: document.getElementById('pdca-urgency').value,
-      estimate: document.getElementById('pdca-estimate').value.trim() || '30m',
-      deadline: document.getElementById('pdca-deadline').value,
+      estimate: document.getElementById('pdca-estimate').value,
+      deadline: this._deadlineVal,
       done: newStatus === 'done',
       completedAt: newStatus === 'done' && !this._task.completedAt ? new Date().toISOString() : this._task.completedAt
     };
@@ -92,7 +112,7 @@ const PDCA = {
     if (!this._task) return;
     if (!confirm(`刪除「${this._task.title}」？`)) return;
     await App.deleteTask(this._task.id);
-    this.hide();
+    this.hide(true);
     App.showToast('已刪除');
   },
 
@@ -128,13 +148,42 @@ const PDCA = {
       }
     });
 
-    // Dirty tracking — mark unsaved on any field change
+    // Dirty tracking — PDCA text areas
     ['pdca-plan','pdca-do','pdca-check','pdca-act'].forEach(id => {
       document.getElementById(id).addEventListener('input', () => this._setDirty(true));
     });
-    ['pdca-status','pdca-urgency','pdca-deadline'].forEach(id => {
+    // Status and urgency selects
+    ['pdca-status','pdca-urgency'].forEach(id => {
       document.getElementById(id).addEventListener('change', () => this._setDirty(true));
     });
-    document.getElementById('pdca-estimate').addEventListener('input', () => this._setDirty(true));
+    // Estimate select
+    document.getElementById('pdca-estimate').addEventListener('change', () => this._setDirty(true));
+
+    // Flatpickr for deadline date picker
+    this._dlPicker = flatpickr('#pdca-deadline-input', {
+      minDate: 'today',
+      dateFormat: 'Y-m-d',
+      onChange: ([date]) => {
+        if (!date) return;
+        this._deadlineVal = date.toISOString().slice(0, 10);
+        this._setDirty(true);
+        this._renderDeadlineBtns();
+      }
+    });
+
+    // Deadline button clicks
+    document.querySelectorAll('.pdca-dl-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.value === '_date') {
+          document.getElementById('pdca-deadline-input').classList.remove('hidden');
+          this._dlPicker.open();
+        } else {
+          this._deadlineVal = btn.dataset.value;
+          document.getElementById('pdca-deadline-input').classList.add('hidden');
+          this._setDirty(true);
+          this._renderDeadlineBtns();
+        }
+      });
+    });
   }
 };
