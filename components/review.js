@@ -10,7 +10,13 @@ const Review = {
   },
 
   hide() {
+    if (this._isDirty && !confirm('有未儲存的修改，確定要關閉嗎？')) return;
+    this._isDirty = false;
+    this._currentPath = null;
+    this._currentSha = null;
+    this._currentContent = null;
     document.getElementById('modal-review').classList.add('hidden');
+    document.querySelector('.review-modal-box')?.classList.remove('reading-mode');
   },
 
   async _loadJournals() {
@@ -35,7 +41,7 @@ const Review = {
         return `<button class="journal-item" data-path="${f.path}">${date}</button>`;
       }).join('');
       document.getElementById('review-content').innerHTML =
-        `<div class="journal-list">${list}</div><div id="journal-view" class="journal-view hidden"></div>`;
+        `<div class="journal-list-panel"><div class="journal-list">${list}</div></div><div id="journal-view" class="journal-view hidden"></div>`;
 
       document.querySelectorAll('.journal-item').forEach(btn => {
         btn.addEventListener('click', () => this._viewJournal(btn.dataset.path, btn.textContent));
@@ -45,16 +51,167 @@ const Review = {
     }
   },
 
+  _currentPath: null,
+  _currentSha: null,
+  _currentContent: null,
+  _isDirty: false,
+
   async _viewJournal(path, title) {
+    if (this._isDirty) {
+      if (!confirm('有未儲存的修改，確定要離開嗎？')) return;
+      this._isDirty = false;
+    }
+    // highlight active item
+    document.querySelectorAll('.journal-item').forEach(b =>
+      b.classList.toggle('active', b.dataset.path === path)
+    );
     const viewEl = document.getElementById('journal-view');
     viewEl.innerHTML = '<p class="loading">載入中…</p>';
     viewEl.classList.remove('hidden');
+    document.querySelector('.review-modal-box').classList.add('reading-mode');
     try {
-      const { content } = await GitHubAPI.getRaw(App.settings.pat, App.settings.repo, path);
-      viewEl.innerHTML = `<h3>${title}</h3><pre class="journal-md">${this._esc(content)}</pre>`;
+      const { content, sha } = await GitHubAPI.getRaw(App.settings.pat, App.settings.repo, path);
+      this._currentPath = path;
+      this._currentSha = sha;
+      this._currentContent = content;
+      this._renderView(viewEl, title, content);
     } catch (e) {
       viewEl.innerHTML = `<p class="error">載入失敗：${e.message}</p>`;
     }
+  },
+
+  _renderView(viewEl, title, content) {
+    const parsed = this._parseJournalMd(content);
+    const doneHtml = parsed.done.length
+      ? parsed.done.map(l => `<div class="jv-item">${this._esc(l)}</div>`).join('')
+      : '<div class="jv-empty">（無）</div>';
+    const todoHtml = parsed.todo.length
+      ? parsed.todo.map(l => `<div class="jv-item">${this._esc(l)}</div>`).join('')
+      : '<div class="jv-empty">（未排）</div>';
+    const pdcaHtml = parsed.pdca.length
+      ? parsed.pdca.map(t => `
+          <div class="jv-pdca-block">
+            <div class="jv-pdca-title">${this._esc(t.title)}</div>
+            ${['plan','do','check','act'].map(k => t[k] ? `
+              <div class="pdca-field-row">
+                <label>${k.charAt(0).toUpperCase()+k.slice(1)}</label>
+                <div class="jv-pdca-val">${this._esc(t[k])}</div>
+              </div>` : '').join('')}
+          </div>`).join('')
+      : '';
+    const notesHtml = parsed.notes
+      ? `<div class="journal-section">
+           <div class="journal-section-label">備注</div>
+           <div class="jv-notes">${this._esc(parsed.notes)}</div>
+         </div>`
+      : '';
+
+    viewEl.innerHTML = `
+      <div class="jv-header">
+        <h3>${this._esc(title)}</h3>
+        <button class="jv-mode-btn" id="jv-edit-btn">編輯</button>
+      </div>
+      <div class="jv-body">
+        <div class="journal-section">
+          <div class="journal-section-label">今日完成</div>
+          <div class="jv-list">${doneHtml}</div>
+        </div>
+        ${parsed.pdca.length ? `<div class="journal-section">
+          <div class="journal-section-label">PDCA 覆盤</div>
+          ${pdcaHtml}
+        </div>` : ''}
+        <div class="journal-section">
+          <div class="journal-section-label">明日計畫</div>
+          <div class="jv-list">${todoHtml}</div>
+        </div>
+        ${notesHtml}
+      </div>`;
+    document.getElementById('jv-edit-btn').addEventListener('click', () =>
+      this._renderEdit(viewEl, title, this._currentContent)
+    );
+  },
+
+  _renderEdit(viewEl, title, content) {
+    viewEl.innerHTML = `
+      <div class="jv-header">
+        <h3>${this._esc(title)}</h3>
+        <div class="jv-edit-actions">
+          <button class="jv-mode-btn" id="jv-view-btn">檢視</button>
+          <button class="btn btn-primary jv-upload-btn" id="jv-upload-btn">上傳</button>
+        </div>
+      </div>
+      <textarea class="journal-md-edit" id="jv-textarea" spellcheck="false"></textarea>`
+    document.getElementById('jv-textarea').value = content;
+    const ta = document.getElementById('jv-textarea');
+    ta.addEventListener('input', () => { this._isDirty = true; });
+    document.getElementById('jv-view-btn').addEventListener('click', () => {
+      this._currentContent = ta.value;
+      this._isDirty = false;
+      this._renderView(viewEl, title, ta.value);
+    });
+    document.getElementById('jv-upload-btn').addEventListener('click', () =>
+      this._uploadEditedJournal(ta, title)
+    );
+  },
+
+  async _uploadEditedJournal(ta, title) {
+    const btn = document.getElementById('jv-upload-btn');
+    btn.disabled = true;
+    btn.textContent = '上傳中…';
+    try {
+      const newContent = ta.value;
+      await GitHubAPI.putRaw(
+        App.settings.pat, App.settings.repo,
+        this._currentPath, newContent,
+        this._currentSha,
+        `TaskFlow: update journal ${title}`
+      );
+      this._currentContent = newContent;
+      this._isDirty = false;
+      // refresh SHA after upload
+      const { sha } = await GitHubAPI.getRaw(App.settings.pat, App.settings.repo, this._currentPath);
+      this._currentSha = sha;
+      App.showToast('日誌已更新');
+    } catch (e) {
+      App.showToast(`上傳失敗：${e.message}`, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '上傳';
+    }
+  },
+
+  _parseJournalMd(md) {
+    const result = { done: [], todo: [], pdca: [], notes: '' };
+    const sections = md.split(/^## /m);
+    for (const sec of sections) {
+      const lines = sec.split('\n');
+      const heading = lines[0].trim();
+      const body = lines.slice(1).join('\n');
+      if (heading.startsWith('今日完成')) {
+        result.done = body.split('\n')
+          .filter(l => /^- \[.\]/.test(l.trim()))
+          .map(l => l.replace(/^- \[.\]\s*/, '').trim());
+      } else if (heading.startsWith('明日計畫')) {
+        result.todo = body.split('\n')
+          .filter(l => /^- \[.\]/.test(l.trim()))
+          .map(l => l.replace(/^- \[.\]\s*/, '').trim());
+      } else if (heading.startsWith('PDCA')) {
+        const tasks = body.split(/^### /m).filter(t => t.trim());
+        result.pdca = tasks.map(t => {
+          const tLines = t.split('\n');
+          const taskTitle = tLines[0].trim();
+          const taskBody = tLines.slice(1).join('\n');
+          const get = (key) => {
+            const m = taskBody.match(new RegExp(`\\*\\*${key}\\*\\*[：:](.*?)(?=\\n\\*\\*|$)`, 's'));
+            return m ? m[1].trim() : '';
+          };
+          return { title: taskTitle, plan: get('Plan'), do: get('Do'), check: get('Check'), act: get('Act') };
+        });
+      } else if (heading.startsWith('備注')) {
+        result.notes = body.trim();
+      }
+    }
+    return result;
   },
 
   // ── 日誌編輯器 ────────────────────────────────────────────

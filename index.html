@@ -109,32 +109,59 @@
   <button class="tab-btn" data-status="done">完成 <span class="tab-count">0</span></button>
 </nav>
 
-<!-- ── Kanban Board ── -->
-<main class="kanban-board">
-  <section class="kanban-col" data-status="todo">
-    <div class="col-header" data-status="todo">
-      <h2>待辦</h2>
-      <span class="count">0</span>
-    </div>
-    <div class="task-list" data-status="todo"></div>
-  </section>
+<!-- ── Mobile Timer Bar (shows when timer is running) ── -->
+<div id="timer-bar" class="timer-bar hidden">
+  <span class="timer-bar-emoji">🍅</span>
+  <span id="timer-bar-time">25:00</span>
+  <span id="timer-bar-task" class="timer-bar-task"></span>
+  <button id="timer-bar-toggle" class="timer-bar-btn">▶</button>
+</div>
 
-  <section class="kanban-col" data-status="in-progress">
-    <div class="col-header" data-status="in-progress">
-      <h2>進行中</h2>
-      <span class="count">0</span>
-    </div>
-    <div class="task-list" data-status="in-progress"></div>
-  </section>
+<!-- ── App Layout ── -->
+<div class="app-layout">
 
-  <section class="kanban-col" data-status="done">
-    <div class="col-header" data-status="done">
-      <h2>完成</h2>
-      <span class="count">0</span>
-    </div>
-    <div class="task-list" data-status="done"></div>
-  </section>
-</main>
+  <!-- Kanban Board -->
+  <main class="kanban-board">
+    <section class="kanban-col" data-status="todo">
+      <div class="col-header" data-status="todo">
+        <h2>待辦</h2>
+        <span class="count">0</span>
+      </div>
+      <div class="task-list" data-status="todo"></div>
+    </section>
+
+    <section class="kanban-col" data-status="in-progress">
+      <div class="col-header" data-status="in-progress">
+        <h2>進行中</h2>
+        <span class="count">0</span>
+      </div>
+      <div class="task-list" data-status="in-progress"></div>
+    </section>
+
+    <section class="kanban-col" data-status="done">
+      <div class="col-header" data-status="done">
+        <h2>完成</h2>
+        <span class="count">0</span>
+      </div>
+      <div class="task-list" data-status="done"></div>
+    </section>
+  </main>
+
+  <!-- Resize Handle -->
+  <div class="resize-handle" id="resize-handle" title="拖曳調整寬度"></div>
+
+  <!-- Side Panel -->
+  <aside class="side-panel" id="side-panel">
+    <div id="panel-timer" class="side-card"></div>
+    <div id="panel-timeline" class="side-card"></div>
+    <div id="panel-stats" class="side-card"></div>
+    <div id="panel-scratch" class="side-card"></div>
+  </aside>
+
+</div><!-- .app-layout -->
+
+<!-- ── Heatmap Bar (desktop/tablet only) ── -->
+<div class="heatmap-bar" id="heatmap-bar"></div>
 
 <!-- ── FAB ── -->
 <button id="btn-fab" title="新增任務">+</button>
@@ -462,6 +489,26 @@
   </div>
 </div>
 
+<!-- ── Bottom Nav (mobile only) ── -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bnav-btn active" data-tab="board">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    看板
+  </button>
+  <button class="bnav-btn" data-tab="focus">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    專注
+  </button>
+  <button class="bnav-btn" data-tab="stats">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    統計
+  </button>
+  <button class="bnav-btn" data-tab="notes">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    記
+  </button>
+</nav>
+
 <!-- ── Scripts (order matters) ── -->
 <script src="components/theme.js"></script>
 <script src="lib/github-api.js"></script>
@@ -474,6 +521,10 @@
 <script src="components/pdca.js"></script>
 <script src="components/review.js"></script>
 <script src="components/calendar.js"></script>
+<script src="components/timer.js"></script>
+<script src="components/stats-panel.js"></script>
+<script src="components/scratch.js"></script>
+<script src="components/mobile-nav.js"></script>
 <script src="app.js"></script>
 
 </body>

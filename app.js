@@ -16,6 +16,10 @@ const App = {
     PDCA.init();
     Review.init();
     Calendar.init();
+    Timer.init();
+    StatsPanel.init();
+    Scratch.init();
+    MobileNav.init();
 
     if (!this.settings.pat || !this.settings.repo) {
       Settings.show(() => this.init());
@@ -34,6 +38,55 @@ const App = {
     Kanban.render(this.tasks);
     this._updateHeader();
     this._handleURLParams();
+    // Refresh side panels now that tasks are loaded
+    if (typeof Timer !== 'undefined') Timer.render();
+    if (typeof StatsPanel !== 'undefined') StatsPanel.refresh();
+    if (typeof Scratch !== 'undefined') Scratch.render();
+    this._initPanelResize();
+  },
+
+  _initPanelResize() {
+    const handle = document.getElementById('resize-handle');
+    const panel  = document.getElementById('side-panel');
+    if (!handle || !panel) return;
+
+    // Restore saved width
+    const saved = localStorage.getItem('taskflow_panel_width');
+    if (saved) panel.style.width = saved + 'px';
+
+    let startX, startW;
+
+    handle.addEventListener('mousedown', e => {
+      if (window.innerWidth <= 1023) return;
+      startX = e.clientX;
+      startW = panel.offsetWidth;
+      handle.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+
+      const onMove = e => {
+        const delta = startX - e.clientX;   // drag left → panel wider
+        const w = Math.min(520, Math.max(200, startW + delta));
+        panel.style.width = w + 'px';
+      };
+      const onUp = () => {
+        handle.classList.remove('dragging');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        localStorage.setItem('taskflow_panel_width', panel.offsetWidth);
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+      e.preventDefault();
+    });
+
+    // Double-click to reset to default width
+    handle.addEventListener('dblclick', () => {
+      panel.style.width = '';
+      localStorage.removeItem('taskflow_panel_width');
+    });
   },
 
   _handleURLParams() {
@@ -117,10 +170,29 @@ const App = {
   async updateTask(id, updates) {
     const idx = this.tasks.findIndex(t => t.id === id);
     if (idx === -1) return;
-    this.tasks[idx] = { ...this.tasks[idx], ...updates };
+    const prev = this.tasks[idx];
+    this.tasks[idx] = { ...prev, ...updates };
+    // Track daily completion log when task moves to done
+    if (updates.status === 'done' && prev.status !== 'done') {
+      this.tasks[idx].completedAt = new Date().toISOString();
+      this._recordDailyLog('done');
+    }
     this._scheduleSave();
     Kanban.render(this.tasks);
     this._updateHeader();
+    if (typeof StatsPanel !== 'undefined') StatsPanel.refresh();
+  },
+
+  _recordDailyLog(event) {
+    const today = this.getTodayKey();
+    const log = JSON.parse(localStorage.getItem('taskflow_daily_log') || '{}');
+    if (!log[today]) log[today] = { done: 0, scheduled: 0 };
+    if (event === 'done') log[today].done++;
+    // Update scheduled count from current tasks
+    log[today].scheduled = this.tasks.filter(t =>
+      t.deadline === 'today' || t.dayKey === today || t.deadline === today
+    ).length;
+    localStorage.setItem('taskflow_daily_log', JSON.stringify(log));
   },
 
   async deleteTask(id) {
@@ -155,7 +227,8 @@ const App = {
       pdca: { plan: '', do: '', check: '', act: '' },
       createdAt: new Date().toISOString(),
       completedAt: null,
-      dayKey: this.getTodayKey()
+      dayKey: this.getTodayKey(),
+      actualMinutes: 0
     };
   },
 
