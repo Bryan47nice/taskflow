@@ -326,6 +326,8 @@ body[data-theme="c-dark"]  .btn-primary { background: #FAFAFA; color: #0D0D0D; }
   padding: 16px;
   overflow-x: auto;
   align-items: flex-start;
+  flex: 1;
+  min-width: 0;
   min-height: calc(100vh - 56px);
 }
 
@@ -735,6 +737,23 @@ textarea { resize: vertical; min-height: 70px; }
 /* ── Review modal ── */
 .review-modal-box { max-width: 600px; }
 
+.review-modal-box.reading-mode { max-width: 900px; width: 92vw; }
+.review-modal-box.reading-mode .modal-body { height: 70vh; overflow: hidden; }
+.review-modal-box.reading-mode #review-content {
+  display: flex; gap: 0; height: 100%;
+}
+.review-modal-box.reading-mode .journal-list-panel {
+  width: 160px; flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding-right: 12px; overflow-y: auto; margin-bottom: 0;
+}
+.review-modal-box.reading-mode .journal-list { margin-bottom: 0; }
+.review-modal-box.reading-mode .journal-view {
+  flex: 1; padding-left: 20px; overflow-y: auto;
+  border-top: none; padding-top: 0;
+  display: flex; flex-direction: column;
+}
+
 /* ── Journal editor modal ── */
 .journal-editor-box { max-width: 600px; width: 96vw; }
 .journal-editor-box .modal-header { gap: 8px; }
@@ -801,7 +820,62 @@ textarea { resize: vertical; min-height: 70px; }
 .journal-item:hover { background: #ede9fe; }
 
 .journal-view { border-top: 1px solid var(--border); padding-top: 16px; }
-.journal-view h3 { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+
+/* journal view — header row */
+.jv-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.jv-header h3 { font-size: 14px; font-weight: 700; color: var(--text); margin: 0; }
+.jv-edit-actions { display: flex; align-items: center; gap: 8px; }
+.jv-mode-btn {
+  font-size: 12px; padding: 4px 10px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text-muted); cursor: pointer; transition: all .15s;
+}
+.jv-mode-btn:hover { border-color: var(--primary); color: var(--primary); }
+.jv-upload-btn { font-size: 12px; padding: 4px 12px; }
+
+/* journal view — body sections */
+.jv-body { display: flex; flex-direction: column; gap: 14px; }
+.jv-list { display: flex; flex-direction: column; gap: 4px; }
+.jv-item {
+  font-size: 13px; line-height: 1.5;
+  background: var(--bg); border-radius: 6px;
+  padding: 7px 10px; color: var(--text);
+}
+.jv-empty { font-size: 13px; color: var(--text-muted); padding: 4px 0; }
+.jv-notes {
+  font-size: 13px; line-height: 1.6; white-space: pre-wrap;
+  background: var(--bg); border-radius: 6px; padding: 8px 10px;
+}
+
+/* PDCA blocks in view mode */
+.jv-pdca-block {
+  background: var(--bg); border-radius: 8px;
+  padding: 10px 12px; margin-top: 6px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.jv-pdca-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.jv-pdca-val { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+/* journal edit — textarea */
+.journal-md-edit {
+  width: 100%; flex: 1; min-height: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 12px; line-height: 1.6;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px; resize: none;
+  color: var(--text); box-sizing: border-box;
+}
+
+/* active journal item in list */
+.journal-item.active {
+  background: var(--primary-bg);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 .journal-md {
   font-family: 'Courier New', monospace;
   font-size: 12px;
@@ -860,14 +934,153 @@ textarea { resize: vertical; min-height: 70px; }
 .error { color: var(--high); }
 .muted { color: var(--text-muted); }
 
+/* ── App Layout ── */
+.app-layout {
+  display: flex;
+  align-items: flex-start;
+}
+
+/* ── Resize Handle ── */
+.resize-handle {
+  width: 8px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  position: relative;
+  z-index: 10;
+  transition: background .15s;
+}
+.resize-handle::after {
+  content: '';
+  position: absolute;
+  left: 3px; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--border);
+  transition: background .15s;
+}
+.resize-handle:hover::after,
+.resize-handle.dragging::after { background: var(--primary); }
+.resize-handle.dragging { cursor: col-resize; }
+@media (max-width: 1023px) { .resize-handle { display: none; } }
+
+/* ── Side Panel (desktop) ── */
+.side-panel {
+  width: 284px;
+  flex-shrink: 0;
+  padding: 16px 16px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: sticky;
+  top: 56px;
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+}
+
+.side-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  min-height: 20px; /* placeholder height while empty */
+}
+.side-card:empty { display: none; }
+
+.side-card-header {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .6px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ── Heatmap Bar ── */
+.heatmap-bar {
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.heatmap-bar:empty { display: none; }
+
+/* ── Timer Bar (mobile, shown when timer running) ── */
+.timer-bar {
+  display: none; /* shown by mobile media query */
+}
+.timer-bar-task { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); font-size: 12px; }
+.timer-bar-btn { background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px 8px; color: var(--primary); }
+
+/* ── Bottom Nav (mobile only) ── */
+.bottom-nav { display: none; }
+
+/* ── RWD: Tablet (768–1023px) ── */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .app-layout { flex-direction: column; }
+  .side-panel {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: static;
+    max-height: none;
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .kanban-board { min-height: auto; }
+}
+
 /* ── RWD: Mobile (< 768px) ── */
 @media (max-width: 767px) {
   .mobile-tabs { display: flex; }
+  .app-layout { display: block; }
+  .side-panel { display: none; }
+  .side-panel.mobile-visible {
+    display: flex; flex-direction: column;
+    padding: 12px; gap: 10px;
+  }
+  .heatmap-bar { display: none; }
+
+  /* Timer Bar */
+  .timer-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: var(--primary-bg);
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .timer-bar.hidden { display: none !important; }
+  #timer-bar-time { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--primary); min-width: 38px; }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 58px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    z-index: 95;
+  }
+  .bnav-btn {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px; font-size: 10px; font-weight: 500;
+    color: var(--text-muted); background: none;
+    border: none; cursor: pointer; transition: color .15s;
+    font-family: var(--font-body);
+  }
+  .bnav-btn.active { color: var(--primary); }
+  .bnav-btn svg { opacity: .7; }
+  .bnav-btn.active svg { opacity: 1; }
+
+  /* Push content above bottom nav */
+  #btn-fab { bottom: 74px; }
 
   .kanban-board {
     padding: 12px;
     gap: 0;
     overflow-x: hidden;
+    min-height: calc(100vh - 56px - 58px);
   }
 
   .kanban-col {
@@ -876,33 +1089,25 @@ textarea { resize: vertical; min-height: 70px; }
     border-radius: var(--radius);
   }
 
-  /* Hide non-active columns */
   .kanban-col.col-hidden { display: none; }
 
   h1 { font-size: 16px; }
 
   .modal-box { max-height: 95vh; border-radius: 14px 14px 0 0; }
-
   .modal { align-items: flex-end; padding: 0; }
-
   .pdca-fields { grid-template-columns: 1fr; }
 }
 
 /* ── RWD: Mobile narrow (< 600px) — header 精簡 ── */
 @media (max-width: 600px) {
-  /* 隱藏 header 中較不重要的元素 */
   #header-date { display: none; }
   #work-hours { display: none; }
   #save-indicator { display: none !important; }
   .btn-journal { display: none; }
   .btn-review-text { display: none; }
-
-  /* 主題按鈕只顯示 icon，隱藏文字 */
   .theme-btn-label { display: none; }
   .theme-chevron { display: none; }
   .theme-btn { padding: 6px 7px; }
-
-  /* 主題下拉改用 bottom sheet — 隱藏 desktop dropdown */
   .theme-picker { display: none !important; }
 }
 
@@ -911,6 +1116,115 @@ textarea { resize: vertical; min-height: 70px; }
   .mobile-tabs { display: none; }
   .kanban-col.col-hidden { display: flex !important; }
 }
+
+/* ── Timer ── */
+.timer-task-select {
+  width: 100%; padding: 6px 8px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--bg); color: var(--text);
+  font-size: 12px; margin-bottom: 12px; font-family: var(--font-body);
+}
+.timer-no-task { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+.timer-ring-wrap {
+  position: relative; width: 100px; height: 100px; margin: 0 auto 12px;
+}
+.timer-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+.timer-ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
+.timer-ring-fg { fill: none; stroke: var(--primary); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset .5s; }
+.timer-ring-fg.done { stroke: var(--medium, #f59e0b); }
+.timer-ring-time {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text);
+}
+.timer-ring-time.done { color: var(--medium, #f59e0b); }
+.timer-actions { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; }
+.timer-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 13px; cursor: pointer; transition: all .15s; }
+.timer-btn-main { background: var(--primary); color: #fff; border-color: var(--primary); }
+.timer-btn-main:hover { background: var(--primary-hover); }
+.timer-btn-stop:hover { border-color: var(--high); color: var(--high); }
+.timer-pomodoros { text-align: center; font-size: 12px; color: var(--text-muted); }
+
+/* ── Timeline ── */
+.timeline-wrap { margin-bottom: 6px; }
+.timeline-track {
+  position: relative; height: 28px;
+  background: var(--bg); border-radius: 6px;
+  border: 1px solid var(--border); overflow: hidden;
+}
+.timeline-block {
+  position: absolute; top: 3px; height: 22px;
+  border-radius: 4px; display: flex; align-items: center;
+  justify-content: center; font-size: 10px; color: #fff;
+  overflow: hidden; cursor: default;
+  background: var(--primary); opacity: .85;
+}
+.timeline-block.urg-high { background: var(--high); }
+.timeline-block.urg-medium { background: var(--medium, #f59e0b); }
+.timeline-block.urg-low { background: var(--primary); }
+.timeline-block.done { opacity: .45; }
+.timeline-now {
+  position: absolute; top: 0; bottom: 0; width: 2px;
+  background: var(--text); opacity: .5;
+}
+.timeline-labels {
+  position: relative; height: 16px; margin-top: 2px; font-size: 10px;
+  color: var(--text-muted);
+}
+.timeline-labels span { position: absolute; transform: translateX(-50%); }
+.timeline-legend { font-size: 11px; color: var(--text-muted); text-align: right; }
+
+/* ── Stats bars ── */
+.stat-bars { display: flex; gap: 4px; align-items: flex-end; height: 60px; margin-bottom: 12px; }
+.stat-bar-col { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; height: 100%; }
+.stat-bar-col.today .stat-bar-label { color: var(--primary); font-weight: 700; }
+.stat-bar-track { flex: 1; width: 100%; background: var(--bg); border-radius: 4px 4px 0 0; display: flex; align-items: flex-end; overflow: hidden; }
+.stat-bar-fill { width: 100%; background: var(--primary); border-radius: 4px 4px 0 0; min-height: 2px; transition: height .3s; }
+.stat-bar-label { font-size: 10px; color: var(--text-muted); }
+.stat-accuracy { margin-bottom: 10px; }
+.stat-accuracy-label { font-size: 11px; color: var(--text-muted); }
+.stat-accuracy-val { float: right; font-size: 12px; font-weight: 700; color: var(--text); }
+.stat-accuracy-bar { height: 6px; background: var(--bg); border-radius: 3px; margin-top: 4px; overflow: hidden; clear: both; }
+.stat-accuracy-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width .3s; }
+.stat-tags { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+.stat-tag-row { display: flex; align-items: center; gap: 6px; }
+.stat-tag-name { font-size: 10px; font-weight: 700; color: var(--text-muted); min-width: 44px; }
+.stat-tag-bar { flex: 1; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.stat-tag-fill { height: 100%; background: var(--primary); opacity: .6; border-radius: 3px; }
+.stat-tag-pct { font-size: 10px; color: var(--text-muted); min-width: 28px; text-align: right; }
+
+/* ── Heatmap ── */
+.hm-header { margin-bottom: 0; }
+.hm-grid {
+  display: grid;
+  grid-template-columns: repeat(18, 1fr);
+  gap: 3px; margin-bottom: 6px;
+}
+.hm-cell {
+  aspect-ratio: 1; border-radius: 2px;
+  background: var(--border);
+}
+.hm-cell.lv1 { background: color-mix(in srgb, var(--primary) 30%, var(--border)); }
+.hm-cell.lv2 { background: color-mix(in srgb, var(--primary) 55%, var(--border)); }
+.hm-cell.lv3 { background: color-mix(in srgb, var(--primary) 80%, var(--border)); }
+.hm-cell.lv4 { background: var(--primary); }
+.hm-legend {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 10px; color: var(--text-muted);
+}
+.hm-legend .hm-cell { width: 10px; height: 10px; flex-shrink: 0; }
+
+/* ── Scratch Pad ── */
+.scratch-textarea {
+  width: 100%; min-height: 90px; resize: vertical;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px; font-size: 13px;
+  line-height: 1.6; color: var(--text); font-family: var(--font-body);
+  box-sizing: border-box;
+}
+.scratch-textarea:focus { outline: none; border-color: var(--primary); }
+.scratch-yesterday { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+.scratch-yesterday-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
+.scratch-yesterday-list { margin: 0; padding-left: 16px; }
+.scratch-yesterday-list li { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
 
 /* ═══════════════════════════════════════════════════════
    Dark Theme Overrides — fix hardcoded light-bg colors
