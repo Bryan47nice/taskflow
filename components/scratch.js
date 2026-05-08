@@ -49,6 +49,7 @@ const Scratch = {
         <ul class="scratch-yesterday-list">
           ${doneItems.map(i => `<li>${this._esc(i)}</li>`).join('')}
         </ul>`;
+      el.querySelector('.scratch-yesterday')?.remove();
       el.appendChild(summaryEl);
     } catch (_) { /* silently skip if no GitHub connection */ }
   },

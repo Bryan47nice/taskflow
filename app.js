@@ -41,7 +41,6 @@ const App = {
     // Refresh side panels now that tasks are loaded
     if (typeof Timer !== 'undefined') Timer.render();
     if (typeof StatsPanel !== 'undefined') StatsPanel.refresh();
-    if (typeof Scratch !== 'undefined') Scratch.render();
     this._initPanelResize();
   },
 
