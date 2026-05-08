@@ -21,7 +21,7 @@ const MobileNav = {
     const showCards = {
       board:  [],
       focus:  ['panel-timer'],
-      stats:  ['panel-timeline', 'panel-stats'],
+      stats:  ['panel-timeline', 'panel-stats', 'panel-heatmap'],
       notes:  ['panel-scratch']
     }[tab] || [];
 
@@ -37,7 +37,7 @@ const MobileNav = {
       panel?.classList.add('mobile-visible');
 
       // Show only relevant cards
-      ['panel-timer','panel-timeline','panel-stats','panel-scratch'].forEach(id => {
+      ['panel-timer','panel-timeline','panel-stats','panel-scratch','panel-heatmap'].forEach(id => {
         const card = document.getElementById(id);
         if (!card) return;
         card.style.display = showCards.includes(id) ? '' : 'none';
@@ -56,7 +56,7 @@ const MobileNav = {
       board?.classList.remove('hidden');
       mobileKanbanTabs?.classList.remove('hidden-mobile');
       panel?.classList.remove('mobile-visible', 'hidden-mobile-panel');
-      ['panel-timer','panel-timeline','panel-stats','panel-scratch'].forEach(id => {
+      ['panel-timer','panel-timeline','panel-stats','panel-scratch','panel-heatmap'].forEach(id => {
         const c = document.getElementById(id); if (c) c.style.display = '';
       });
     } else {

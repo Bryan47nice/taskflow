@@ -66,7 +66,7 @@ const App = {
 
       const onMove = e => {
         const delta = startX - e.clientX;   // drag left → panel wider
-        const w = Math.min(520, Math.max(200, startW + delta));
+        const w = Math.min(560, Math.max(220, startW + delta));
         panel.style.width = w + 'px';
       };
       const onUp = () => {

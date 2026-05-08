@@ -942,29 +942,51 @@ textarea { resize: vertical; min-height: 70px; }
 
 /* ── Resize Handle ── */
 .resize-handle {
-  width: 8px;
+  width: 16px;
   flex-shrink: 0;
   cursor: col-resize;
   position: relative;
   z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background .15s;
 }
-.resize-handle::after {
+/* thin line */
+.resize-handle::before {
   content: '';
   position: absolute;
-  left: 3px; top: 0; bottom: 0;
+  left: 7px; top: 0; bottom: 0;
   width: 2px;
   background: var(--border);
   transition: background .15s;
 }
+/* grabber pill in the center */
+.resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 36px;
+  background: var(--border);
+  border-radius: 3px;
+  transition: background .15s, height .15s, box-shadow .15s;
+}
+.resize-handle:hover::before,
+.resize-handle.dragging::before { background: var(--primary); }
 .resize-handle:hover::after,
-.resize-handle.dragging::after { background: var(--primary); }
+.resize-handle.dragging::after {
+  background: var(--primary);
+  height: 52px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
+}
 .resize-handle.dragging { cursor: col-resize; }
 @media (max-width: 1023px) { .resize-handle { display: none; } }
 
 /* ── Side Panel (desktop) ── */
 .side-panel {
-  width: 284px;
+  width: 320px;
   flex-shrink: 0;
   padding: 16px 16px 16px 0;
   display: flex;
@@ -993,13 +1015,8 @@ textarea { resize: vertical; min-height: 70px; }
   display: flex; align-items: center; gap: 6px;
 }
 
-/* ── Heatmap Bar ── */
-.heatmap-bar {
-  padding: 0 16px 16px;
-  border-top: 1px solid var(--border);
-  margin-top: 4px;
-}
-.heatmap-bar:empty { display: none; }
+/* ── Heatmap Bar (now inside side panel) ── */
+.heatmap-bar { display: none; }
 
 /* ── Timer Bar (mobile, shown when timer running) ── */
 .timer-bar {
@@ -1035,7 +1052,6 @@ textarea { resize: vertical; min-height: 70px; }
     display: flex; flex-direction: column;
     padding: 12px; gap: 10px;
   }
-  .heatmap-bar { display: none; }
 
   /* Timer Bar */
   .timer-bar {

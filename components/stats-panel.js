@@ -120,7 +120,7 @@ const StatsPanel = {
 
   // ── 熱力圖 ────────────────────────────────────────────────────────
   _renderHeatmap() {
-    const el = document.getElementById('heatmap-bar');
+    const el = document.getElementById('panel-heatmap');
     if (!el) return;
     const log = JSON.parse(localStorage.getItem('taskflow_daily_log') || '{}');
     const maxVal = Math.max(1, ...Object.values(log).map(d => d.done));
@@ -135,9 +135,7 @@ const StatsPanel = {
     }
 
     el.innerHTML = `
-      <div class="hm-header">
-        <span class="side-card-header" style="margin-bottom:8px">📅 近 90 天</span>
-      </div>
+      <div class="side-card-header">📅 近 90 天</div>
       <div class="hm-grid">${cells.join('')}</div>
       <div class="hm-legend">
         <span>少</span>
