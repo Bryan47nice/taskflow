@@ -227,15 +227,17 @@ const Review = {
     const todo       = tasks.filter(t => t.status === 'todo' && (t.deadline === 'today' || t.dayKey === today));
 
     // 今日完成（只有 done）
-    document.getElementById('jf-done').value = done.length
-      ? done.map(t => `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`).join('\n')
-      : '';
+    const doneList = document.getElementById('jf-done-list');
+    doneList.innerHTML = '';
+    done.map(t => `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`)
+        .forEach(text => this._addDoneChip(text));
 
     // 明日計畫（todo + in-progress 未完成的繼續排）
     const upcoming = [...inProgress, ...todo];
-    document.getElementById('jf-todo').value = upcoming.length
-      ? upcoming.map(t => `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`).join('\n')
-      : '';
+    const todoList = document.getElementById('jf-todo-list');
+    todoList.innerHTML = '';
+    upcoming.map(t => `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`)
+            .forEach(text => this._addDoneChip(text, todoList));
 
     document.getElementById('jf-notes').value = '';
 
@@ -248,7 +250,13 @@ const Review = {
 
     document.getElementById('journal-editor-date').textContent = today;
     document.getElementById('modal-journal-editor').classList.remove('hidden');
-    document.getElementById('jf-done').focus();
+  },
+
+  _addDoneChip(text, list = document.getElementById('jf-done-list')) {
+    const chip = document.createElement('div');
+    chip.className = 'jf-done-chip';
+    chip.innerHTML = `<span title="${this._esc(text)}">${this._esc(text)}</span>`;
+    list.appendChild(chip);
   },
 
   _renderPdcaTabs() {
@@ -317,15 +325,17 @@ const Review = {
   _formToMarkdown() {
     this._savePdcaFields(); // 儲存目前編輯中的 tab
     const today = App.getTodayKey();
-    const done  = document.getElementById('jf-done').value.trim();
-    const todo  = document.getElementById('jf-todo').value.trim();
+    const doneChips = [...document.querySelectorAll('#jf-done-list .jf-done-chip span')]
+      .map(s => s.textContent.trim()).filter(Boolean);
+    const todoChips = [...document.querySelectorAll('#jf-todo-list .jf-done-chip span')]
+      .map(s => s.textContent.trim()).filter(Boolean);
     const notes = document.getElementById('jf-notes').value.trim();
 
     let md = `# ${today} 工作日誌\n\n`;
 
     md += `## 今日完成\n`;
-    if (done) {
-      done.split('\n').filter(l => l.trim()).forEach(l => { md += `- [x] ${l.trim()}\n`; });
+    if (doneChips.length) {
+      doneChips.forEach(l => { md += `- [x] ${l}\n`; });
     } else {
       md += `- （無）\n`;
     }
@@ -345,8 +355,8 @@ const Review = {
     }
 
     md += `\n## 明日計畫\n`;
-    if (todo) {
-      todo.split('\n').filter(l => l.trim()).forEach(l => { md += `- [ ] ${l.trim()}\n`; });
+    if (todoChips.length) {
+      todoChips.forEach(l => { md += `- [ ] ${l}\n`; });
     } else {
       md += `- （未排）\n`;
     }

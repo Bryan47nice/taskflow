@@ -782,6 +782,22 @@ textarea { resize: vertical; min-height: 70px; }
 }
 .journal-form textarea:focus { border-color: var(--primary); outline: none; }
 
+/* Done/Todo chip list */
+.jf-done-list {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  min-height: 38px; padding: 8px 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.jf-done-chip {
+  display: inline-flex; align-items: center;
+  padding: 3px 11px;
+  background: var(--primary-bg); border: 1px solid var(--primary);
+  border-radius: 20px; font-size: 12px; color: var(--primary);
+  max-width: 280px;
+}
+.jf-done-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* PDCA task tabs */
 .journal-pdca-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .journal-pdca-tab {
