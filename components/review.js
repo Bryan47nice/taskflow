@@ -252,6 +252,24 @@ const Review = {
     document.getElementById('modal-journal-editor').classList.remove('hidden');
   },
 
+  // Open journal editor pre-filled with snapshot data for a past date
+  showEditorForDate(dateStr, doneTasks = []) {
+    const doneList = document.getElementById('jf-done-list');
+    doneList.innerHTML = '';
+    doneTasks.map(t => `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`)
+             .forEach(text => this._addDoneChip(text));
+
+    document.getElementById('jf-todo-list').innerHTML = '';
+    document.getElementById('jf-notes').value = '';
+    this._pdcaTasks = [];
+    this._pdcaActive = null;
+    this._renderPdcaTabs();
+
+    this._journalDateOverride = dateStr;
+    document.getElementById('journal-editor-date').textContent = dateStr;
+    document.getElementById('modal-journal-editor').classList.remove('hidden');
+  },
+
   _addDoneChip(text, list = document.getElementById('jf-done-list')) {
     const chip = document.createElement('div');
     chip.className = 'jf-done-chip';
@@ -369,7 +387,8 @@ const Review = {
   },
 
   async _uploadJournal() {
-    const today = App.getTodayKey();
+    const today = this._journalDateOverride || App.getTodayKey();
+    this._journalDateOverride = null;
     const md = this._formToMarkdown();
 
     const btn = document.getElementById('btn-journal-editor-upload');
@@ -387,6 +406,7 @@ const Review = {
 
       await GitHubAPI.putRaw(pat, repo, path, md, sha, `TaskFlow: journal ${today}`);
       App.showToast(`日誌已上傳 → ${path}`);
+      if (typeof Reminder !== 'undefined') Reminder.markJournalDone(today);
       this.hideEditor();
     } catch (e) {
       App.showToast(`上傳失敗：${e.message}`, 'error');

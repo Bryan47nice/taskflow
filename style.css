@@ -950,6 +950,24 @@ textarea { resize: vertical; min-height: 70px; }
 .error { color: var(--high); }
 .muted { color: var(--text-muted); }
 
+/* ── Reminder Banner ── */
+.reminder-banner {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 16px 10px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--primary) 10%, var(--bg));
+  border: 1px solid var(--primary);
+  border-radius: var(--radius);
+  font-size: 13px; color: var(--text);
+}
+.reminder-banner.hidden { display: none; }
+.reminder-banner-text { flex: 1; line-height: 1.4; }
+.reminder-banner-btn { font-size: 12px; padding: 4px 12px; white-space: nowrap; }
+
+/* ── Reminder Modal ── */
+.reminder-modal-box { max-width: 380px; }
+.reminder-modal-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin: 0; }
+
 /* ── App Layout ── */
 .app-layout {
   display: flex;

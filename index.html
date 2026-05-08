@@ -117,6 +117,17 @@
   <button id="timer-bar-toggle" class="timer-bar-btn">▶</button>
 </div>
 
+<!-- ── Reminder Banner (missed yesterday journal) ── -->
+<div id="reminder-banner" class="reminder-banner hidden">
+  <span class="reminder-banner-text">
+    📋 <strong id="reminder-banner-date"></strong> 的日誌未完成，已快照 <strong id="reminder-banner-count">0</strong> 件完成任務
+  </span>
+  <button class="btn btn-primary reminder-banner-btn" id="btn-reminder-banner-journal">補填日誌</button>
+  <button class="btn-icon" id="btn-reminder-banner-dismiss" title="關閉">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+</div>
+
 <!-- ── App Layout ── -->
 <div class="app-layout">
 
@@ -487,6 +498,22 @@
   </div>
 </div>
 
+<!-- ── Reminder Modal (19:00 escalation) ── -->
+<div id="reminder-modal" class="modal hidden">
+  <div class="modal-box reminder-modal-box">
+    <div class="modal-header">
+      <h2>📋 今日日誌未完成</h2>
+    </div>
+    <div class="modal-body">
+      <p class="reminder-modal-desc">今天是工作日，日誌尚未產出。<br>現在只要 1 分鐘，別讓今天的工作付諸流水。</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-reminder-dismiss">今天不做了</button>
+      <button class="btn btn-primary" id="btn-reminder-journal-now">立即產日誌</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Bottom Nav (mobile only) ── -->
 <nav class="bottom-nav" id="bottom-nav">
   <button class="bnav-btn active" data-tab="board">
@@ -523,6 +550,7 @@
 <script src="components/stats-panel.js"></script>
 <script src="components/scratch.js"></script>
 <script src="components/mobile-nav.js"></script>
+<script src="components/reminder.js"></script>
 <script src="app.js"></script>
 
 </body>

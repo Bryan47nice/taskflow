@@ -43,6 +43,7 @@ const App = {
     if (typeof StatsPanel !== 'undefined') StatsPanel.refresh();
     this._initPanelResize();
     this._initKeyboardShortcuts();
+    if (typeof Reminder !== 'undefined') Reminder.init();
   },
 
   _initPanelResize() {
