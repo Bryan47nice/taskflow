@@ -42,6 +42,7 @@ const App = {
     if (typeof Timer !== 'undefined') Timer.render();
     if (typeof StatsPanel !== 'undefined') StatsPanel.refresh();
     this._initPanelResize();
+    this._initKeyboardShortcuts();
   },
 
   _initPanelResize() {
@@ -51,7 +52,7 @@ const App = {
 
     // Restore saved width
     const saved = localStorage.getItem('taskflow_panel_width');
-    if (saved) panel.style.width = saved + 'px';
+    if (saved && window.innerWidth > 1023) panel.style.width = saved + 'px';
 
     let startX, startW;
 
@@ -85,6 +86,19 @@ const App = {
     handle.addEventListener('dblclick', () => {
       panel.style.width = '';
       localStorage.removeItem('taskflow_panel_width');
+    });
+  },
+
+  _initKeyboardShortcuts() {
+    document.addEventListener('keydown', e => {
+      if (e.key !== '+') return;
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      const modals = ['modal-triage', 'modal-pdca', 'modal-review',
+                      'modal-journal-editor', 'modal-settings'];
+      if (modals.some(id => !document.getElementById(id)?.classList.contains('hidden'))) return;
+      e.preventDefault();
+      Triage.show({}, null);
     });
   },
 

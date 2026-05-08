@@ -1020,6 +1020,7 @@ textarea { resize: vertical; min-height: 70px; }
   border-radius: var(--radius);
   padding: 14px;
   min-height: 20px; /* placeholder height while empty */
+  flex-shrink: 0;   /* prevent panel from compressing cards */
 }
 .side-card:empty { display: none; }
 
@@ -1067,6 +1068,9 @@ textarea { resize: vertical; min-height: 70px; }
   .side-panel.mobile-visible {
     display: flex; flex-direction: column;
     padding: 12px; gap: 10px;
+    width: 100%;
+    position: static;
+    max-height: none;
   }
 
   /* Timer Bar */
