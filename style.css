@@ -728,7 +728,7 @@ textarea { resize: vertical; min-height: 70px; }
 #pdca-source { font-size: 12px; color: var(--text-muted); }
 #pdca-source a { color: var(--primary); }
 
-.pdca-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pdca-fields { display: grid; grid-template-columns: 1fr; gap: 12px; }
 
 @media (max-width: 500px) {
   .pdca-fields { grid-template-columns: 1fr; }
