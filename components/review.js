@@ -402,16 +402,28 @@ const Review = {
     btn.textContent = '上傳中…';
 
     const path = `taskflow/journal/${today}.md`;
-    const { pat, repo } = App.settings;
+    const { pat, repo, obsidianRepo } = App.settings;
+    const obsidianPath = `02-Areas/CMoney-流量/工作日誌/${today}.md`;
     try {
+      // ── 主 repo 上傳 ──
       let sha = null;
-      try {
-        const res = await GitHubAPI.getRaw(pat, repo, path);
-        sha = res.sha;
-      } catch (_) { /* 新檔案 */ }
-
+      try { const res = await GitHubAPI.getRaw(pat, repo, path); sha = res.sha; } catch (_) {}
       await GitHubAPI.putRaw(pat, repo, path, md, sha, `TaskFlow: journal ${today}`);
-      App.showToast(`日誌已上傳 → ${path}`);
+
+      // ── Obsidian repo 雙推 ──
+      if (obsidianRepo) {
+        try {
+          let obSha = null;
+          try { const res = await GitHubAPI.getRaw(pat, obsidianRepo, obsidianPath); obSha = res.sha; } catch (_) {}
+          await GitHubAPI.putRaw(pat, obsidianRepo, obsidianPath, md, obSha, `TaskFlow: journal ${today}`);
+          App.showToast(`日誌已上傳 → ${path}　+ Obsidian ✓`);
+        } catch (e2) {
+          App.showToast(`主倉上傳成功，Obsidian 失敗：${e2.message}`, 'error');
+        }
+      } else {
+        App.showToast(`日誌已上傳 → ${path}`);
+      }
+
       if (typeof Reminder !== 'undefined') Reminder.markJournalDone(today);
       this.hideEditor();
     } catch (e) {

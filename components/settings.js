@@ -7,6 +7,7 @@ const Settings = {
     const s = App.settings;
     document.getElementById('s-pat').value = s.pat || '';
     document.getElementById('s-repo').value = s.repo || '';
+    document.getElementById('s-obsidian-repo').value = s.obsidianRepo || '';
     document.getElementById('s-hours').value = s.dailyHours || 8;
     document.getElementById('s-claude-key').value = s.claudeKey || '';
     document.getElementById('s-cal-id').value = s.calClientId || '';
@@ -21,6 +22,7 @@ const Settings = {
   async save() {
     const pat = document.getElementById('s-pat').value.trim();
     const repo = document.getElementById('s-repo').value.trim();
+    const obsidianRepo = document.getElementById('s-obsidian-repo').value.trim();
     const dailyHours = parseFloat(document.getElementById('s-hours').value) || 8;
     const claudeKey = document.getElementById('s-claude-key').value.trim();
     const calClientId = document.getElementById('s-cal-id').value.trim();
@@ -37,7 +39,7 @@ const Settings = {
       return;
     }
 
-    App.saveSettings({ pat, repo, dailyHours, claudeKey, calClientId });
+    App.saveSettings({ pat, repo, obsidianRepo, dailyHours, claudeKey, calClientId });
     this._setStatus('已儲存', 'ok');
     setTimeout(() => {
       this.hide();
@@ -57,10 +59,11 @@ const Settings = {
     document.getElementById('btn-settings-cancel').addEventListener('click', () => {
       if (App.settings.pat) this.hide();
     });
-    document.getElementById('s-repo').addEventListener('input', e => {
-      // Auto-remove leading https://github.com/
-      const v = e.target.value.replace('https://github.com/', '').replace(/\/$/, '');
-      if (v !== e.target.value) e.target.value = v;
+    ['s-repo', 's-obsidian-repo'].forEach(id => {
+      document.getElementById(id)?.addEventListener('input', e => {
+        const v = e.target.value.replace('https://github.com/', '').replace(/\/$/, '');
+        if (v !== e.target.value) e.target.value = v;
+      });
     });
   }
 };
