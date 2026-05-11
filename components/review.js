@@ -216,14 +216,16 @@ const Review = {
 
   // ── 日誌編輯器 ────────────────────────────────────────────
 
-  _pdcaTasks: [],      // [{ id, title, plan, do, check, act }]
-  _pdcaActive: null,   // current active task id
+  _pdcaTasks: [],         // [{ id, title, plan, do, check, act }]
+  _pdcaActive: null,      // current active task id
+  _journalDoneTasks: [],  // task objects to delete after journal submit
 
   showEditor() {
     const today = App.getTodayKey();
     const tasks = App.tasks;
     const done       = tasks.filter(t => (t.done || t.status === 'done') &&
       (t.completedAt ? t.completedAt.startsWith(today) : t.dayKey === today));
+    this._journalDoneTasks = done;
     const inProgress = tasks.filter(t => t.status === 'in-progress' && (t.deadline === 'today' || t.dayKey === today));
     const todo       = tasks.filter(t => t.status === 'todo' && (t.deadline === 'today' || t.dayKey === today));
 
@@ -255,6 +257,7 @@ const Review = {
 
   // Open journal editor pre-filled with snapshot data for a past date
   showEditorForDate(dateStr, doneTasks = [], doingTasks = []) {
+    this._journalDoneTasks = doneTasks;
     const doneList = document.getElementById('jf-done-list');
     doneList.innerHTML = '';
     doneTasks.map(t => `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`)
@@ -425,6 +428,11 @@ const Review = {
       }
 
       if (typeof Reminder !== 'undefined') Reminder.markJournalDone(today);
+      // 清除已完成任務（日誌送出即代表該任務週期結束）
+      for (const t of this._journalDoneTasks) {
+        if (t.id) await App.deleteTask(t.id);
+      }
+      this._journalDoneTasks = [];
       this.hideEditor();
     } catch (e) {
       App.showToast(`上傳失敗：${e.message}`, 'error');
