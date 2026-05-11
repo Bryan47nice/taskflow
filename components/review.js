@@ -223,7 +223,7 @@ const Review = {
     const today = App.getTodayKey();
     const tasks = App.tasks;
     const done       = tasks.filter(t => (t.done || t.status === 'done') &&
-      t.completedAt?.startsWith(today));
+      (t.completedAt ? t.completedAt.startsWith(today) : t.dayKey === today));
     const inProgress = tasks.filter(t => t.status === 'in-progress' && (t.deadline === 'today' || t.dayKey === today));
     const todo       = tasks.filter(t => t.status === 'todo' && (t.deadline === 'today' || t.dayKey === today));
 
