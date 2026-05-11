@@ -264,7 +264,9 @@ const Review = {
     doingTasks.map(t => `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`)
               .forEach(text => this._addDoneChip(text, todoList));
     document.getElementById('jf-notes').value = '';
-    this._pdcaTasks = [];
+    this._pdcaTasks = [...doneTasks, ...doingTasks]
+      .filter(t => t.pdca && Object.values(t.pdca).some(v => v?.trim()))
+      .map(t => ({ id: t.id, title: t.title, plan: t.pdca.plan || '', do: t.pdca.do || '', check: t.pdca.check || '', act: t.pdca.act || '' }));
     this._pdcaActive = null;
     this._renderPdcaTabs();
 
