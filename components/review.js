@@ -253,13 +253,16 @@ const Review = {
   },
 
   // Open journal editor pre-filled with snapshot data for a past date
-  showEditorForDate(dateStr, doneTasks = []) {
+  showEditorForDate(dateStr, doneTasks = [], doingTasks = []) {
     const doneList = document.getElementById('jf-done-list');
     doneList.innerHTML = '';
     doneTasks.map(t => `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`)
              .forEach(text => this._addDoneChip(text));
 
-    document.getElementById('jf-todo-list').innerHTML = '';
+    const todoList = document.getElementById('jf-todo-list');
+    todoList.innerHTML = '';
+    doingTasks.map(t => `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`)
+              .forEach(text => this._addDoneChip(text, todoList));
     document.getElementById('jf-notes').value = '';
     this._pdcaTasks = [];
     this._pdcaActive = null;

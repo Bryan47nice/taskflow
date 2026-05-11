@@ -4,6 +4,7 @@ const Reminder = {
   _DONE_KEY:     'taskflow_journal_done',
   _REMINDED_KEY: 'taskflow_reminded',
   _SNAPSHOT_KEY: 'taskflow_eod_snapshot',
+  _bannerDismissedThisSession: false,
 
   // ── Public API ───────────────────────────────────────────────
   markJournalDone(dateKey) {
@@ -35,16 +36,16 @@ const Reminder = {
     });
 
     document.getElementById('btn-reminder-banner-journal')?.addEventListener('click', async () => {
-      document.getElementById('reminder-banner')?.classList.add('hidden');
       const snap = JSON.parse(localStorage.getItem(this._SNAPSHOT_KEY) || 'null');
       if (snap && typeof Review !== 'undefined' && Review.showEditorForDate) {
-        Review.showEditorForDate(snap.date, snap.doneTasks || []);
+        Review.showEditorForDate(snap.date, snap.doneTasks || [], snap.doingTasks || []);
       } else {
         document.getElementById('btn-journal')?.click();
       }
     });
 
     document.getElementById('btn-reminder-banner-dismiss')?.addEventListener('click', () => {
+      this._bannerDismissedThisSession = true;
       document.getElementById('reminder-banner')?.classList.add('hidden');
     });
   },
@@ -57,6 +58,8 @@ const Reminder = {
 
     // Midnight snapshot window: 00:00–00:59
     if (h === 0) { await this._maybeTakeSnapshot(); return; }
+
+    await this._checkMissedJournal();
 
     // Evening window only
     if (h < 18 || h > 23) return;
@@ -80,6 +83,7 @@ const Reminder = {
 
   // ── Page-load: check for unfinished yesterday ────────────────
   async _checkMissedJournal() {
+    if (this._bannerDismissedThisSession) return;
     const snap = JSON.parse(localStorage.getItem(this._SNAPSHOT_KEY) || 'null');
     if (!snap) return;
 
@@ -107,9 +111,10 @@ const Reminder = {
 
     const tasks = typeof App !== 'undefined' ? App.tasks : [];
     localStorage.setItem(this._SNAPSHOT_KEY, JSON.stringify({
-      date: yesterday,
-      doneTasks: tasks.filter(t => t.status === 'done'),
-      takenAt:   new Date().toISOString()
+      date:       yesterday,
+      doneTasks:  tasks.filter(t => t.status === 'done'),
+      doingTasks: tasks.filter(t => t.status === 'doing'),
+      takenAt:    new Date().toISOString()
     }));
   },
 
