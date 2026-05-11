@@ -222,7 +222,8 @@ const Review = {
   showEditor() {
     const today = App.getTodayKey();
     const tasks = App.tasks;
-    const done       = tasks.filter(t => (t.done || t.status === 'done') && t.dayKey === today);
+    const done       = tasks.filter(t => (t.done || t.status === 'done') &&
+      (t.dayKey === today || t.deadline === 'today' || t.completedAt?.startsWith(today)));
     const inProgress = tasks.filter(t => t.status === 'in-progress' && (t.deadline === 'today' || t.dayKey === today));
     const todo       = tasks.filter(t => t.status === 'todo' && (t.deadline === 'today' || t.dayKey === today));
 
