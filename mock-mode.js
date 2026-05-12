@@ -82,12 +82,12 @@
       urgency: 'medium',
       estimate: '15m',
       deadline: 'today',
-      status: 'done',
-      done: true,
+      status: 'todo',
+      done: false,
       source: null,
-      pdca: { plan: '列出昨日進度與今日計畫', do: '已整理好三點更新', check: '準備充分', act: '' },
+      pdca: { plan: '列出昨日進度與今日計畫', do: '', check: '', act: '' },
       createdAt: new Date().toISOString(),
-      completedAt: new Date().toISOString(),
+      completedAt: null,
       dayKey: today
     }
   ];

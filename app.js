@@ -256,8 +256,8 @@ const App = {
     let available = HonestLimit.calculateAvailable(todayTasks, stats);
     const meetMin = Calendar.getMeetingMinutes();
     if (meetMin > 0) available = Math.max(0, available - meetMin);
-    const completed = HonestLimit.completedMinutesToday(todayTasks);
-    const scheduled = HonestLimit.scheduledMinutesToday(todayTasks);
+    const completed = HonestLimit.completedMinutesToday(this.tasks, today);
+    const scheduled = HonestLimit.scheduledMinutesToday(this.tasks);
     document.getElementById('work-hours').textContent = HonestLimit.getMessage(completed, available, scheduled);
   },
 
