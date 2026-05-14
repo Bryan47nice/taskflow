@@ -47,7 +47,7 @@ const Calendar = {
             return;
           }
           console.log('[Calendar] OAuth success, token received');
-          GCalAPI.setToken(resp.access_token);
+          GCalAPI.setToken(resp.access_token, resp.expires_in);
           document.getElementById('cal-panel').classList.remove('hidden');
           this._loadEvents();
         }

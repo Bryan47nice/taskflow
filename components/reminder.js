@@ -44,6 +44,11 @@ const Reminder = {
       }
     });
 
+    document.getElementById('btn-reminder-banner-done')?.addEventListener('click', () => {
+      const snap = JSON.parse(localStorage.getItem(this._SNAPSHOT_KEY) || 'null');
+      this.markJournalDone(snap?.date);
+    });
+
     document.getElementById('btn-reminder-banner-dismiss')?.addEventListener('click', () => {
       this._bannerDismissedThisSession = true;
       document.getElementById('reminder-banner')?.classList.add('hidden');
