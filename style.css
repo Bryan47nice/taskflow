@@ -741,6 +741,9 @@ textarea { resize: vertical; min-height: 70px; }
 .pdca-link-edit-row .input-name { flex: 0 0 100px; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; color: var(--text); padding: 5px 8px; font-size: 12px; }
 .pdca-link-edit-row .input-url { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; color: var(--text); padding: 5px 8px; font-size: 12px; }
 .pdca-link-edit-row .btn-link-save { padding: 4px 10px; font-size: 12px; background: var(--primary); color: #fff; border: none; border-radius: 5px; cursor: pointer; white-space: nowrap; }
+/* C 主題 primary 是黑/白，link-save 文字需要對比色 */
+body[data-theme="c-light"] .btn-link-save { background: #0A0A0A; color: #fff; }
+body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D; }
 .pdca-link-edit-row .btn-link-cancel { padding: 4px 8px; font-size: 12px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 5px; cursor: pointer; }
 .pdca-links-add { width: 100%; padding: 5px 0; border: 1px dashed var(--border); border-radius: 6px; background: transparent; color: var(--text-muted); font-size: 12px; cursor: pointer; margin-top: 2px; }
 .pdca-links-add:hover { border-color: var(--primary); color: var(--primary); }
