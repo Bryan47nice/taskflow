@@ -25,26 +25,35 @@ const Calendar = {
 
   _requestAuth() {
     const clientId = App.settings.calClientId;
+    console.log('[Calendar] _requestAuth start', { clientId: clientId ? clientId.slice(0, 20) + '…' : '(empty)', origin: location.origin });
     if (!clientId) {
       App.showToast('請先在設定填入 Google Calendar OAuth Client ID', 'error');
       return;
     }
     if (typeof google === 'undefined') {
+      console.warn('[Calendar] google object undefined — GSI script not loaded');
       App.showToast('Google 服務未載入，請確認網路連線', 'error');
       return;
     }
     if (!this._tokenClient) {
+      console.log('[Calendar] initTokenClient', clientId.slice(0, 20) + '…');
       this._tokenClient = google.accounts.oauth2.initTokenClient({
         client_id: clientId,
         scope: 'https://www.googleapis.com/auth/calendar.events.readonly',
         callback: resp => {
-          if (resp.error) { App.showToast(`授權失敗：${resp.error}`, 'error'); return; }
+          if (resp.error) {
+            console.error('[Calendar] OAuth error', resp.error, resp);
+            App.showToast(`授權失敗：${resp.error}`, 'error');
+            return;
+          }
+          console.log('[Calendar] OAuth success, token received');
           GCalAPI.setToken(resp.access_token);
           document.getElementById('cal-panel').classList.remove('hidden');
           this._loadEvents();
         }
       });
     }
+    console.log('[Calendar] requestAccessToken');
     this._tokenClient.requestAccessToken();
   },
 
