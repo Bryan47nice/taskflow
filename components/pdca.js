@@ -105,15 +105,26 @@ const PDCA = {
 
   _renderDeadlineBtns() {
     const val = this._deadlineVal;
-    const isCustomDate = !['today', 'tomorrow', 'backlog', '_date'].includes(val);
-    const showInput = isCustomDate || val === '_date';
+
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const todayKey = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    const tom = new Date(now); tom.setDate(tom.getDate() + 1);
+    const tomorrowKey = `${tom.getFullYear()}-${pad(tom.getMonth()+1)}-${pad(tom.getDate())}`;
+
+    let effectiveVal = val;
+    if (val === todayKey)          effectiveVal = 'today';
+    else if (val === tomorrowKey)  effectiveVal = 'tomorrow';
+
+    const isCustomDate = !['today', 'tomorrow', 'backlog', '_date'].includes(effectiveVal);
+    const showInput = isCustomDate || effectiveVal === '_date';
 
     document.querySelectorAll('.pdca-dl-btn').forEach(btn => {
       const v = btn.dataset.value;
       if (v === '_date') {
         btn.classList.toggle('selected', showInput);
       } else {
-        btn.classList.toggle('selected', v === val);
+        btn.classList.toggle('selected', v === effectiveVal);
       }
     });
 
@@ -341,7 +352,8 @@ const PDCA = {
       dateFormat: 'Y-m-d',
       onChange: ([date]) => {
         if (!date) return;
-        this._deadlineVal = date.toISOString().slice(0, 10);
+        const _pad = n => String(n).padStart(2, '0');
+        this._deadlineVal = `${date.getFullYear()}-${_pad(date.getMonth()+1)}-${_pad(date.getDate())}`;
         this._setDirty(true);
         this._renderDeadlineBtns();
       }
