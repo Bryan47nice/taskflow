@@ -4,6 +4,9 @@ const PDCA = {
   _dirty: false,
   _deadlineVal: 'today',
   _dlPicker: null,
+  _links: [],
+  _linksExpanded: false,
+  _editingLinkIdx: null,
 
   _setDirty(val) {
     this._dirty = val;
@@ -48,6 +51,12 @@ const PDCA = {
     } else {
       srcEl.classList.add('hidden');
     }
+
+    // Links section
+    this._links = this._normalizeLinks(task.links);
+    this._linksExpanded = false;
+    this._editingLinkIdx = null;
+    this._renderLinksSection();
 
     // PDCA fields
     const p = task.pdca || {};
@@ -135,6 +144,7 @@ const PDCA = {
     const deadlineSave = this._deadlineVal === '_date' ? 'today' : this._deadlineVal;
     const updates = {
       pdca,
+      links: this._links.slice(),
       status: newStatus,
       urgency: document.getElementById('pdca-urgency').value,
       estimate: this._getEstimate(),
@@ -175,7 +185,125 @@ const PDCA = {
     );
   },
 
+  _normalizeLinks(raw) {
+    if (!Array.isArray(raw)) return [];
+    return raw.map(l => {
+      if (typeof l === 'string') return { name: '', url: l };
+      return { name: l.name || '', url: l.url || '' };
+    });
+  },
+
+  _renderLinksSection() {
+    const container = document.getElementById('pdca-links-section');
+    if (!container) return;
+    const VISIBLE = 3;
+    const links = this._links;
+    const expanded = this._linksExpanded;
+    const editIdx = this._editingLinkIdx;
+
+    const effectiveExpanded = (editIdx !== null && editIdx >= VISIBLE) ? true : expanded;
+    const visibleLinks = effectiveExpanded ? links : links.slice(0, VISIBLE);
+    const hiddenCount = links.length - VISIBLE;
+
+    let html = '<div class="pdca-links-header"><label>相關連結</label></div>';
+
+    visibleLinks.forEach((link, i) => {
+      if (editIdx === i) {
+        html += `<div class="pdca-link-edit-row">
+          <input class="input-name" type="text" placeholder="連結名稱" value="${this._esc(link.name)}" data-field="name">
+          <input class="input-url" type="text" placeholder="https://..." value="${this._esc(link.url)}" data-field="url">
+          <button class="btn-link-save" data-action="save-link" data-idx="${i}">儲存</button>
+          <button class="btn-link-cancel" data-action="cancel-link" data-idx="${i}">取消</button>
+        </div>`;
+      } else {
+        const safeUrl = this._safeUrl(link.url);
+        const displayName = this._esc(link.name) || `<span style="color:var(--text-muted);font-style:italic">無名稱</span>`;
+        html += `<div class="pdca-link-row">
+          <span class="pdca-link-name" title="${this._esc(link.name)}">${displayName}</span>
+          <a class="pdca-link-url" href="${safeUrl}" target="_blank" rel="noopener" title="${this._esc(link.url)}">${this._esc(link.url)}</a>
+          <div class="pdca-link-actions">
+            <button class="btn-icon" style="padding:3px;font-size:13px" data-action="edit-link" data-idx="${i}" title="編輯">✎</button>
+            <button class="btn-icon" style="padding:3px;font-size:13px" data-action="delete-link" data-idx="${i}" title="刪除">✕</button>
+          </div>
+        </div>`;
+      }
+    });
+
+    if (!effectiveExpanded && hiddenCount > 0) {
+      html += `<button class="pdca-links-toggle" data-action="expand-links">▼ 顯示另外 ${hiddenCount} 個連結</button>`;
+    } else if (effectiveExpanded && links.length > VISIBLE) {
+      html += `<button class="pdca-links-toggle" data-action="collapse-links">▲ 收合</button>`;
+    }
+
+    if (editIdx === -1) {
+      html += `<div class="pdca-link-edit-row">
+        <input class="input-name" type="text" placeholder="連結名稱" data-field="name">
+        <input class="input-url" type="text" placeholder="https://..." data-field="url">
+        <button class="btn-link-save" data-action="save-link" data-idx="-1">儲存</button>
+        <button class="btn-link-cancel" data-action="cancel-link" data-idx="-1">取消</button>
+      </div>`;
+    } else {
+      html += `<button class="pdca-links-add" data-action="add-link">＋ 新增連結</button>`;
+    }
+
+    container.innerHTML = html;
+
+    if (editIdx !== null) {
+      const editRow = container.querySelector('.pdca-link-edit-row');
+      if (editRow) {
+        const first = editRow.querySelector('input[data-field="name"]');
+        if (first) setTimeout(() => first.focus(), 0);
+      }
+    }
+  },
+
+  _handleLinksClick(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const idx = parseInt(btn.dataset.idx, 10);
+
+    if (action === 'edit-link') {
+      this._editingLinkIdx = idx;
+      this._renderLinksSection();
+    } else if (action === 'delete-link') {
+      this._links.splice(idx, 1);
+      if (this._editingLinkIdx === idx) this._editingLinkIdx = null;
+      this._setDirty(true);
+      this._renderLinksSection();
+    } else if (action === 'save-link') {
+      const editRow = btn.closest('.pdca-link-edit-row');
+      const name = editRow.querySelector('[data-field="name"]').value.trim();
+      const url = editRow.querySelector('[data-field="url"]').value.trim();
+      if (!url) {
+        editRow.querySelector('[data-field="url"]').focus();
+        return;
+      }
+      if (idx === -1) {
+        this._links.push({ name, url });
+      } else {
+        this._links[idx] = { name, url };
+      }
+      this._editingLinkIdx = null;
+      this._setDirty(true);
+      this._renderLinksSection();
+    } else if (action === 'cancel-link') {
+      this._editingLinkIdx = null;
+      this._renderLinksSection();
+    } else if (action === 'add-link') {
+      this._editingLinkIdx = -1;
+      this._renderLinksSection();
+    } else if (action === 'expand-links') {
+      this._linksExpanded = true;
+      this._renderLinksSection();
+    } else if (action === 'collapse-links') {
+      this._linksExpanded = false;
+      this._renderLinksSection();
+    }
+  },
+
   init() {
+    document.getElementById('pdca-links-section').addEventListener('click', e => this._handleLinksClick(e));
     document.getElementById('btn-pdca-save').addEventListener('click', () => this.save());
     document.getElementById('btn-pdca-delete').addEventListener('click', () => this.deleteTask());
     document.getElementById('btn-pdca-close').addEventListener('click', () => this.hide());

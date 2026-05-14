@@ -728,6 +728,25 @@ textarea { resize: vertical; min-height: 70px; }
 #pdca-source { font-size: 12px; color: var(--text-muted); }
 #pdca-source a { color: var(--primary); }
 
+/* ── PDCA links section ── */
+.pdca-links-section { margin-bottom: 12px; }
+.pdca-links-header { display: flex; align-items: center; margin-bottom: 6px; }
+.pdca-links-header label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.pdca-link-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--surface2); border-radius: 6px; margin-bottom: 4px; border: 1px solid var(--border2); }
+.pdca-link-name { font-size: 13px; font-weight: 500; min-width: 72px; max-width: 120px; flex: 0 0 auto; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pdca-link-url { font-size: 12px; color: var(--primary); text-decoration: underline; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.pdca-link-url:hover { opacity: 0.8; }
+.pdca-link-actions { display: flex; gap: 2px; flex-shrink: 0; }
+.pdca-link-edit-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.pdca-link-edit-row .input-name { flex: 0 0 100px; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; color: var(--text); padding: 5px 8px; font-size: 12px; }
+.pdca-link-edit-row .input-url { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 5px; color: var(--text); padding: 5px 8px; font-size: 12px; }
+.pdca-link-edit-row .btn-link-save { padding: 4px 10px; font-size: 12px; background: var(--primary); color: #fff; border: none; border-radius: 5px; cursor: pointer; white-space: nowrap; }
+.pdca-link-edit-row .btn-link-cancel { padding: 4px 8px; font-size: 12px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 5px; cursor: pointer; }
+.pdca-links-add { width: 100%; padding: 5px 0; border: 1px dashed var(--border); border-radius: 6px; background: transparent; color: var(--text-muted); font-size: 12px; cursor: pointer; margin-top: 2px; }
+.pdca-links-add:hover { border-color: var(--primary); color: var(--primary); }
+.pdca-links-toggle { width: 100%; padding: 4px 0; font-size: 11px; color: var(--primary); background: none; border: none; cursor: pointer; text-align: center; margin-bottom: 2px; }
+.pdca-links-toggle:hover { opacity: 0.8; }
+
 .pdca-fields { display: grid; grid-template-columns: 1fr; gap: 12px; }
 
 @media (max-width: 500px) {
