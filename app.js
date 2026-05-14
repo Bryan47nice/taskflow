@@ -146,14 +146,23 @@ const App = {
   },
 
   async _persistTasks() {
-    this.tasksSha = await GitHubAPI.putJSON(
-      this.settings.pat,
-      this.settings.repo,
-      'taskflow/tasks.json',
-      this.tasks,
-      this.tasksSha,
-      `TaskFlow: update ${this.getTodayKey()}`
-    );
+    try {
+      this.tasksSha = await GitHubAPI.putJSON(
+        this.settings.pat, this.settings.repo, 'taskflow/tasks.json',
+        this.tasks, this.tasksSha, `TaskFlow: update ${this.getTodayKey()}`
+      );
+    } catch (e) {
+      if (!e.message.includes('409')) throw e;
+      // SHA 過期 — 重抓後重試一次
+      const { sha } = await GitHubAPI.getJSON(
+        this.settings.pat, this.settings.repo, 'taskflow/tasks.json'
+      );
+      this.tasksSha = sha;
+      this.tasksSha = await GitHubAPI.putJSON(
+        this.settings.pat, this.settings.repo, 'taskflow/tasks.json',
+        this.tasks, this.tasksSha, `TaskFlow: update ${this.getTodayKey()}`
+      );
+    }
   },
 
   // Debounced save — batches rapid changes into one API call
