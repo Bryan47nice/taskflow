@@ -247,7 +247,7 @@ const Review = {
     // PDCA tabs — done + in-progress，有任何 PDCA 資料的才顯示
     this._pdcaTasks = [...done, ...inProgress]
       .filter(t => t.pdca && Object.values(t.pdca).some(v => v?.trim()))
-      .map(t => ({ id: t.id, title: t.title, plan: t.pdca.plan || '', do: t.pdca.do || '', check: t.pdca.check || '', act: t.pdca.act || '' }));
+      .map(t => ({ id: t.id, title: t.title, plan: t.pdca.plan || '', do: t.pdca.do || '', check: t.pdca.check || '', act: t.pdca.act || '', links: t.links || [] }));
     this._pdcaActive = null;
     this._renderPdcaTabs();
 
@@ -270,7 +270,7 @@ const Review = {
     document.getElementById('jf-notes').value = '';
     this._pdcaTasks = [...doneTasks, ...doingTasks]
       .filter(t => t.pdca && Object.values(t.pdca).some(v => v?.trim()))
-      .map(t => ({ id: t.id, title: t.title, plan: t.pdca.plan || '', do: t.pdca.do || '', check: t.pdca.check || '', act: t.pdca.act || '' }));
+      .map(t => ({ id: t.id, title: t.title, plan: t.pdca.plan || '', do: t.pdca.do || '', check: t.pdca.check || '', act: t.pdca.act || '', links: t.links || [] }));
     this._pdcaActive = null;
     this._renderPdcaTabs();
 
@@ -378,6 +378,12 @@ const Review = {
         if (t.do.trim())    md += `**Do**：${t.do.trim()}\n`;
         if (t.check.trim()) md += `**Check**：${t.check.trim()}\n`;
         if (t.act.trim())   md += `**Act**：${t.act.trim()}\n`;
+        if (t.links && t.links.length) {
+          const linkLines = t.links
+            .map(l => typeof l === 'string' ? `- ${l}` : `- [${l.name || l.url}](${l.url})`)
+            .join('\n');
+          md += `**相關連結**：\n${linkLines}\n`;
+        }
       });
     }
 
