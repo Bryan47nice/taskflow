@@ -34,7 +34,11 @@ const PDCA = {
     if (task.body || task.links?.length) {
       let html = task.body ? `<p>${this._renderLinks(task.body)}</p>` : '';
       if (task.links?.length) {
-        html += task.links.map(l => `<a href="${this._safeUrl(l)}" target="_blank" rel="noopener">${this._esc(l)}</a>`).join('<br>');
+        html += task.links.map(l => {
+          const url = typeof l === 'string' ? l : (l.url || '');
+          const label = typeof l === 'string' ? l : (l.name || l.url || '');
+          return `<a href="${this._safeUrl(url)}" target="_blank" rel="noopener">${this._esc(label)}</a>`;
+        }).join('<br>');
       }
       bodyEl.innerHTML = html;
       bodyEl.classList.remove('hidden');
