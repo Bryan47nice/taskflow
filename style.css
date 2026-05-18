@@ -694,6 +694,17 @@ textarea { resize: vertical; min-height: 70px; }
 
 .triage-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
 .triage-nav .step-indicator { flex: 1; text-align: center; }
+.triage-nav-right { display: flex; gap: 8px; }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
 
 /* ── PDCA modal ── */
 .pdca-modal-box { max-width: 560px; }

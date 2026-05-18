@@ -39,7 +39,15 @@ const Triage = {
     setTimeout(() => document.getElementById('t-title')?.focus(), 50);
   },
 
-  hide() {
+  _isDirty() {
+    const title = document.getElementById('t-title')?.value.trim() || '';
+    return title.length > 0 || this._step > 1;
+  },
+
+  hide(force = false) {
+    if (!force && this._isDirty()) {
+      if (!confirm('已輸入的內容將會遺失，確定要取消新增任務嗎？')) return;
+    }
     document.getElementById('modal-triage').classList.add('hidden');
   },
 
@@ -116,7 +124,7 @@ const Triage = {
   async _save() {
     const task = App.createTask(this._data);
     await App.addTask(task);
-    this.hide();
+    this.hide(true);
     App.showToast('任務已新增');
   },
 
@@ -152,6 +160,7 @@ const Triage = {
     document.getElementById('btn-triage-next').addEventListener('click', () => this._next());
     document.getElementById('btn-triage-back').addEventListener('click', () => this._back());
     document.getElementById('btn-triage-cancel').addEventListener('click', () => this.hide());
+    document.getElementById('btn-triage-cancel-footer').addEventListener('click', () => this.hide());
     document.getElementById('btn-ai-suggest').addEventListener('click', () => this._aiSuggest());
 
     // Enter in title field = next
@@ -229,10 +238,5 @@ const Triage = {
 
     // FAB button opens triage
     document.getElementById('btn-fab').addEventListener('click', () => this.show({}, null));
-
-    // Close on overlay click
-    document.getElementById('modal-triage').addEventListener('click', e => {
-      if (e.target === document.getElementById('modal-triage')) this.hide();
-    });
   }
 };

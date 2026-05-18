@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.2 — 2026-05-18
+- fix: 新增任務 modal 防誤關閉 — 點背景不再關閉、ESC 與 × 有輸入時跳確認
+- feat: footer 新增明確「取消」按鈕
+
 ## v1.3.1 — 2026-05-18
 - fix: 行事曆事件快取至 localStorage（30min TTL），刷新自動還原
 - fix: 新增行事曆「重新整理」按鈕
