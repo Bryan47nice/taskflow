@@ -3,9 +3,33 @@ const Calendar = {
   _tokenClient: null,
   _events: [],
 
+  _saveCache(events) {
+    localStorage.setItem('taskflow_gcal_events', JSON.stringify({ events, cachedAt: Date.now() }));
+  },
+
+  _loadCache() {
+    const raw = localStorage.getItem('taskflow_gcal_events');
+    if (!raw) return null;
+    const { events, cachedAt } = JSON.parse(raw);
+    if (Date.now() - cachedAt > 30 * 60 * 1000) return null;
+    return events;
+  },
+
   init() {
     document.getElementById('btn-cal').addEventListener('click', () => this.toggle());
     document.getElementById('btn-cal-disconnect').addEventListener('click', () => this.disconnect());
+    document.getElementById('btn-cal-refresh').addEventListener('click', () => this._loadEvents());
+
+    if (GCalAPI.getToken()) {
+      const cached = this._loadCache();
+      document.getElementById('cal-panel').classList.remove('hidden');
+      if (cached) {
+        this._events = cached;
+        this._renderEvents();
+      } else {
+        this._loadEvents();
+      }
+    }
   },
 
   toggle() {
@@ -61,6 +85,7 @@ const Calendar = {
     this._setBody('<p class="cal-empty">載入中…</p>');
     try {
       this._events = await GCalAPI.getTodayEvents();
+      this._saveCache(this._events);
       this._renderEvents();
       App._updateHeader();
     } catch (e) {
@@ -79,6 +104,7 @@ const Calendar = {
     const t = GCalAPI.getToken();
     if (t && typeof google !== 'undefined') google.accounts.oauth2.revoke(t, () => {});
     GCalAPI.clearToken();
+    localStorage.removeItem('taskflow_gcal_events');
     this._events = [];
     this._tokenClient = null;
     document.getElementById('cal-panel').classList.add('hidden');
