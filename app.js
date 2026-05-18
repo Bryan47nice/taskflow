@@ -218,6 +218,15 @@ const App = {
     localStorage.setItem('taskflow_daily_log', JSON.stringify(log));
   },
 
+  applyColumnOrder(orderedIds) {
+    orderedIds.forEach((id, idx) => {
+      const task = this.tasks.find(t => t.id === id);
+      if (task) task.order = idx;
+    });
+    this._scheduleSave();
+    Kanban.render(this.tasks);
+  },
+
   async deleteTask(id) {
     this.tasks = this.tasks.filter(t => t.id !== id);
     this._scheduleSave();

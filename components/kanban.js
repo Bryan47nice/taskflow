@@ -11,12 +11,16 @@ const Kanban = {
       if (cols[st]) cols[st].push(t);
     });
 
-    // Sort each column: urgency (high first), then createdAt
+    // Sort each column: urgency (high first), then manual order, then createdAt
     const urgOrd = { high: 0, medium: 1, low: 2 };
     Object.keys(cols).forEach(k => {
       cols[k].sort((a, b) => {
         const ud = (urgOrd[a.urgency] ?? 1) - (urgOrd[b.urgency] ?? 1);
-        return ud !== 0 ? ud : (a.createdAt > b.createdAt ? 1 : -1);
+        if (ud !== 0) return ud;
+        const ao = a.order ?? Infinity;
+        const bo = b.order ?? Infinity;
+        if (ao !== bo) return ao - bo;
+        return a.createdAt > b.createdAt ? 1 : -1;
       });
     });
 
@@ -134,11 +138,14 @@ const Kanban = {
         list.classList.remove('drag-over');
         const id = e.dataTransfer.getData('taskId');
         const newStatus = list.dataset.status;
+        // Capture DOM order before updateTask triggers re-render
+        const orderedIds = [...list.querySelectorAll('.task-card')].map(c => c.dataset.id);
         await App.updateTask(id, {
           status: newStatus,
           done: newStatus === 'done',
           completedAt: newStatus === 'done' ? new Date().toISOString() : null
         });
+        App.applyColumnOrder(orderedIds);
       });
     });
   },
