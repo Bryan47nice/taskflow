@@ -12,6 +12,7 @@ const Settings = {
     document.getElementById('s-claude-key').value = s.claudeKey || '';
     document.getElementById('s-cal-id').value = s.calClientId || '';
     document.getElementById('s-status').textContent = '';
+    document.getElementById('app-version-display').textContent = `TaskFlow ${APP_VERSION}`;
     document.getElementById('modal-settings').classList.remove('hidden');
   },
 
