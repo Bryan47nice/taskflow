@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.3 — 2026-05-19
+- fix: 日誌「明日計畫」補入跨日 in-progress 任務 — 不再被「今天」條件過濾
+- fix: review.js 補上 `deadline === today` 具體日期分支，與 app.js 篩選邏輯保持一致
+
 ## v1.3.2 — 2026-05-18
 - fix: 新增任務 modal 防誤關閉 — 點背景不再關閉、ESC 與 × 有輸入時跳確認
 - feat: footer 新增明確「取消」按鈕

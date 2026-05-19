@@ -226,8 +226,10 @@ const Review = {
     const done       = tasks.filter(t => (t.done || t.status === 'done') &&
       (t.completedAt ? t.completedAt.startsWith(today) : t.dayKey === today));
     this._journalDoneTasks = done;
-    const inProgress = tasks.filter(t => t.status === 'in-progress' && (t.deadline === 'today' || t.dayKey === today));
-    const todo       = tasks.filter(t => t.status === 'todo' && (t.deadline === 'today' || t.dayKey === today));
+    // 進行中：不受「今天」限制，所有 in-progress 都要繼續做
+    const inProgress = tasks.filter(t => t.status === 'in-progress');
+    const todo       = tasks.filter(t => t.status === 'todo' &&
+      (t.deadline === 'today' || t.dayKey === today || t.deadline === today));
 
     // 今日完成（只有 done）
     const doneList = document.getElementById('jf-done-list');
