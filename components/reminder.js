@@ -35,10 +35,10 @@ const Reminder = {
       localStorage.setItem(this._REMINDED_KEY, JSON.stringify({ date: today, level: 'dismissed' }));
     });
 
-    document.getElementById('btn-reminder-banner-journal')?.addEventListener('click', async () => {
+    document.getElementById('btn-reminder-banner-journal')?.addEventListener('click', () => {
       const snap = JSON.parse(localStorage.getItem(this._SNAPSHOT_KEY) || 'null');
       if (snap && typeof Review !== 'undefined' && Review.showEditorForDate) {
-        Review.showEditorForDate(snap.date, snap.doneTasks || [], snap.doingTasks || []);
+        Review.showEditorForDate(snap.date);
       } else {
         document.getElementById('btn-journal')?.click();
       }
@@ -137,8 +137,13 @@ const Reminder = {
     const el = id => document.getElementById(id);
     const dateEl  = el('reminder-banner-date');
     const countEl = el('reminder-banner-count');
+    // 即時掃 App.tasks，按 completedAt 統計當日完成數 — 與補填 modal 帶入的清單一致
+    const liveDoneCount = (typeof App !== 'undefined' ? App.tasks : [])
+      .filter(t => (t.done || t.status === 'done') &&
+        (t.completedAt ? t.completedAt.startsWith(snap.date) : t.dayKey === snap.date))
+      .length;
     if (dateEl)  dateEl.textContent  = snap.date;
-    if (countEl) countEl.textContent = snap.doneTasks?.length ?? 0;
+    if (countEl) countEl.textContent = liveDoneCount;
     banner.classList.remove('hidden');
   },
 

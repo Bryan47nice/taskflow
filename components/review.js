@@ -220,14 +220,16 @@ const Review = {
   _pdcaActive: null,      // current active task id
   _journalDoneTasks: [],  // task objects to delete after journal submit
 
-  showEditor() {
+  showEditor(dateStr = null) {
     const today = App.getTodayKey();
+    const date  = dateStr || today;
     const tasks = App.tasks;
     const done       = tasks.filter(t => (t.done || t.status === 'done') &&
-      (t.completedAt ? t.completedAt.startsWith(today) : t.dayKey === today));
+      (t.completedAt ? t.completedAt.startsWith(date) : t.dayKey === date));
     this._journalDoneTasks = done;
-    // 進行中：不受「今天」限制，所有 in-progress 都要繼續做
+    // 進行中：不受日期限制，所有 in-progress 都要繼續做
     const inProgress = tasks.filter(t => t.status === 'in-progress');
+    // 明日計畫的 todo 一律以「今天」為基準（補填時「明日」= 補填當下隔天，仍從目前 todo 找）
     const todo       = tasks.filter(t => t.status === 'todo' &&
       (t.deadline === 'today' || t.dayKey === today || t.deadline === today));
 
@@ -253,32 +255,16 @@ const Review = {
     this._pdcaActive = null;
     this._renderPdcaTabs();
 
-    document.getElementById('journal-editor-date').textContent = today;
+    this._journalDateOverride = dateStr;
+    document.getElementById('journal-editor-date').textContent = date;
     document.getElementById('modal-journal-editor').classList.remove('hidden');
   },
 
-  // Open journal editor pre-filled with snapshot data for a past date
-  showEditorForDate(dateStr, doneTasks = [], doingTasks = []) {
-    this._journalDoneTasks = doneTasks;
-    const doneList = document.getElementById('jf-done-list');
-    doneList.innerHTML = '';
-    doneTasks.map(t => `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`)
-             .forEach(text => this._addDoneChip(text));
-
-    const todoList = document.getElementById('jf-todo-list');
-    todoList.innerHTML = '';
-    doingTasks.map(t => `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`)
-              .forEach(text => this._addDoneChip(text, todoList));
-    document.getElementById('jf-notes').value = '';
-    this._pdcaTasks = [...doneTasks, ...doingTasks]
-      .filter(t => t.pdca && Object.values(t.pdca).some(v => v?.trim()))
-      .map(t => ({ id: t.id, title: t.title, plan: t.pdca.plan || '', do: t.pdca.do || '', check: t.pdca.check || '', act: t.pdca.act || '', links: t.links || [] }));
-    this._pdcaActive = null;
-    this._renderPdcaTabs();
-
-    this._journalDateOverride = dateStr;
-    document.getElementById('journal-editor-date').textContent = dateStr;
-    document.getElementById('modal-journal-editor').classList.remove('hidden');
+  // Open journal editor for a past date (backfill). Delegates to showEditor;
+  // extra args kept for backward compatibility but ignored — data is recomputed
+  // live from App.tasks instead of trusting the (possibly stale) midnight snapshot.
+  showEditorForDate(dateStr) {
+    this.showEditor(dateStr);
   },
 
   _addDoneChip(text, list = document.getElementById('jf-done-list')) {

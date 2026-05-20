@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.4 — 2026-05-20
+- fix: 補填日誌改為即時掃描 App.tasks，按 completedAt 帶入該日完成任務，不再依賴可能過時的午夜快照
+- fix: 未完成日誌橫幅的「已快照 N 件完成任務」改為即時計算，與 modal 內容一致
+- refactor: review.showEditor 接受 dateStr 參數，showEditorForDate 委派給它，移除重複邏輯
+
 ## v1.3.3 — 2026-05-19
 - fix: 日誌「明日計畫」補入跨日 in-progress 任務 — 不再被「今天」條件過濾
 - fix: review.js 補上 `deadline === today` 具體日期分支，與 app.js 篩選邏輯保持一致
