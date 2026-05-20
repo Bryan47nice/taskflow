@@ -137,10 +137,10 @@ const Reminder = {
     const el = id => document.getElementById(id);
     const dateEl  = el('reminder-banner-date');
     const countEl = el('reminder-banner-count');
-    // 即時掃 App.tasks，按 completedAt 統計當日完成數 — 與補填 modal 帶入的清單一致
+    // 即時掃 App.tasks 統計目前 done 任務數 — 與補填 modal 帶入的清單一致
+    // （補填路徑不按 completedAt 過濾，把累積在 done 的事都抓回來給用戶確認）
     const liveDoneCount = (typeof App !== 'undefined' ? App.tasks : [])
-      .filter(t => (t.done || t.status === 'done') &&
-        (t.completedAt ? t.completedAt.startsWith(snap.date) : t.dayKey === snap.date))
+      .filter(t => t.done || t.status === 'done')
       .length;
     if (dateEl)  dateEl.textContent  = snap.date;
     if (countEl) countEl.textContent = liveDoneCount;

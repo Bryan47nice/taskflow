@@ -1,5 +1,5 @@
 // === TaskFlow App — main state management ===
-const APP_VERSION = 'v1.3.4';
+const APP_VERSION = 'v1.3.6';
 
 const App = {
   tasks: [],

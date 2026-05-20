@@ -224,8 +224,20 @@ const Review = {
     const today = App.getTodayKey();
     const date  = dateStr || today;
     const tasks = App.tasks;
-    const done       = tasks.filter(t => (t.done || t.status === 'done') &&
-      (t.completedAt ? t.completedAt.startsWith(date) : t.dayKey === date));
+    // 正常路徑（today）：按 completedAt 嚴格過濾今天完成的
+    // 補填路徑（dateStr）：直接帶入所有目前 done 任務——補填的精神是把累積在 done 欄
+    //   還沒被清掉的事抓回來，跟主畫面 done 欄顯示一致；completedAt 嚴格過濾在跨日情境
+    //   下會漏掉「今天才標完成的舊任務」。
+    // completedAt 以 ISO UTC 儲存，要轉本地日期才能跟 App.getTodayKey()（本地時區）比對
+    // 否則台灣（UTC+8）凌晨完成的任務 ISO 還在前一日，會被誤過濾
+    const localDayOf = iso => {
+      const d = new Date(iso);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    };
+    const done = dateStr
+      ? tasks.filter(t => t.done || t.status === 'done')
+      : tasks.filter(t => (t.done || t.status === 'done') &&
+          (t.completedAt ? localDayOf(t.completedAt) === date : t.dayKey === date));
     this._journalDoneTasks = done;
     // 進行中：不受日期限制，所有 in-progress 都要繼續做
     const inProgress = tasks.filter(t => t.status === 'in-progress');
