@@ -262,9 +262,16 @@
       <p class="settings-status" id="s-status"></p>
       <p class="settings-hint" style="text-align:right;margin-top:8px" id="app-version-display"></p>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" id="btn-settings-cancel">取消</button>
-      <button class="btn btn-primary" id="btn-settings-save">驗證並儲存</button>
+    <div class="modal-footer" style="justify-content: space-between;">
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-ghost" id="btn-settings-export" title="下載目前設定為 JSON 檔（含 PAT，請妥善保管）">匯出設定</button>
+        <button class="btn btn-ghost" id="btn-settings-import" title="從 JSON 檔還原設定">匯入設定</button>
+        <input type="file" id="s-import-file" accept=".json,application/json" hidden>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary" id="btn-settings-cancel">取消</button>
+        <button class="btn btn-primary" id="btn-settings-save">驗證並儲存</button>
+      </div>
     </div>
   </div>
 </div>
