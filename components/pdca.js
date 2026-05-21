@@ -19,7 +19,7 @@ const PDCA = {
     this._setDirty(false);
     const m = document.getElementById('modal-pdca');
 
-    document.getElementById('pdca-title').textContent = task.title;
+    document.getElementById('pdca-title').value = task.title || '';
     document.getElementById('pdca-urgency').value = task.urgency || 'medium';
 
     // Estimate — show custom input if value not in preset list
@@ -157,6 +157,8 @@ const PDCA = {
     const newStatus = document.getElementById('pdca-status').value;
     // If user clicked "指定日期" but never picked a date, fall back to 'today'
     const deadlineSave = this._deadlineVal === '_date' ? 'today' : this._deadlineVal;
+    // Empty title falls back to original — avoid making a task "nameless"
+    const titleRaw = document.getElementById('pdca-title').value.trim();
     const updates = {
       pdca,
       links: this._links.slice(),
@@ -164,6 +166,7 @@ const PDCA = {
       urgency: document.getElementById('pdca-urgency').value,
       estimate: this._getEstimate(),
       deadline: deadlineSave,
+      title: titleRaw || this._task.title,
       done: newStatus === 'done',
       completedAt: newStatus === 'done' && !this._task.completedAt ? new Date().toISOString() : this._task.completedAt
     };
@@ -331,8 +334,8 @@ const PDCA = {
       }
     });
 
-    // Dirty tracking — PDCA text areas
-    ['pdca-plan','pdca-do','pdca-check','pdca-act'].forEach(id => {
+    // Dirty tracking — title + PDCA text areas
+    ['pdca-title','pdca-plan','pdca-do','pdca-check','pdca-act'].forEach(id => {
       document.getElementById(id).addEventListener('input', () => this._setDirty(true));
     });
     // Status and urgency selects

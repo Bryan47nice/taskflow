@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.7 — 2026-05-20
+- feat: 任務詳情 modal 標題可直接編輯，hover/focus 顯示邊框；儲存時空白標題會 fallback 回原值
+
 ## v1.3.6 — 2026-05-20
 - fix: 日誌「今日完成」過濾改用本地時區比對 — completedAt 以 ISO UTC 儲存，凌晨完成的任務轉本地日期後才能正確對應 getTodayKey()
 
