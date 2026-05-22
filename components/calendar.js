@@ -11,7 +11,7 @@ const Calendar = {
     const raw = localStorage.getItem('taskflow_gcal_events');
     if (!raw) return null;
     const { events, cachedAt } = JSON.parse(raw);
-    if (Date.now() - cachedAt > 30 * 60 * 1000) return null;
+    if (new Date(cachedAt).toDateString() !== new Date().toDateString()) return null;
     return events;
   },
 
@@ -82,6 +82,9 @@ const Calendar = {
   },
 
   async _loadEvents() {
+    const btn = document.getElementById('btn-cal-refresh');
+    btn.classList.add('is-loading');
+    btn.disabled = true;
     this._setBody('<p class="cal-empty">載入中…</p>');
     try {
       this._events = await GCalAPI.getTodayEvents();
@@ -97,6 +100,9 @@ const Calendar = {
       } else {
         this._setBody('<p class="cal-empty">載入失敗，請稍後再試</p>');
       }
+    } finally {
+      btn.classList.remove('is-loading');
+      btn.disabled = false;
     }
   },
 

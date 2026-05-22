@@ -286,6 +286,20 @@ body[data-theme="c-dark"]  .btn-primary { background: #FAFAFA; color: #0D0D0D; }
   text-transform: uppercase;
   letter-spacing: .05em;
 }
+/* 刷新按鈕：平時低調，hover header 才完全顯示 */
+#btn-cal-refresh {
+  opacity: 0.25;
+  transition: opacity .2s;
+}
+.cal-panel-hdr:hover #btn-cal-refresh,
+#btn-cal-refresh:hover,
+#btn-cal-refresh.is-loading {
+  opacity: 1;
+}
+#btn-cal-refresh.is-loading svg {
+  animation: spin .8s linear infinite;
+}
+
 .cal-events { max-height: 160px; overflow-y: auto; }
 .cal-event {
   display: flex;
@@ -994,6 +1008,10 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
   75% { transform: translateX(6px); }
 }
 .shake { animation: shake .3s ease; }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
 
 /* ── Utilities ── */
 .hidden { display: none !important; }
