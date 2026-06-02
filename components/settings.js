@@ -8,6 +8,7 @@ const Settings = {
     document.getElementById('s-pat').value = s.pat || '';
     document.getElementById('s-repo').value = s.repo || '';
     document.getElementById('s-obsidian-repo').value = s.obsidianRepo || '';
+    document.getElementById('s-obsidian-folder').value = s.obsidianFolder || '';
     document.getElementById('s-hours').value = s.dailyHours || 8;
     document.getElementById('s-claude-key').value = s.claudeKey || '';
     document.getElementById('s-cal-id').value = s.calClientId || '';
@@ -24,6 +25,7 @@ const Settings = {
     const pat = document.getElementById('s-pat').value.trim();
     const repo = document.getElementById('s-repo').value.trim();
     const obsidianRepo = document.getElementById('s-obsidian-repo').value.trim();
+    const obsidianFolder = document.getElementById('s-obsidian-folder').value.trim().replace(/^\/+|\/+$/g, '');
     const dailyHours = parseFloat(document.getElementById('s-hours').value) || 8;
     const claudeKey = document.getElementById('s-claude-key').value.trim();
     const calClientId = document.getElementById('s-cal-id').value.trim();
@@ -40,7 +42,7 @@ const Settings = {
       return;
     }
 
-    App.saveSettings({ pat, repo, obsidianRepo, dailyHours, claudeKey, calClientId });
+    App.saveSettings({ pat, repo, obsidianRepo, obsidianFolder, dailyHours, claudeKey, calClientId });
     this._setStatus('已儲存', 'ok');
     setTimeout(() => {
       this.hide();
@@ -59,6 +61,7 @@ const Settings = {
       pat: document.getElementById('s-pat').value.trim(),
       repo: document.getElementById('s-repo').value.trim(),
       obsidianRepo: document.getElementById('s-obsidian-repo').value.trim(),
+      obsidianFolder: document.getElementById('s-obsidian-folder').value.trim(),
       dailyHours: parseFloat(document.getElementById('s-hours').value) || 8,
       claudeKey: document.getElementById('s-claude-key').value.trim(),
       calClientId: document.getElementById('s-cal-id').value.trim(),
@@ -91,6 +94,7 @@ const Settings = {
       if (data.pat !== undefined) document.getElementById('s-pat').value = data.pat || '';
       if (data.repo !== undefined) document.getElementById('s-repo').value = data.repo || '';
       if (data.obsidianRepo !== undefined) document.getElementById('s-obsidian-repo').value = data.obsidianRepo || '';
+      if (data.obsidianFolder !== undefined) document.getElementById('s-obsidian-folder').value = data.obsidianFolder || '';
       if (data.dailyHours !== undefined) document.getElementById('s-hours').value = data.dailyHours || 8;
       if (data.claudeKey !== undefined) document.getElementById('s-claude-key').value = data.claudeKey || '';
       if (data.calClientId !== undefined) document.getElementById('s-cal-id').value = data.calClientId || '';

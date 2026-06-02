@@ -349,9 +349,9 @@ const Review = {
   },
 
   // 將表單欄位組合成 Markdown（上傳時才轉）
-  _formToMarkdown() {
+  _formToMarkdown(dateStr) {
     this._savePdcaFields(); // 儲存目前編輯中的 tab
-    const today = App.getTodayKey();
+    const today = dateStr || App.getTodayKey();
     const doneChips = [...document.querySelectorAll('#jf-done-list .jf-done-chip span')]
       .map(s => s.textContent.trim()).filter(Boolean);
     const todoChips = [...document.querySelectorAll('#jf-todo-list .jf-done-chip span')]
@@ -404,15 +404,16 @@ const Review = {
   async _uploadJournal() {
     const today = this._journalDateOverride || App.getTodayKey();
     this._journalDateOverride = null;
-    const md = this._formToMarkdown();
+    const md = this._formToMarkdown(today);
 
     const btn = document.getElementById('btn-journal-editor-upload');
     btn.disabled = true;
     btn.textContent = '上傳中…';
 
     const path = `taskflow/journal/${today}.md`;
-    const { pat, repo, obsidianRepo } = App.settings;
-    const obsidianPath = `02-Areas/CMoney-流量/工作日誌/${today}.md`;
+    const { pat, repo, obsidianRepo, obsidianFolder } = App.settings;
+    const folder = (obsidianFolder || '02-Areas/CMoney-流量/07-工作日誌').replace(/^\/+|\/+$/g, '');
+    const obsidianPath = `${folder}/${today}.md`;
     try {
       // ── 主 repo 上傳 ──
       let sha = null;
@@ -430,7 +431,8 @@ const Review = {
           App.showToast(`主倉上傳成功，Obsidian 失敗：${e2.message}`, 'error');
         }
       } else {
-        App.showToast(`日誌已上傳 → ${path}`);
+        // obsidianRepo 未設定：明確警示，避免看起來跟「雙推成功」一樣而誤以為已同步
+        App.showToast(`日誌已上傳 → ${path}（⚠ 未設定 Obsidian repo，未同步）`, 'error');
       }
 
       if (typeof Reminder !== 'undefined') Reminder.markJournalDone(today);
