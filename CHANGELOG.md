@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.1 — 2026-06-03
+- fix: 拖曳卡片到欄位外放開或按 Escape 時，卡片不再卡在錯誤泳道；dragend 若未完成 drop 會強制還原至資料狀態
+- fix: dragleave 改用 relatedTarget 判斷，避免游標移到子卡片時 highlight 錯誤消失
+
 ## v1.5.0 — 2026-06-02
 - feat: 設定新增「Obsidian 日誌資料夾」可填欄位，日誌雙推路徑不再寫死（預設 02-Areas/CMoney-流量/07-工作日誌），避免日後在 Obsidian 改資料夾名後同步失效
 - fix: 先前雙推路徑寫死且缺 `07-` 前綴，日誌推到舊資料夾，雖顯示「+ Obsidian ✓」卻沒同步到實際 vault（已改為可設定並修正預設值）

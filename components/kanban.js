@@ -113,12 +113,18 @@ const Kanban = {
   },
 
   _setupDragDrop() {
+    let dropSucceeded = false;
+
     document.querySelectorAll('.task-card').forEach(card => {
       card.addEventListener('dragstart', e => {
+        dropSucceeded = false;
         e.dataTransfer.setData('taskId', card.dataset.id);
         card.classList.add('dragging');
       });
-      card.addEventListener('dragend', () => card.classList.remove('dragging'));
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        if (!dropSucceeded) Kanban.render(App.tasks);
+      });
     });
 
     document.querySelectorAll('.task-list').forEach(list => {
@@ -132,9 +138,12 @@ const Kanban = {
           else list.appendChild(dragging);
         }
       });
-      list.addEventListener('dragleave', () => list.classList.remove('drag-over'));
+      list.addEventListener('dragleave', e => {
+        if (!list.contains(e.relatedTarget)) list.classList.remove('drag-over');
+      });
       list.addEventListener('drop', async e => {
         e.preventDefault();
+        dropSucceeded = true;
         list.classList.remove('drag-over');
         const id = e.dataTransfer.getData('taskId');
         const newStatus = list.dataset.status;
