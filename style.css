@@ -1396,7 +1396,6 @@ body[data-theme="c-dark"] .flatpickr-day.today { border-color: var(--primary); }
 .task-card.search-flash { animation: searchFlash 1.5s ease; }
 @keyframes searchFlash { 0%,100% { box-shadow: none; } 25%,65% { box-shadow: 0 0 0 2px var(--primary); } }
 
-/* 卡片編輯器內的搜尋命中：欄位發光 + 內文反白 */
-.search-hit { animation: searchHit 2s ease; border-radius: 6px; }
-@keyframes searchHit { 0%,100% { box-shadow: none; } 15%,70% { box-shadow: 0 0 0 2px var(--primary); } }
+/* 卡片編輯器內的搜尋命中：每個命中欄位持久光環 + 內文反白 */
+.search-hit { box-shadow: 0 0 0 2px var(--primary); border-radius: 6px; }
 #pdca-body mark { background: var(--primary); color: var(--surface); padding: 0 2px; border-radius: 2px; }

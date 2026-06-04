@@ -17,6 +17,7 @@ const PDCA = {
   show(task, highlightQ) {
     this._task = task;
     this._setDirty(false);
+    this._clearMatchHighlight();
     const m = document.getElementById('modal-pdca');
 
     document.getElementById('pdca-title').value = task.title || '';
@@ -81,14 +82,14 @@ const PDCA = {
     if (!q) return;
     const ql = q.toLowerCase();
 
-    // 內文區（HTML div）：命中字反白 <mark>
+    // 內文區（HTML div）：命中字反白 <mark> + 持久光環
     const bodyEl = document.getElementById('pdca-body');
     if (bodyEl && !bodyEl.classList.contains('hidden') && bodyEl.textContent.toLowerCase().includes(ql)) {
       this._markTextNodes(bodyEl, q);
-      this._flashHit(bodyEl);
+      bodyEl.classList.add('search-hit');
     }
 
-    // 文字欄位（input / textarea）：發光 + 自動聚焦並選取第一個命中
+    // 文字欄位（input / textarea）：每個命中欄位都加持久光環，並聚焦+選取第一個命中
     const fieldIds = ['pdca-title', 'pdca-plan', 'pdca-do', 'pdca-check', 'pdca-act'];
     let firstHit = null;
     for (const id of fieldIds) {
@@ -96,7 +97,7 @@ const PDCA = {
       if (!f) continue;
       const idx = (f.value || '').toLowerCase().indexOf(ql);
       if (idx >= 0) {
-        this._flashHit(f);
+        f.classList.add('search-hit');
         if (!firstHit) firstHit = { f, idx };
       }
     }
@@ -110,9 +111,12 @@ const PDCA = {
     }
   },
 
-  _flashHit(el) {
-    el.classList.add('search-hit');
-    setTimeout(() => el.classList.remove('search-hit'), 2000);
+  // 清除上一次的命中光環（每次 show 開頭呼叫，避免殘留到下一張卡）
+  _clearMatchHighlight() {
+    ['pdca-title', 'pdca-plan', 'pdca-do', 'pdca-check', 'pdca-act', 'pdca-body'].forEach(id => {
+      const f = document.getElementById(id);
+      if (f) f.classList.remove('search-hit');
+    });
   },
 
   // 在節點內的文字節點包 <mark>（只動文字節點，安全不破壞既有標籤）
