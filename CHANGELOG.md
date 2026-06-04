@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.8.0 — 2026-06-04
+- feat: 「覆盤」改造為「週覆盤」——可自選起訖日期（預設本週一～今天），自動彙整區間內每天日誌的完成項目與 PDCA，並引導填寫本週反思與下週重點（下週重點預帶目前待辦）
+- feat: 週覆盤產出 markdown 雙推 GitHub 主倉 taskflow/weekly/ 與 Obsidian {資料夾}/週報/，沿用 v1.6.0 已存在防覆蓋確認；不刪任何任務
+- remove: 移除舊「覆盤」單篇日誌瀏覽/編輯功能（與直接看 Obsidian vault 重疊）
+
 ## v1.7.0 — 2026-06-04
 - remove: 移除側邊欄「便條紙」（隨手記事 + 昨日摘要）功能，及其本地 taskflow_scratch 暫存
 - remove: 移除側邊欄「近 90 天」完成熱力圖（本週統計柱狀圖保留，taskflow_daily_log 記錄不受影響）
