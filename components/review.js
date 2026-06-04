@@ -224,20 +224,9 @@ const Review = {
     const today = App.getTodayKey();
     const date  = dateStr || today;
     const tasks = App.tasks;
-    // 正常路徑（today）：按 completedAt 嚴格過濾今天完成的
-    // 補填路徑（dateStr）：直接帶入所有目前 done 任務——補填的精神是把累積在 done 欄
-    //   還沒被清掉的事抓回來，跟主畫面 done 欄顯示一致；completedAt 嚴格過濾在跨日情境
-    //   下會漏掉「今天才標完成的舊任務」。
-    // completedAt 以 ISO UTC 儲存，要轉本地日期才能跟 App.getTodayKey()（本地時區）比對
-    // 否則台灣（UTC+8）凌晨完成的任務 ISO 還在前一日，會被誤過濾
-    const localDayOf = iso => {
-      const d = new Date(iso);
-      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    };
-    const done = dateStr
-      ? tasks.filter(t => t.done || t.status === 'done')
-      : tasks.filter(t => (t.done || t.status === 'done') &&
-          (t.completedAt ? localDayOf(t.completedAt) === date : t.dayKey === date));
+    // 完成清單一律取「目前完成欄全部」——使用者可自選這份成果要產成哪一天的日誌
+    // （含補產昨天還累積在 done 欄、尚未被清掉的項目）。上傳後一律清除這些任務。
+    const done = tasks.filter(t => t.done || t.status === 'done');
     this._journalDoneTasks = done;
     // 進行中：不受日期限制，所有 in-progress 都要繼續做
     const inProgress = tasks.filter(t => t.status === 'in-progress');
@@ -267,9 +256,35 @@ const Review = {
     this._pdcaActive = null;
     this._renderPdcaTabs();
 
-    this._journalDateOverride = dateStr;
-    document.getElementById('journal-editor-date').textContent = date;
+    this._journalDate = date;
+    if (this._datePicker) this._datePicker.setDate(date, false);
+    else document.getElementById('journal-editor-date-input').value = date;
+    this._checkJournalExists(date);
     document.getElementById('modal-journal-editor').classList.remove('hidden');
+  },
+
+  // 檢查所選日期是否已有日誌（主倉 + Obsidian 倉），有就顯示警示。回傳布林。
+  async _checkJournalExists(date) {
+    const warn = document.getElementById('journal-editor-exists-warn');
+    const { pat, repo, obsidianRepo, obsidianFolder } = App.settings;
+    if (!pat || !repo) { warn.classList.add('hidden'); return false; }
+    try {
+      const mainPath = `taskflow/journal/${date}.md`;
+      const mainRes = await GitHubAPI.getRaw(pat, repo, mainPath);
+      let exists = !!mainRes.sha;
+      if (!exists && obsidianRepo) {
+        const folder = (obsidianFolder || '02-Areas/CMoney-流量/07-工作日誌').replace(/^\/+|\/+$/g, '');
+        const obRes = await GitHubAPI.getRaw(pat, obsidianRepo, `${folder}/${date}.md`);
+        exists = !!obRes.sha;
+      }
+      // 競態保護：檢查回來時若使用者已改成別的日期，忽略這次結果
+      if (date !== this._journalDate) return false;
+      warn.classList.toggle('hidden', !exists);
+      return exists;
+    } catch (_) {
+      warn.classList.add('hidden');
+      return false;
+    }
   },
 
   // Open journal editor for a past date (backfill). Delegates to showEditor;
@@ -402,8 +417,7 @@ const Review = {
   },
 
   async _uploadJournal() {
-    const today = this._journalDateOverride || App.getTodayKey();
-    this._journalDateOverride = null;
+    const today = this._journalDate || App.getTodayKey();
     const md = this._formToMarkdown(today);
 
     const btn = document.getElementById('btn-journal-editor-upload');
@@ -414,17 +428,27 @@ const Review = {
     const { pat, repo, obsidianRepo, obsidianFolder } = App.settings;
     const folder = (obsidianFolder || '02-Areas/CMoney-流量/07-工作日誌').replace(/^\/+|\/+$/g, '');
     const obsidianPath = `${folder}/${today}.md`;
+
+    // ── 先抓 SHA（順便當「已存在」判斷）：任一倉已有日誌就先提醒，避免靜默覆蓋 ──
+    let sha = null, obSha = null;
+    try { const res = await GitHubAPI.getRaw(pat, repo, path); sha = res.sha; } catch (_) {}
+    if (obsidianRepo) {
+      try { const res = await GitHubAPI.getRaw(pat, obsidianRepo, obsidianPath); obSha = res.sha; } catch (_) {}
+    }
+    if ((sha || obSha) &&
+        !confirm(`⚠ ${today} 已有日誌，請先到 Obsidian 確認是否要覆蓋。\n\n確定要覆蓋嗎？`)) {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:4px"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>上傳`;
+      return;
+    }
+
     try {
       // ── 主 repo 上傳 ──
-      let sha = null;
-      try { const res = await GitHubAPI.getRaw(pat, repo, path); sha = res.sha; } catch (_) {}
       await GitHubAPI.putRaw(pat, repo, path, md, sha, `TaskFlow: journal ${today}`);
 
       // ── Obsidian repo 雙推 ──
       if (obsidianRepo) {
         try {
-          let obSha = null;
-          try { const res = await GitHubAPI.getRaw(pat, obsidianRepo, obsidianPath); obSha = res.sha; } catch (_) {}
           await GitHubAPI.putRaw(pat, obsidianRepo, obsidianPath, md, obSha, `TaskFlow: journal ${today}`);
           App.showToast(`日誌已上傳 → ${path}　+ Obsidian ✓`);
         } catch (e2) {
@@ -466,6 +490,19 @@ const Review = {
 
     // 產日誌按鈕 → 開編輯器（不直接推）
     document.getElementById('btn-journal').addEventListener('click', () => this.showEditor());
+
+    // 日誌日期選擇器（可自選要產哪一天的日誌；不允許選未來）
+    this._datePicker = flatpickr('#journal-editor-date-input', {
+      dateFormat: 'Y-m-d',
+      maxDate: 'today',
+      onChange: ([date]) => {
+        if (!date) return;
+        const _pad = n => String(n).padStart(2, '0');
+        const ds = `${date.getFullYear()}-${_pad(date.getMonth()+1)}-${_pad(date.getDate())}`;
+        this._journalDate = ds;
+        this._checkJournalExists(ds);
+      }
+    });
 
     // 日誌編輯器
     document.getElementById('btn-journal-editor-close').addEventListener('click', () => this.hideEditor());

@@ -661,6 +661,19 @@ textarea { resize: vertical; min-height: 70px; }
 }
 #t-dl-date:focus { border-color: var(--primary); outline: none; }
 
+/* ── Journal editor date picker + 已存在警示 ── */
+/* input[type="text"] 全域規則 width:100%（specificity 0,1,1）會蓋過單一 class，
+   故用 input.<class>（同特異度、靠後勝出）把日期框收成小尺寸 */
+input.journal-editor-date-input {
+  width: 110px; padding: 3px 8px; font-size: 12px;
+  border-radius: var(--radius); border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text-muted);
+  font-family: var(--font-body); cursor: pointer; transition: border-color .15s;
+}
+input.journal-editor-date-input:focus { border-color: var(--primary); color: var(--text); outline: none; }
+.journal-exists-warn { font-size: 12px; color: var(--high); font-weight: 500; }
+.journal-exists-warn.hidden { display: none; }
+
 /* ── Settings modal ── */
 .settings-status { font-size: 12px; padding-top: 4px; }
 .settings-status.error { color: var(--high); }
@@ -822,7 +835,8 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
 /* ── Journal editor modal ── */
 .journal-editor-box { max-width: 600px; width: 96vw; }
 .journal-editor-box .modal-header { gap: 8px; }
-#journal-editor-date { flex: 1; }
+/* h2 + 日期框 + 警示靠左群組，關閉鈕推到最右 */
+.journal-editor-box .modal-header .btn-icon { margin-left: auto; }
 
 .journal-form { display: flex; flex-direction: column; gap: 12px; }
 .journal-section { display: flex; flex-direction: column; gap: 6px; }
