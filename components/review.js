@@ -121,7 +121,93 @@ const Review = {
       </div>`).join('') : '<div class="jv-empty">（無 PDCA 記錄）</div>';
   },
 
-  async _uploadWeekly() { /* Task 3 補實作 */ },
+  _weeklyToMarkdown() {
+    const start = this._weeklyStart, end = this._weeklyEnd;
+    const byDay = this._weeklyDone || [];
+    const pdca  = this._weeklyPdca || [];
+    const reflection = document.getElementById('wk-reflection').value.trim();
+    const nextweek = document.getElementById('wk-nextweek').value
+      .split('\n').map(s => s.trim()).filter(Boolean);
+    const totalItems = byDay.reduce((n, d) => n + d.items.length, 0);
+
+    let md = `# ${start} ~ ${end} 週覆盤\n\n`;
+    md += `## 本週完成總覽（共 ${totalItems} 項）\n`;
+    if (byDay.length) {
+      byDay.forEach(d => {
+        md += `### ${d.date}（週${d.label}）\n`;
+        d.items.forEach(i => { md += `- [x] ${i}\n`; });
+      });
+    } else {
+      md += `- （無）\n`;
+    }
+
+    if (pdca.length) {
+      md += `\n## PDCA 彙總\n`;
+      pdca.forEach(t => {
+        md += `\n### ${t.title}（${t.date}）\n`;
+        if (t.plan)  md += `**Plan**：${t.plan}\n`;
+        if (t.do)    md += `**Do**：${t.do}\n`;
+        if (t.check) md += `**Check**：${t.check}\n`;
+        if (t.act)   md += `**Act**：${t.act}\n`;
+      });
+    }
+
+    if (reflection) md += `\n## 本週反思\n${reflection}\n`;
+    if (nextweek.length) {
+      md += `\n## 下週重點\n`;
+      nextweek.forEach(i => { md += `- [ ] ${i}\n`; });
+    }
+    return md;
+  },
+
+  async _uploadWeekly() {
+    const start = this._weeklyStart, end = this._weeklyEnd;
+    const md = this._weeklyToMarkdown();
+
+    const btn = document.getElementById('btn-weekly-upload');
+    btn.disabled = true;
+    btn.textContent = '上傳中…';
+
+    const file = `${start}_${end}.md`;
+    const path = `taskflow/weekly/${file}`;
+    const { pat, repo, obsidianRepo, obsidianFolder } = App.settings;
+    const folder = (obsidianFolder || '02-Areas/CMoney-流量/07-工作日誌').replace(/^\/+|\/+$/g, '');
+    const obsidianPath = `${folder}/週報/${file}`;
+
+    // 先抓 SHA 當「已存在」判斷（沿用 v1.6.0 防覆蓋）
+    let sha = null, obSha = null;
+    try { const res = await GitHubAPI.getRaw(pat, repo, path); sha = res.sha; } catch (_) {}
+    if (obsidianRepo) {
+      try { const res = await GitHubAPI.getRaw(pat, obsidianRepo, obsidianPath); obSha = res.sha; } catch (_) {}
+    }
+    if ((sha || obSha) &&
+        !confirm(`⚠ ${start} ~ ${end} 週覆盤已存在，請先到 Obsidian 確認是否要覆蓋。\n\n確定要覆蓋嗎？`)) {
+      btn.disabled = false;
+      btn.textContent = '上傳';
+      return;
+    }
+
+    try {
+      await GitHubAPI.putRaw(pat, repo, path, md, sha, `TaskFlow: weekly ${start}~${end}`);
+      if (obsidianRepo) {
+        try {
+          await GitHubAPI.putRaw(pat, obsidianRepo, obsidianPath, md, obSha, `TaskFlow: weekly ${start}~${end}`);
+          App.showToast(`週覆盤已上傳 → ${path}　+ Obsidian ✓`);
+        } catch (e2) {
+          App.showToast(`主倉上傳成功，Obsidian 失敗：${e2.message}`, 'error');
+        }
+      } else {
+        App.showToast(`週覆盤已上傳 → ${path}（⚠ 未設定 Obsidian repo，未同步）`, 'error');
+      }
+      this._isDirty = false;
+      this.hide();
+    } catch (e) {
+      App.showToast(`上傳失敗：${e.message}`, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '上傳';
+    }
+  },
 
   _parseJournalMd(md) {
     const result = { done: [], todo: [], pdca: [], notes: '' };
