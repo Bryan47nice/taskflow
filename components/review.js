@@ -16,9 +16,9 @@ const Review = {
     const end   = App.getTodayKey();
     this._weeklyStart = start;
     this._weeklyEnd   = end;
-    if (this._wkStartPicker) this._wkStartPicker.setDate(start, false);
+    if (this._wkStartPicker) { this._wkStartPicker.set('maxDate', end); this._wkStartPicker.setDate(start, false); }
     else document.getElementById('wk-start').value = start;
-    if (this._wkEndPicker) this._wkEndPicker.setDate(end, false);
+    if (this._wkEndPicker) { this._wkEndPicker.set('minDate', start); this._wkEndPicker.set('maxDate', 'today'); this._wkEndPicker.setDate(end, false); }
     else document.getElementById('wk-end').value = end;
     this._prefillNextWeek();
     this._aggregateRange(start, end);
@@ -63,6 +63,12 @@ const Review = {
   async _aggregateRange(start, end) {
     const doneEl = document.getElementById('wk-done');
     const pdcaEl = document.getElementById('wk-pdca');
+    if (start > end) { // YYYY-MM-DD 字串比較即等同日期比較
+      doneEl.innerHTML = '<div class="jv-empty wk-warn">⚠ 結束日不能早於開始日</div>';
+      pdcaEl.innerHTML = '';
+      this._weeklyDone = []; this._weeklyPdca = [];
+      return;
+    }
     const { pat, repo } = App.settings;
     if (!pat || !repo) {
       doneEl.innerHTML = '<div class="jv-empty">請先設定 GitHub 連線</div>';
@@ -162,6 +168,7 @@ const Review = {
 
   async _uploadWeekly() {
     const start = this._weeklyStart, end = this._weeklyEnd;
+    if (start > end) { App.showToast('結束日不能早於開始日', 'error'); return; }
     const md = this._weeklyToMarkdown();
 
     const btn = document.getElementById('btn-weekly-upload');
@@ -518,14 +525,24 @@ const Review = {
       if (e.target === document.getElementById('modal-review')) this.hide();
     });
 
-    // 週覆盤日期區間（不允許選未來）
+    // 週覆盤日期區間（不允許選未來；結束日不可早於開始日，反之亦然）
     this._wkStartPicker = flatpickr('#wk-start', {
       dateFormat: 'Y-m-d', maxDate: 'today',
-      onChange: ([d]) => { if (!d) return; this._weeklyStart = this._fmtDate(d); this._aggregateRange(this._weeklyStart, this._weeklyEnd); }
+      onChange: ([d]) => {
+        if (!d) return;
+        this._weeklyStart = this._fmtDate(d);
+        if (this._wkEndPicker) this._wkEndPicker.set('minDate', this._weeklyStart);
+        this._aggregateRange(this._weeklyStart, this._weeklyEnd);
+      }
     });
     this._wkEndPicker = flatpickr('#wk-end', {
       dateFormat: 'Y-m-d', maxDate: 'today',
-      onChange: ([d]) => { if (!d) return; this._weeklyEnd = this._fmtDate(d); this._aggregateRange(this._weeklyStart, this._weeklyEnd); }
+      onChange: ([d]) => {
+        if (!d) return;
+        this._weeklyEnd = this._fmtDate(d);
+        if (this._wkStartPicker) this._wkStartPicker.set('maxDate', this._weeklyEnd);
+        this._aggregateRange(this._weeklyStart, this._weeklyEnd);
+      }
     });
     document.getElementById('btn-weekly-upload').addEventListener('click', () => this._uploadWeekly());
     ['wk-reflection','wk-nextweek'].forEach(id =>

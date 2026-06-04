@@ -827,6 +827,7 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
   border-radius: 8px; padding: 8px 10px;
 }
 .wk-agg-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+.wk-warn { color: var(--high); font-weight: 500; }
 .wk-day-block { margin-bottom: 8px; }
 .wk-day-head { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px; }
 
