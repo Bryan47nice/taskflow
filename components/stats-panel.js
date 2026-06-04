@@ -4,7 +4,6 @@ const StatsPanel = {
   refresh() {
     this._renderTimeline();
     this._renderStats();
-    this._renderHeatmap();
   },
 
   // ── 今日時間軸 ────────────────────────────────────────────────────
@@ -116,36 +115,6 @@ const StatsPanel = {
           </div>
         </div>` : ''}
       ${tagHtml ? `<div class="stat-tags">${tagHtml}</div>` : ''}`;
-  },
-
-  // ── 熱力圖 ────────────────────────────────────────────────────────
-  _renderHeatmap() {
-    const el = document.getElementById('panel-heatmap');
-    if (!el) return;
-    const log = JSON.parse(localStorage.getItem('taskflow_daily_log') || '{}');
-    const maxVal = Math.max(1, ...Object.values(log).map(d => d.done));
-
-    const cells = [];
-    for (let i = 89; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate() - i);
-      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      const val = log[key]?.done || 0;
-      const level = val === 0 ? 0 : Math.ceil((val / maxVal) * 4);
-      cells.push(`<div class="hm-cell lv${level}" title="${key}: ${val} 個完成"></div>`);
-    }
-
-    el.innerHTML = `
-      <div class="side-card-header">📅 近 90 天</div>
-      <div class="hm-grid">${cells.join('')}</div>
-      <div class="hm-legend">
-        <span>少</span>
-        <div class="hm-cell lv0"></div>
-        <div class="hm-cell lv1"></div>
-        <div class="hm-cell lv2"></div>
-        <div class="hm-cell lv3"></div>
-        <div class="hm-cell lv4"></div>
-        <span>多</span>
-      </div>`;
   },
 
   // ── Helpers ───────────────────────────────────────────────────────

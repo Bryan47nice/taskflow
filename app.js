@@ -1,5 +1,5 @@
 // === TaskFlow App — main state management ===
-const APP_VERSION = 'v1.6.0';
+const APP_VERSION = 'v1.7.0';
 
 const App = {
   tasks: [],
@@ -20,7 +20,6 @@ const App = {
     Calendar.init();
     Timer.init();
     StatsPanel.init();
-    Scratch.init();
     MobileNav.init();
 
     if (!this.settings.pat || !this.settings.repo) {

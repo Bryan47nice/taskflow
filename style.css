@@ -1133,9 +1133,6 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
   display: flex; align-items: center; gap: 6px;
 }
 
-/* ── Heatmap Bar (now inside side panel) ── */
-.heatmap-bar { display: none; }
-
 /* ── Timer Bar (mobile, shown when timer running) ── */
 .timer-bar {
   display: none; /* shown by mobile media query */
@@ -1327,41 +1324,6 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
 .stat-tag-bar { flex: 1; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
 .stat-tag-fill { height: 100%; background: var(--primary); opacity: .6; border-radius: 3px; }
 .stat-tag-pct { font-size: 10px; color: var(--text-muted); min-width: 28px; text-align: right; }
-
-/* ── Heatmap ── */
-.hm-header { margin-bottom: 0; }
-.hm-grid {
-  display: grid;
-  grid-template-columns: repeat(18, 1fr);
-  gap: 3px; margin-bottom: 6px;
-}
-.hm-cell {
-  aspect-ratio: 1; border-radius: 2px;
-  background: var(--border);
-}
-.hm-cell.lv1 { background: color-mix(in srgb, var(--primary) 30%, var(--border)); }
-.hm-cell.lv2 { background: color-mix(in srgb, var(--primary) 55%, var(--border)); }
-.hm-cell.lv3 { background: color-mix(in srgb, var(--primary) 80%, var(--border)); }
-.hm-cell.lv4 { background: var(--primary); }
-.hm-legend {
-  display: flex; align-items: center; gap: 4px;
-  font-size: 10px; color: var(--text-muted);
-}
-.hm-legend .hm-cell { width: 10px; height: 10px; flex-shrink: 0; }
-
-/* ── Scratch Pad ── */
-.scratch-textarea {
-  width: 100%; min-height: 90px; resize: vertical;
-  background: var(--bg); border: 1px solid var(--border);
-  border-radius: 8px; padding: 10px; font-size: 13px;
-  line-height: 1.6; color: var(--text); font-family: var(--font-body);
-  box-sizing: border-box;
-}
-.scratch-textarea:focus { outline: none; border-color: var(--primary); }
-.scratch-yesterday { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
-.scratch-yesterday-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
-.scratch-yesterday-list { margin: 0; padding-left: 16px; }
-.scratch-yesterday-list li { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
 
 /* ═══════════════════════════════════════════════════════
    Dark Theme Overrides — fix hardcoded light-bg colors
