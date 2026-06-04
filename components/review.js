@@ -61,9 +61,64 @@ const Review = {
   },
 
   async _aggregateRange(start, end) {
-    // Task 2 補實作
-    document.getElementById('wk-done').innerHTML = '<div class="jv-empty">（彙整功能待實作）</div>';
-    document.getElementById('wk-pdca').innerHTML = '';
+    const doneEl = document.getElementById('wk-done');
+    const pdcaEl = document.getElementById('wk-pdca');
+    const { pat, repo } = App.settings;
+    if (!pat || !repo) {
+      doneEl.innerHTML = '<div class="jv-empty">請先設定 GitHub 連線</div>';
+      pdcaEl.innerHTML = '';
+      return;
+    }
+    doneEl.innerHTML = '<p class="loading">彙整中…</p>';
+    pdcaEl.innerHTML = '';
+
+    const dates = this._datesInRange(start, end);
+    const token = `${start}~${end}`;
+    this._aggToken = token;
+
+    const byDay = [];   // { date, label, items: [] }
+    const pdca  = [];   // { date, title, plan, do, check, act }
+    let coverage = 0;
+
+    for (const date of dates) {
+      let content = null;
+      try {
+        const res = await GitHubAPI.getRaw(pat, repo, `taskflow/journal/${date}.md`);
+        content = res.content; // 404 → res.content === null（getRaw 不丟錯）
+      } catch (_) { content = null; }
+      if (this._aggToken !== token) return; // race 保護：區間已被改掉就放棄
+      if (!content) continue;
+      coverage++;
+      const parsed = this._parseJournalMd(content);
+      if (parsed.done.length) byDay.push({ date, label: this._weekdayLabel(date), items: parsed.done });
+      parsed.pdca.forEach(t => pdca.push({ date, ...t }));
+    }
+    if (this._aggToken !== token) return;
+
+    this._weeklyDone = byDay;
+    this._weeklyPdca = pdca;
+    this._renderAggregation(byDay, pdca, coverage, dates.length);
+  },
+
+  _renderAggregation(byDay, pdca, coverage, totalDays) {
+    const doneEl = document.getElementById('wk-done');
+    const pdcaEl = document.getElementById('wk-pdca');
+    const totalItems = byDay.reduce((n, d) => n + d.items.length, 0);
+
+    doneEl.innerHTML = `
+      <div class="wk-agg-meta">共 ${totalItems} 項・本週 ${coverage}/${totalDays} 天有日誌</div>
+      ${byDay.length ? byDay.map(d => `
+        <div class="wk-day-block">
+          <div class="wk-day-head">${d.date}（週${d.label}）</div>
+          ${d.items.map(i => `<div class="jv-item">${this._esc(i)}</div>`).join('')}
+        </div>`).join('') : '<div class="jv-empty">（無）</div>'}`;
+
+    pdcaEl.innerHTML = pdca.length ? pdca.map(t => `
+      <div class="jv-pdca-block">
+        <div class="jv-pdca-title">${this._esc(t.title)}（${t.date}）</div>
+        ${['plan','do','check','act'].map(k => t[k] ? `
+          <div class="pdca-field-row"><label>${k.charAt(0).toUpperCase()+k.slice(1)}</label><div class="jv-pdca-val">${this._esc(t[k])}</div></div>` : '').join('')}
+      </div>`).join('') : '<div class="jv-empty">（無 PDCA 記錄）</div>';
   },
 
   async _uploadWeekly() { /* Task 3 補實作 */ },
