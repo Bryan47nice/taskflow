@@ -815,22 +815,20 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
 /* ── Review modal ── */
 .review-modal-box { max-width: 600px; }
 
-.review-modal-box.reading-mode { max-width: 900px; width: 92vw; }
-.review-modal-box.reading-mode .modal-body { height: 70vh; overflow: hidden; }
-.review-modal-box.reading-mode #review-content {
-  display: flex; gap: 0; height: 100%;
+/* ── 週覆盤 ── */
+.weekly-box { max-width: 600px; width: 96vw; }
+.weekly-box .modal-header { gap: 8px; }
+.weekly-box .modal-header .btn-icon { margin-left: auto; }
+.weekly-range { display: flex; align-items: center; gap: 6px; }
+.weekly-range-sep { color: var(--text-muted); font-size: 12px; }
+.wk-agg {
+  max-height: 200px; overflow-y: auto;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px;
 }
-.review-modal-box.reading-mode .journal-list-panel {
-  width: 160px; flex-shrink: 0;
-  border-right: 1px solid var(--border);
-  padding-right: 12px; overflow-y: auto; margin-bottom: 0;
-}
-.review-modal-box.reading-mode .journal-list { margin-bottom: 0; }
-.review-modal-box.reading-mode .journal-view {
-  flex: 1; padding-left: 20px; overflow-y: auto;
-  border-top: none; padding-top: 0;
-  display: flex; flex-direction: column;
-}
+.wk-agg-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
+.wk-day-block { margin-bottom: 8px; }
+.wk-day-head { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px; }
 
 /* ── Journal editor modal ── */
 .journal-editor-box { max-width: 600px; width: 96vw; }
@@ -899,51 +897,13 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
   font-size: 12px; color: var(--text-muted); padding: 8px 0;
 }
 
-.journal-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
-.journal-item {
-  text-align: left;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  cursor: pointer;
-  font-size: 13px;
-  font-family: monospace;
-  color: var(--primary);
-  transition: background .1s;
-}
-.journal-item:hover { background: #ede9fe; }
-
-.journal-view { border-top: 1px solid var(--border); padding-top: 16px; }
-
-/* journal view — header row */
-.jv-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 14px;
-}
-.jv-header h3 { font-size: 14px; font-weight: 700; color: var(--text); margin: 0; }
-.jv-edit-actions { display: flex; align-items: center; gap: 8px; }
-.jv-mode-btn {
-  font-size: 12px; padding: 4px 10px; border-radius: 6px;
-  border: 1px solid var(--border); background: var(--surface);
-  color: var(--text-muted); cursor: pointer; transition: all .15s;
-}
-.jv-mode-btn:hover { border-color: var(--primary); color: var(--primary); }
-.jv-upload-btn { font-size: 12px; padding: 4px 12px; }
-
-/* journal view — body sections */
-.jv-body { display: flex; flex-direction: column; gap: 14px; }
-.jv-list { display: flex; flex-direction: column; gap: 4px; }
+/* 週覆盤彙整渲染共用樣式（完成項 / PDCA 區塊） */
 .jv-item {
   font-size: 13px; line-height: 1.5;
   background: var(--bg); border-radius: 6px;
   padding: 7px 10px; color: var(--text);
 }
 .jv-empty { font-size: 13px; color: var(--text-muted); padding: 4px 0; }
-.jv-notes {
-  font-size: 13px; line-height: 1.6; white-space: pre-wrap;
-  background: var(--bg); border-radius: 6px; padding: 8px 10px;
-}
 
 /* PDCA blocks in view mode */
 .jv-pdca-block {
@@ -953,23 +913,6 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
 }
 .jv-pdca-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
 .jv-pdca-val { font-size: 13px; color: var(--text); line-height: 1.5; }
-
-/* journal edit — textarea */
-.journal-md-edit {
-  width: 100%; flex: 1; min-height: 0;
-  font-family: 'Courier New', monospace;
-  font-size: 12px; line-height: 1.6;
-  background: var(--bg); border: 1px solid var(--border);
-  border-radius: 8px; padding: 12px; resize: none;
-  color: var(--text); box-sizing: border-box;
-}
-
-/* active journal item in list */
-.journal-item.active {
-  background: var(--primary-bg);
-  border-color: var(--primary);
-  color: var(--primary);
-}
 
 .journal-md {
   font-family: 'Courier New', monospace;
@@ -1371,10 +1314,6 @@ body[data-theme="b-dark"] .badge-medium,
 body[data-theme="c-dark"] .badge-medium { background: rgba(245,166,35,.15); color: var(--medium); }
 body[data-theme="b-dark"] .badge-low,
 body[data-theme="c-dark"] .badge-low { background: rgba(34,197,94,.15); color: var(--low); }
-
-/* Journal item hover: 淺紫 → surface2 */
-body[data-theme="b-dark"] .journal-item:hover,
-body[data-theme="c-dark"] .journal-item:hover { background: var(--surface2); }
 
 /* Toast: 主題化，帶邊框增加對比 */
 body[data-theme="b-dark"] #toast,
