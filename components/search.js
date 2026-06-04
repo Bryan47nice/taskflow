@@ -4,6 +4,7 @@ const Search = {
   _journalState: 'idle',  // 'idle'|'loading'|'loaded'|'error'|'no-conn'
   _expanded: {},          // {date: true}
   _loadToken: 0,
+  _active: 0,             // 鍵盤導航：目前選取的結果列索引
 
   open() {
     document.getElementById('modal-search').classList.remove('hidden');
@@ -12,6 +13,7 @@ const Search = {
     input.focus();
     this._expanded = {};
     this._journalState = 'idle';
+    this._active = 0;
     this._render();
     this._loadJournals();
   },
@@ -20,7 +22,7 @@ const Search = {
 
   isOpen() { return !document.getElementById('modal-search').classList.contains('hidden'); },
 
-  _onInput() { this._render(); },
+  _onInput() { this._active = 0; this._render(); },
 
   _query() { return (document.getElementById('search-input').value || '').trim(); },
 
@@ -72,10 +74,29 @@ const Search = {
     }
 
     el.innerHTML = html;
-    el.querySelectorAll('.search-row[data-kind="card"]').forEach(row =>
-      row.addEventListener('click', () => this._openCard(row.dataset.id)));
-    el.querySelectorAll('.search-row[data-kind="journal"]').forEach(row =>
-      row.addEventListener('click', () => { const d = row.dataset.date; this._expanded[d] = !this._expanded[d]; this._render(); }));
+    const rows = [...el.querySelectorAll('.search-row')];
+    rows.forEach((row, i) => {
+      row.addEventListener('mouseenter', () => { this._active = i; this._applyActive(); });
+      row.addEventListener('click', () => { this._active = i; this._activateRow(row); });
+    });
+    this._applyActive();
+  },
+
+  // ── 鍵盤導航 ──
+  _rows() { return [...document.querySelectorAll('#search-results .search-row')]; },
+  _applyActive() {
+    const rows = this._rows();
+    if (!rows.length) { this._active = 0; return; }
+    if (this._active < 0) this._active = 0;
+    if (this._active > rows.length - 1) this._active = rows.length - 1;
+    rows.forEach((r, i) => r.classList.toggle('search-active', i === this._active));
+    rows[this._active].scrollIntoView({ block: 'nearest' });
+  },
+  _move(delta) { this._active += delta; this._applyActive(); },
+  _activate() { const row = this._rows()[this._active]; if (row) this._activateRow(row); },
+  _activateRow(row) {
+    if (row.dataset.kind === 'card') this._openCard(row.dataset.id);
+    else { const d = row.dataset.date; this._expanded[d] = !this._expanded[d]; this._render(); }
   },
 
   // ── 卡片搜尋（全欄位）──
@@ -108,7 +129,7 @@ const Search = {
     const task = (App.tasks || []).find(t => t.id === id);
     if (!task) return;
     this.close();
-    if (typeof PDCA !== 'undefined') PDCA.show(task);
+    if (typeof PDCA !== 'undefined') PDCA.show(task, this._query());
     const card = document.querySelector(`.task-card[data-id="${id}"]`);
     if (card) {
       card.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -184,7 +205,13 @@ const Search = {
 
   init() {
     document.getElementById('btn-search').addEventListener('click', () => this.open());
-    document.getElementById('search-input').addEventListener('input', () => this._onInput());
+    const input = document.getElementById('search-input');
+    input.addEventListener('input', () => this._onInput());
+    input.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); this._move(1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); this._move(-1); }
+      else if (e.key === 'Enter') { e.preventDefault(); this._activate(); }
+    });
     document.getElementById('modal-search').addEventListener('click', e => {
       if (e.target === document.getElementById('modal-search')) this.close();
     });

@@ -14,7 +14,7 @@ const PDCA = {
     if (dot) dot.classList.toggle('visible', val);
   },
 
-  show(task) {
+  show(task, highlightQ) {
     this._task = task;
     this._setDirty(false);
     const m = document.getElementById('modal-pdca');
@@ -73,6 +73,70 @@ const PDCA = {
     document.getElementById('pdca-status').value = task.status || 'todo';
 
     m.classList.remove('hidden');
+    if (highlightQ) this._applyMatchHighlight(highlightQ);
+  },
+
+  // ── 搜尋命中標示（從搜尋面板開啟時）──────────────────────────────
+  _applyMatchHighlight(q) {
+    if (!q) return;
+    const ql = q.toLowerCase();
+
+    // 內文區（HTML div）：命中字反白 <mark>
+    const bodyEl = document.getElementById('pdca-body');
+    if (bodyEl && !bodyEl.classList.contains('hidden') && bodyEl.textContent.toLowerCase().includes(ql)) {
+      this._markTextNodes(bodyEl, q);
+      this._flashHit(bodyEl);
+    }
+
+    // 文字欄位（input / textarea）：發光 + 自動聚焦並選取第一個命中
+    const fieldIds = ['pdca-title', 'pdca-plan', 'pdca-do', 'pdca-check', 'pdca-act'];
+    let firstHit = null;
+    for (const id of fieldIds) {
+      const f = document.getElementById(id);
+      if (!f) continue;
+      const idx = (f.value || '').toLowerCase().indexOf(ql);
+      if (idx >= 0) {
+        this._flashHit(f);
+        if (!firstHit) firstHit = { f, idx };
+      }
+    }
+    if (firstHit) {
+      const { f, idx } = firstHit;
+      f.focus();
+      try { f.setSelectionRange(idx, idx + q.length); } catch (_) {}
+      f.scrollIntoView({ block: 'center' });
+    } else if (bodyEl && !bodyEl.classList.contains('hidden') && bodyEl.querySelector('mark')) {
+      bodyEl.querySelector('mark').scrollIntoView({ block: 'center' });
+    }
+  },
+
+  _flashHit(el) {
+    el.classList.add('search-hit');
+    setTimeout(() => el.classList.remove('search-hit'), 2000);
+  },
+
+  // 在節點內的文字節點包 <mark>（只動文字節點，安全不破壞既有標籤）
+  _markTextNodes(root, q) {
+    const ql = q.toLowerCase();
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    const targets = [];
+    let n;
+    while ((n = walker.nextNode())) {
+      if (n.nodeValue.toLowerCase().includes(ql)) targets.push(n);
+    }
+    for (const textNode of targets) {
+      const frag = document.createDocumentFragment();
+      let s = textNode.nodeValue, i;
+      while ((i = s.toLowerCase().indexOf(ql)) >= 0) {
+        if (i > 0) frag.appendChild(document.createTextNode(s.slice(0, i)));
+        const mark = document.createElement('mark');
+        mark.textContent = s.slice(i, i + q.length);
+        frag.appendChild(mark);
+        s = s.slice(i + q.length);
+      }
+      if (s) frag.appendChild(document.createTextNode(s));
+      textNode.parentNode.replaceChild(frag, textNode);
+    }
   },
 
   // ── Estimate helpers ──────────────────────────────────────────────
