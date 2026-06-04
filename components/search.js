@@ -117,9 +117,41 @@ const Search = {
     }
   },
 
-  // ── Task 3 補實作 ──
-  _searchJournals(q) { return []; },
-  async _loadJournals() { this._journalState = 'loaded'; this._journals = []; this._render(); },
+  // ── 近 5 天日誌 ──
+  async _loadJournals() {
+    const { pat, repo } = App.settings;
+    if (!pat || !repo) { this._journalState = 'no-conn'; this._journals = []; this._render(); return; }
+    this._journalState = 'loading';
+    this._journals = [];
+    this._render();
+    const token = ++this._loadToken;
+    const dates = this._recentDates(5);
+    const out = [];
+    try {
+      for (const date of dates) {
+        const res = await GitHubAPI.getRaw(pat, repo, `taskflow/journal/${date}.md`);
+        if (token !== this._loadToken) return; // 已被新的 open 取代
+        if (res.content) out.push({ date, label: this._weekdayLabel(date), content: res.content });
+      }
+      if (token !== this._loadToken) return;
+      this._journals = out;
+      this._journalState = 'loaded';
+    } catch (_) {
+      if (token !== this._loadToken) return;
+      this._journalState = 'error';
+    }
+    this._render();
+  },
+
+  _searchJournals(q) {
+    const ql = q.toLowerCase();
+    const out = [];
+    for (const j of this._journals) {
+      const lines = j.content.split('\n').filter(l => l.trim() && l.toLowerCase().includes(ql));
+      if (lines.length) out.push({ date: j.date, label: j.label, lines, content: j.content });
+    }
+    return out;
+  },
 
   // ── 渲染輔助 ──
   _recentDates(n) {
