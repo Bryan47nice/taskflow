@@ -45,6 +45,7 @@ const App = {
     this._initPanelResize();
     this._initKeyboardShortcuts();
     if (typeof Reminder !== 'undefined') Reminder.init();
+    if (typeof Search !== 'undefined') Search.init();
   },
 
   _initPanelResize() {
@@ -97,7 +98,7 @@ const App = {
       const tag = document.activeElement?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       const modals = ['modal-triage', 'modal-pdca', 'modal-review',
-                      'modal-journal-editor', 'modal-settings'];
+                      'modal-journal-editor', 'modal-settings', 'modal-search'];
       if (modals.some(id => !document.getElementById(id)?.classList.contains('hidden'))) return;
       e.preventDefault();
       Triage.show({}, null);

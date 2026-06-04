@@ -25,6 +25,11 @@
     <span id="work-hours"></span>
     <span id="save-indicator" class="hidden">同步中…</span>
 
+    <!-- 搜尋 -->
+    <button class="btn-icon" id="btn-search" title="搜尋（Ctrl+F）">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+
     <!-- 產日誌 -->
     <button class="btn btn-secondary btn-journal" id="btn-journal">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -176,6 +181,20 @@
 
 <!-- ── FAB ── -->
 <button id="btn-fab" title="新增任務">+</button>
+
+<!-- ======================================== -->
+<!-- Modal: Search (command palette)          -->
+<!-- ======================================== -->
+<div id="modal-search" class="modal hidden">
+  <div class="search-box">
+    <div class="search-input-row">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search-input" placeholder="搜尋卡片與近 5 天日誌…" autocomplete="off" spellcheck="false">
+      <span class="search-esc">Esc</span>
+    </div>
+    <div id="search-results" class="search-results"></div>
+  </div>
+</div>
 
 <!-- ── Toast ── -->
 <div id="toast"></div>
@@ -596,6 +615,7 @@
 <script src="components/stats-panel.js"></script>
 <script src="components/mobile-nav.js"></script>
 <script src="components/reminder.js"></script>
+<script src="components/search.js"></script>
 <script src="app.js"></script>
 
 </body>
