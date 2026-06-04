@@ -1364,3 +1364,33 @@ body[data-theme="c-dark"] .flatpickr-prev-month svg,
 body[data-theme="c-dark"] .flatpickr-next-month svg { fill: var(--text); }
 body[data-theme="b-dark"] .flatpickr-day.today,
 body[data-theme="c-dark"] .flatpickr-day.today { border-color: var(--primary); }
+
+/* ── Search command palette ── */
+#modal-search { align-items: flex-start; }
+.search-box {
+  width: 92vw; max-width: 560px; margin-top: 10vh;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0,0,0,.4);
+  display: flex; flex-direction: column; max-height: 70vh;
+}
+.search-input-row { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.search-input-row svg { color: var(--text-muted); flex-shrink: 0; }
+#search-input { flex: 1; border: none; background: transparent; color: var(--text); font-size: 15px; font-family: var(--font-body); outline: none; }
+.search-esc { font-size: 11px; color: var(--text-muted); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; flex-shrink: 0; }
+.search-results { overflow-y: auto; padding: 8px; }
+.search-empty { text-align: center; color: var(--text-muted); font-size: 13px; padding: 28px 12px; }
+.search-hint { font-size: 11px; opacity: .7; margin-top: 6px; }
+.search-group { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; padding: 10px 8px 4px; }
+.search-row { padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+.search-row:hover { background: var(--surface2); }
+.search-row-title { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 6px; }
+.search-row-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; word-break: break-word; }
+.search-expand { font-size: 11px; color: var(--primary); margin-left: auto; flex-shrink: 0; }
+.search-context { font-size: 12px; line-height: 1.7; color: var(--text); background: var(--bg); border-left: 2px solid var(--primary); padding: 8px 10px; margin-top: 6px; border-radius: 4px; }
+.search-none, .search-status { font-size: 12px; color: var(--text-muted); padding: 4px 10px 8px; }
+.search-status.warn { color: var(--high); }
+.search-results mark { background: var(--primary); color: var(--surface); padding: 0 2px; border-radius: 2px; }
+/* 看板卡片命中閃光 */
+.task-card.search-flash { animation: searchFlash 1.5s ease; }
+@keyframes searchFlash { 0%,100% { box-shadow: none; } 25%,65% { box-shadow: 0 0 0 2px var(--primary); } }
