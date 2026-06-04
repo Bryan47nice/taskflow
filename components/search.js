@@ -78,11 +78,48 @@ const Search = {
       row.addEventListener('click', () => { const d = row.dataset.date; this._expanded[d] = !this._expanded[d]; this._render(); }));
   },
 
-  // ── 資料函式：Task 2/3 補實作，先給空殼 ──
-  _searchCards(q) { return []; },
+  // ── 卡片搜尋（全欄位）──
+  _searchCards(q) {
+    const ql = q.toLowerCase();
+    const out = [];
+    for (const t of (App.tasks || [])) {
+      const fields = [];
+      if (t.title) fields.push(['標題', t.title]);
+      if (t.body) fields.push(['內文', t.body]);
+      if (t.pdca) ['plan','do','check','act'].forEach(k => { if (t.pdca[k]) fields.push(['PDCA', t.pdca[k]]); });
+      if (t.source && t.source.snippet) fields.push(['來源', t.source.snippet]);
+      if (Array.isArray(t.links)) t.links.forEach(l => {
+        const s = typeof l === 'string' ? l : (l && (l.name || l.url)) || '';
+        if (s) fields.push(['連結', s]);
+      });
+      let titleHit = false, snippet = null;
+      for (const [label, val] of fields) {
+        if (String(val).toLowerCase().includes(ql)) {
+          if (label === '標題') titleHit = true;
+          else if (!snippet) snippet = { label, val: String(val) };
+        }
+      }
+      if (titleHit || snippet) out.push({ task: t, snippet });
+    }
+    return out;
+  },
+
+  _openCard(id) {
+    const task = (App.tasks || []).find(t => t.id === id);
+    if (!task) return;
+    this.close();
+    if (typeof PDCA !== 'undefined') PDCA.show(task);
+    const card = document.querySelector(`.task-card[data-id="${id}"]`);
+    if (card) {
+      card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      card.classList.add('search-flash');
+      setTimeout(() => card.classList.remove('search-flash'), 1500);
+    }
+  },
+
+  // ── Task 3 補實作 ──
   _searchJournals(q) { return []; },
   async _loadJournals() { this._journalState = 'loaded'; this._journals = []; this._render(); },
-  _openCard(id) { /* Task 2 */ },
 
   // ── 渲染輔助 ──
   _recentDates(n) {
