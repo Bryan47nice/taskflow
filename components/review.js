@@ -1,184 +1,72 @@
 // === Review Modal — 覆盤 + 產日誌 ===
 const Review = {
 
-  // ── 覆盤日誌列表 ──────────────────────────────────────────
+  // ── 週覆盤 ────────────────────────────────────────────────
+
+  _isDirty: false,
+  _weeklyStart: null,
+  _weeklyEnd: null,
+  _weeklyDone: [],
+  _weeklyPdca: [],
+  _aggToken: null,
 
   show() {
     document.getElementById('modal-review').classList.remove('hidden');
-    document.getElementById('review-content').innerHTML = '<p class="loading">載入中…</p>';
-    this._loadJournals();
+    const start = this._weekStart();
+    const end   = App.getTodayKey();
+    this._weeklyStart = start;
+    this._weeklyEnd   = end;
+    if (this._wkStartPicker) this._wkStartPicker.setDate(start, false);
+    else document.getElementById('wk-start').value = start;
+    if (this._wkEndPicker) this._wkEndPicker.setDate(end, false);
+    else document.getElementById('wk-end').value = end;
+    this._prefillNextWeek();
+    this._aggregateRange(start, end);
   },
 
   hide() {
     if (this._isDirty && !confirm('有未儲存的修改，確定要關閉嗎？')) return;
     this._isDirty = false;
-    this._currentPath = null;
-    this._currentSha = null;
-    this._currentContent = null;
     document.getElementById('modal-review').classList.add('hidden');
-    document.querySelector('.review-modal-box')?.classList.remove('reading-mode');
   },
 
-  async _loadJournals() {
-    const { pat, repo } = App.settings;
-    if (!pat || !repo) {
-      document.getElementById('review-content').innerHTML = '<p class="error">請先設定 GitHub 連線</p>';
-      return;
+  _fmtDate(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  },
+  _weekStart() {
+    const d = new Date();
+    const back = (d.getDay() + 6) % 7; // 週一=0
+    d.setDate(d.getDate() - back);
+    return this._fmtDate(d);
+  },
+  _weekdayLabel(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return ['日','一','二','三','四','五','六'][d.getDay()];
+  },
+  _datesInRange(start, end) {
+    const out = [];
+    const e = new Date(end + 'T00:00:00');
+    for (let d = new Date(start + 'T00:00:00'); d <= e; d.setDate(d.getDate() + 1)) {
+      out.push(this._fmtDate(new Date(d)));
     }
-    try {
-      const files = await GitHubAPI.listDir(pat, repo, 'taskflow/journal');
-      const md = files
-        .filter(f => f.name.endsWith('.md'))
-        .sort((a, b) => b.name.localeCompare(a.name));
-
-      if (!md.length) {
-        document.getElementById('review-content').innerHTML = '<p class="muted">還沒有日誌記錄</p>';
-        return;
-      }
-
-      const list = md.map(f => {
-        const date = f.name.replace('.md', '');
-        return `<button class="journal-item" data-path="${f.path}">${date}</button>`;
-      }).join('');
-      document.getElementById('review-content').innerHTML =
-        `<div class="journal-list-panel"><div class="journal-list">${list}</div></div><div id="journal-view" class="journal-view hidden"></div>`;
-
-      document.querySelectorAll('.journal-item').forEach(btn => {
-        btn.addEventListener('click', () => this._viewJournal(btn.dataset.path, btn.textContent));
-      });
-    } catch (e) {
-      document.getElementById('review-content').innerHTML = `<p class="error">載入失敗：${e.message}</p>`;
-    }
+    return out;
+  },
+  _prefillNextWeek() {
+    const ta = document.getElementById('wk-nextweek');
+    if (!ta || ta.value.trim()) return; // 不覆蓋使用者已打的內容
+    const todos = (App.tasks || [])
+      .filter(t => t.status === 'todo')
+      .map(t => `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`);
+    ta.value = todos.join('\n');
   },
 
-  _currentPath: null,
-  _currentSha: null,
-  _currentContent: null,
-  _isDirty: false,
-
-  async _viewJournal(path, title) {
-    if (this._isDirty) {
-      if (!confirm('有未儲存的修改，確定要離開嗎？')) return;
-      this._isDirty = false;
-    }
-    // highlight active item
-    document.querySelectorAll('.journal-item').forEach(b =>
-      b.classList.toggle('active', b.dataset.path === path)
-    );
-    const viewEl = document.getElementById('journal-view');
-    viewEl.innerHTML = '<p class="loading">載入中…</p>';
-    viewEl.classList.remove('hidden');
-    document.querySelector('.review-modal-box').classList.add('reading-mode');
-    try {
-      const { content, sha } = await GitHubAPI.getRaw(App.settings.pat, App.settings.repo, path);
-      this._currentPath = path;
-      this._currentSha = sha;
-      this._currentContent = content;
-      this._renderView(viewEl, title, content);
-    } catch (e) {
-      viewEl.innerHTML = `<p class="error">載入失敗：${e.message}</p>`;
-    }
+  async _aggregateRange(start, end) {
+    // Task 2 補實作
+    document.getElementById('wk-done').innerHTML = '<div class="jv-empty">（彙整功能待實作）</div>';
+    document.getElementById('wk-pdca').innerHTML = '';
   },
 
-  _renderView(viewEl, title, content) {
-    const parsed = this._parseJournalMd(content);
-    const doneHtml = parsed.done.length
-      ? parsed.done.map(l => `<div class="jv-item">${this._esc(l)}</div>`).join('')
-      : '<div class="jv-empty">（無）</div>';
-    const todoHtml = parsed.todo.length
-      ? parsed.todo.map(l => `<div class="jv-item">${this._esc(l)}</div>`).join('')
-      : '<div class="jv-empty">（未排）</div>';
-    const pdcaHtml = parsed.pdca.length
-      ? parsed.pdca.map(t => `
-          <div class="jv-pdca-block">
-            <div class="jv-pdca-title">${this._esc(t.title)}</div>
-            ${['plan','do','check','act'].map(k => t[k] ? `
-              <div class="pdca-field-row">
-                <label>${k.charAt(0).toUpperCase()+k.slice(1)}</label>
-                <div class="jv-pdca-val">${this._esc(t[k])}</div>
-              </div>` : '').join('')}
-          </div>`).join('')
-      : '';
-    const notesHtml = parsed.notes
-      ? `<div class="journal-section">
-           <div class="journal-section-label">備注</div>
-           <div class="jv-notes">${this._esc(parsed.notes)}</div>
-         </div>`
-      : '';
-
-    viewEl.innerHTML = `
-      <div class="jv-header">
-        <h3>${this._esc(title)}</h3>
-        <button class="jv-mode-btn" id="jv-edit-btn">編輯</button>
-      </div>
-      <div class="jv-body">
-        <div class="journal-section">
-          <div class="journal-section-label">今日完成</div>
-          <div class="jv-list">${doneHtml}</div>
-        </div>
-        ${parsed.pdca.length ? `<div class="journal-section">
-          <div class="journal-section-label">PDCA 覆盤</div>
-          ${pdcaHtml}
-        </div>` : ''}
-        <div class="journal-section">
-          <div class="journal-section-label">明日計畫</div>
-          <div class="jv-list">${todoHtml}</div>
-        </div>
-        ${notesHtml}
-      </div>`;
-    document.getElementById('jv-edit-btn').addEventListener('click', () =>
-      this._renderEdit(viewEl, title, this._currentContent)
-    );
-  },
-
-  _renderEdit(viewEl, title, content) {
-    viewEl.innerHTML = `
-      <div class="jv-header">
-        <h3>${this._esc(title)}</h3>
-        <div class="jv-edit-actions">
-          <button class="jv-mode-btn" id="jv-view-btn">檢視</button>
-          <button class="btn btn-primary jv-upload-btn" id="jv-upload-btn">上傳</button>
-        </div>
-      </div>
-      <textarea class="journal-md-edit" id="jv-textarea" spellcheck="false"></textarea>`
-    document.getElementById('jv-textarea').value = content;
-    const ta = document.getElementById('jv-textarea');
-    ta.addEventListener('input', () => { this._isDirty = true; });
-    document.getElementById('jv-view-btn').addEventListener('click', () => {
-      this._currentContent = ta.value;
-      this._isDirty = false;
-      this._renderView(viewEl, title, ta.value);
-    });
-    document.getElementById('jv-upload-btn').addEventListener('click', () =>
-      this._uploadEditedJournal(ta, title)
-    );
-  },
-
-  async _uploadEditedJournal(ta, title) {
-    const btn = document.getElementById('jv-upload-btn');
-    btn.disabled = true;
-    btn.textContent = '上傳中…';
-    try {
-      const newContent = ta.value;
-      await GitHubAPI.putRaw(
-        App.settings.pat, App.settings.repo,
-        this._currentPath, newContent,
-        this._currentSha,
-        `TaskFlow: update journal ${title}`
-      );
-      this._currentContent = newContent;
-      this._isDirty = false;
-      // refresh SHA after upload
-      const { sha } = await GitHubAPI.getRaw(App.settings.pat, App.settings.repo, this._currentPath);
-      this._currentSha = sha;
-      App.showToast('日誌已更新');
-    } catch (e) {
-      App.showToast(`上傳失敗：${e.message}`, 'error');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = '上傳';
-    }
-  },
+  async _uploadWeekly() { /* Task 3 補實作 */ },
 
   _parseJournalMd(md) {
     const result = { done: [], todo: [], pdca: [], notes: '' };
@@ -481,12 +369,27 @@ const Review = {
   // ── Init ──────────────────────────────────────────────────
 
   init() {
-    // 覆盤按鈕
+    // 週覆盤按鈕
     document.getElementById('btn-review').addEventListener('click', () => this.show());
     document.getElementById('btn-review-close').addEventListener('click', () => this.hide());
+    document.getElementById('btn-weekly-cancel').addEventListener('click', () => this.hide());
     document.getElementById('modal-review').addEventListener('click', e => {
       if (e.target === document.getElementById('modal-review')) this.hide();
     });
+
+    // 週覆盤日期區間（不允許選未來）
+    this._wkStartPicker = flatpickr('#wk-start', {
+      dateFormat: 'Y-m-d', maxDate: 'today',
+      onChange: ([d]) => { if (!d) return; this._weeklyStart = this._fmtDate(d); this._aggregateRange(this._weeklyStart, this._weeklyEnd); }
+    });
+    this._wkEndPicker = flatpickr('#wk-end', {
+      dateFormat: 'Y-m-d', maxDate: 'today',
+      onChange: ([d]) => { if (!d) return; this._weeklyEnd = this._fmtDate(d); this._aggregateRange(this._weeklyStart, this._weeklyEnd); }
+    });
+    document.getElementById('btn-weekly-upload').addEventListener('click', () => this._uploadWeekly());
+    ['wk-reflection','wk-nextweek'].forEach(id =>
+      document.getElementById(id).addEventListener('input', () => { this._isDirty = true; })
+    );
 
     // 產日誌按鈕 → 開編輯器（不直接推）
     document.getElementById('btn-journal').addEventListener('click', () => this.showEditor());

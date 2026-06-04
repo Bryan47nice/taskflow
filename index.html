@@ -38,7 +38,7 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.49"/>
       </svg>
-      <span class="btn-review-text">覆盤</span>
+      <span class="btn-review-text">週覆盤</span>
     </button>
 
     <!-- 行事曆 -->
@@ -170,8 +170,6 @@
     <div id="panel-timer" class="side-card"></div>
     <div id="panel-timeline" class="side-card"></div>
     <div id="panel-stats" class="side-card"></div>
-    <div id="panel-scratch" class="side-card"></div>
-    <div id="panel-heatmap" class="side-card"></div>
   </aside>
 
 </div><!-- .app-layout -->
@@ -464,15 +462,39 @@
 <!-- Modal: Review / Journal                  -->
 <!-- ======================================== -->
 <div id="modal-review" class="modal hidden">
-  <div class="modal-box review-modal-box">
+  <div class="modal-box review-modal-box weekly-box">
     <div class="modal-header">
-      <h2>覆盤日誌</h2>
+      <h2>週覆盤</h2>
+      <div class="weekly-range">
+        <input type="text" id="wk-start" class="journal-editor-date-input" readonly placeholder="起">
+        <span class="weekly-range-sep">~</span>
+        <input type="text" id="wk-end" class="journal-editor-date-input" readonly placeholder="訖">
+      </div>
       <button class="btn-icon" id="btn-review-close">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
     <div class="modal-body">
-      <div id="review-content"></div>
+      <div class="journal-section">
+        <div class="journal-section-label">本週完成總覽</div>
+        <div id="wk-done" class="wk-agg"></div>
+      </div>
+      <div class="journal-section">
+        <div class="journal-section-label">PDCA 彙總</div>
+        <div id="wk-pdca" class="wk-agg"></div>
+      </div>
+      <div class="journal-section">
+        <div class="journal-section-label">本週反思</div>
+        <textarea id="wk-reflection" rows="4" placeholder="本週心得 / 問題 / 學到什麼…"></textarea>
+      </div>
+      <div class="journal-section">
+        <div class="journal-section-label">下週重點</div>
+        <textarea id="wk-nextweek" rows="4" placeholder="下週要推進的重點（已帶入目前待辦，可加減）"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-weekly-cancel">取消</button>
+      <button class="btn btn-primary" id="btn-weekly-upload">上傳</button>
     </div>
   </div>
 </div>
@@ -556,10 +578,6 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     統計
   </button>
-  <button class="bnav-btn" data-tab="notes">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-    記
-  </button>
 </nav>
 
 <!-- ── Scripts (order matters) ── -->
@@ -576,7 +594,6 @@
 <script src="components/calendar.js"></script>
 <script src="components/timer.js"></script>
 <script src="components/stats-panel.js"></script>
-<script src="components/scratch.js"></script>
 <script src="components/mobile-nav.js"></script>
 <script src="components/reminder.js"></script>
 <script src="app.js"></script>
