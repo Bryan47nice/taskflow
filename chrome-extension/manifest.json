@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "TaskFlow Capture",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "選取文字按 Alt+S，或讓 @mention 訊息自動出現「加入 TaskFlow」按鈕",
   "permissions": [
     "activeTab",

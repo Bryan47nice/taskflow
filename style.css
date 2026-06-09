@@ -1218,6 +1218,9 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
 .timer-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 13px; cursor: pointer; transition: all .15s; }
 .timer-btn-main { background: var(--primary); color: #fff; border-color: var(--primary); }
 .timer-btn-main:hover { background: var(--primary-hover); }
+/* C 主題 primary 是黑/白，按鈕文字需要對比色（否則 c-dark 白底白字會被吃掉） */
+body[data-theme="c-light"] .timer-btn-main { background: #0A0A0A; color: #fff; }
+body[data-theme="c-dark"]  .timer-btn-main { background: #FAFAFA; color: #0D0D0D; }
 .timer-btn-stop:hover { border-color: var(--high); color: var(--high); }
 .timer-pomodoros { text-align: center; font-size: 12px; color: var(--text-muted); }
 
@@ -1238,6 +1241,8 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
 .timeline-block.urg-high { background: var(--high); }
 .timeline-block.urg-medium { background: var(--medium, #f59e0b); }
 .timeline-block.urg-low { background: var(--primary); }
+/* c-dark 的 --primary 是近白，urg-low 區塊內的 ✓ 需要深色才不會被吃掉 */
+body[data-theme="c-dark"] .timeline-block.urg-low { color: #0D0D0D; }
 .timeline-block.done { opacity: .45; }
 .timeline-now {
   position: absolute; top: 0; bottom: 0; width: 2px;
