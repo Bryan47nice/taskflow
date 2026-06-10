@@ -1,5 +1,5 @@
 // === TaskFlow App — main state management ===
-const APP_VERSION = 'v1.9.3';
+const APP_VERSION = 'v1.10.0';
 
 const App = {
   tasks: [],
@@ -215,7 +215,7 @@ const App = {
     if (event === 'done') log[today].done++;
     // Update scheduled count from current tasks
     log[today].scheduled = this.tasks.filter(t =>
-      t.deadline === 'today' || t.dayKey === today || t.deadline === today
+      t.status !== 'parked' && (t.deadline === 'today' || t.dayKey === today || t.deadline === today)
     ).length;
     localStorage.setItem('taskflow_daily_log', JSON.stringify(log));
   },

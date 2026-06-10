@@ -54,7 +54,59 @@ const Kanban = {
       btn.querySelector('.tab-count').textContent = cols[st]?.length ?? 0;
     });
 
+    // 擱置區（側欄卡）：parked 不屬於上面三欄，另外撈出渲染
+    const parked = tasks.filter(t => t.status === 'parked');
+    parked.sort((a, b) => {
+      const ud = (urgOrd[a.urgency] ?? 1) - (urgOrd[b.urgency] ?? 1);
+      if (ud !== 0) return ud;
+      const ao = a.order ?? Infinity;
+      const bo = b.order ?? Infinity;
+      if (ao !== bo) return ao - bo;
+      return a.createdAt > b.createdAt ? 1 : -1;
+    });
+    this._renderParked(parked);
+
     this._setupDragDrop();
+  },
+
+  // 擱置側欄卡：N=0 時清空（靠 .side-card:empty 自動隱藏）
+  _renderParked(parked) {
+    const el = document.getElementById('panel-parked');
+    if (!el) return;
+    if (!parked.length) { el.innerHTML = ''; return; }
+
+    const collapsed = localStorage.getItem('taskflow_parked_collapsed') !== 'false'; // 預設收合
+    const rows = collapsed ? '' : parked.map(t => `
+      <div class="parked-row urgency-${t.urgency || 'medium'}" data-id="${t.id}">
+        <span class="urgency-dot"></span>
+        <span class="parked-row-title">${this._esc(t.title)}</span>
+        <button class="parked-row-back" data-id="${t.id}" title="移回待辦">↩</button>
+      </div>`).join('');
+
+    el.innerHTML = `
+      <div class="parked-header" role="button" tabindex="0">
+        <span class="parked-toggle">${collapsed ? '▸' : '▾'}</span>
+        <span class="parked-title">擱置中</span>
+        <span class="count">${parked.length}</span>
+      </div>
+      <div class="parked-list">${rows}</div>`;
+
+    el.querySelector('.parked-header').addEventListener('click', () => {
+      localStorage.setItem('taskflow_parked_collapsed', collapsed ? 'false' : 'true');
+      Kanban.render(App.tasks);
+    });
+    el.querySelectorAll('.parked-row-back').forEach(b => {
+      b.addEventListener('click', async e => {
+        e.stopPropagation();
+        await App.updateTask(b.dataset.id, { status: 'todo' });
+      });
+    });
+    el.querySelectorAll('.parked-row').forEach(r => {
+      r.addEventListener('click', () => {
+        const t = App.tasks.find(x => x.id === r.dataset.id);
+        if (t) PDCA.show(t);
+      });
+    });
   },
 
   _card(task, today) {
@@ -203,5 +255,23 @@ const Kanban = {
     });
     // Default: show todo
     this.switchTab('todo');
+
+    // 拖曳到擱置側欄卡 → 擱置（桌面）。輕量 drop handler，不走 .task-list 排序流程
+    const parkedPanel = document.getElementById('panel-parked');
+    if (parkedPanel) {
+      parkedPanel.addEventListener('dragover', e => {
+        e.preventDefault();
+        parkedPanel.classList.add('drag-over');
+      });
+      parkedPanel.addEventListener('dragleave', e => {
+        if (!parkedPanel.contains(e.relatedTarget)) parkedPanel.classList.remove('drag-over');
+      });
+      parkedPanel.addEventListener('drop', async e => {
+        e.preventDefault();
+        parkedPanel.classList.remove('drag-over');
+        const id = e.dataTransfer.getData('taskId');
+        if (id) await App.updateTask(id, { status: 'parked', done: false, completedAt: null });
+      });
+    }
   }
 };

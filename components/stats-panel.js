@@ -12,7 +12,7 @@ const StatsPanel = {
     if (!el) return;
     const today = (typeof App !== 'undefined') ? App.getTodayKey() : new Date().toISOString().slice(0,10);
     const tasks = (typeof App !== 'undefined' ? App.tasks : [])
-      .filter(t => t.deadline === 'today' || t.dayKey === today || t.deadline === today);
+      .filter(t => t.status !== 'parked' && (t.deadline === 'today' || t.dayKey === today || t.deadline === today));
 
     const startHour = 9, endHour = 19, totalMins = (endHour - startHour) * 60;
     const nowMins = this._nowMins();

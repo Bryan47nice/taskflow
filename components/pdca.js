@@ -23,6 +23,10 @@ const PDCA = {
     document.getElementById('pdca-title').value = task.title || '';
     document.getElementById('pdca-urgency').value = task.urgency || 'medium';
 
+    // 擱置/移回 按鈕文案隨狀態切換
+    const parkBtn = document.getElementById('btn-pdca-park');
+    if (parkBtn) parkBtn.textContent = (task.status === 'parked') ? '移回待辦' : '擱置';
+
     // Estimate — show custom input if value not in preset list
     this._setEstimate(task.estimate || '30m');
 
@@ -252,6 +256,16 @@ const PDCA = {
     App.showToast('已刪除');
   },
 
+  async togglePark() {
+    if (!this._task) return;
+    const parking = this._task.status !== 'parked';
+    await App.updateTask(this._task.id, parking
+      ? { status: 'parked', done: false, completedAt: null }
+      : { status: 'todo' });
+    this.hide(true);
+    App.showToast(parking ? '已擱置' : '已移回待辦');
+  },
+
   _esc(str) {
     return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   },
@@ -392,6 +406,7 @@ const PDCA = {
     document.getElementById('pdca-links-section').addEventListener('click', e => this._handleLinksClick(e));
     document.getElementById('btn-pdca-save').addEventListener('click', () => this.save());
     document.getElementById('btn-pdca-delete').addEventListener('click', () => this.deleteTask());
+    document.getElementById('btn-pdca-park').addEventListener('click', () => this.togglePark());
     document.getElementById('btn-pdca-close').addEventListener('click', () => this.hide());
     document.getElementById('modal-pdca').addEventListener('click', e => {
       if (e.target === document.getElementById('modal-pdca')) this.hide();

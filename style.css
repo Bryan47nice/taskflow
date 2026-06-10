@@ -1077,6 +1077,37 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
   display: flex; align-items: center; gap: 6px;
 }
 
+/* ── 擱置區（Parked Zone） ── */
+#panel-parked.drag-over { outline: 2px dashed var(--primary); outline-offset: -2px; }
+.parked-header {
+  display: flex; align-items: center; gap: 6px;
+  cursor: pointer; user-select: none;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .6px;
+  color: var(--text-muted);
+}
+.parked-header .parked-toggle { font-size: 10px; width: 10px; }
+.parked-header .parked-title { flex: 1; }
+.parked-list { display: flex; flex-direction: column; gap: 2px; }
+.parked-list:not(:empty) { margin-top: 10px; }
+.parked-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 6px; border-radius: 6px; cursor: pointer;
+}
+.parked-row:hover { background: var(--surface2); }
+.parked-row-title {
+  flex: 1; min-width: 0;
+  font-size: 13px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.parked-row-back {
+  flex-shrink: 0;
+  background: transparent; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 14px; line-height: 1;
+  padding: 2px 4px; border-radius: 4px;
+}
+.parked-row-back:hover { color: var(--primary); background: var(--primary-bg); }
+
 /* ── Timer Bar (mobile, shown when timer running) ── */
 .timer-bar {
   display: none; /* shown by mobile media query */
