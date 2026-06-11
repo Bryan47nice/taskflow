@@ -1316,6 +1316,200 @@ body[data-theme="c-dark"] #btn-fab { color: #0D0D0D; }
 /* Danger button: 半透明紅底取代淺粉紅 */
 body[data-theme="b-dark"] .btn-danger,
 body[data-theme="c-dark"] .btn-danger { background: rgba(255,68,68,.12); border-color: rgba(255,68,68,.3); }
+
+/* ═══════════════════════════════════════════════════════
+   Long-term Plans — 長期規劃（母子單 / Epic 視圖）
+   ════════════════════════════════════════════════════ */
+
+/* 進規劃視圖時隱藏看板專屬控制 */
+body.plan-open #btn-fab,
+body.plan-open .mobile-tabs,
+body.plan-open .bottom-nav { display: none !important; }
+
+/* ── Plan view container ── */
+.plan-view {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 56px);
+}
+.plan-view-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.plan-view-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.plan-show-archived {
+  margin-left: auto;
+  font-size: 12px; color: var(--text-muted);
+  display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none;
+}
+.plan-show-archived input { cursor: pointer; }
+
+.plan-view-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+/* ── Plan list (left) ── */
+.plan-list {
+  width: 320px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  overflow-y: auto;
+}
+.plan-list-empty {
+  font-size: 12px; color: var(--text-muted);
+  text-align: center; line-height: 1.6; padding: 30px 12px;
+}
+.plan-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: box-shadow .15s, border-color .15s, transform .1s;
+}
+.plan-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+.plan-card.selected { border-color: var(--primary); background: var(--primary-bg); }
+.plan-card-top { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+.plan-card-title { font-size: 14px; font-weight: 600; line-height: 1.4; flex: 1; word-break: break-word; }
+.plan-card-status {
+  font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px; flex-shrink: 0;
+  background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border2);
+}
+.plan-card-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+.plan-card-period {
+  font-size: 10px; font-weight: 700; letter-spacing: .3px;
+  color: var(--primary); background: var(--primary-bg);
+  padding: 1px 6px; border-radius: 4px;
+}
+.plan-card-count { font-size: 11px; color: var(--text-muted); }
+
+.plan-progress { display: flex; align-items: center; gap: 8px; }
+.plan-progress-bar { flex: 1; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.plan-progress-bar.lg { height: 8px; }
+.plan-progress-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width .3s; min-width: 0; }
+.plan-progress-label { font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ── Plan detail (right) ── */
+.plan-detail { flex: 1; min-width: 0; padding: 18px 20px; overflow-y: auto; }
+.plan-detail-empty, .plan-detail-empty-kids {
+  font-size: 13px; color: var(--text-muted); text-align: center; line-height: 1.7; padding: 40px 16px;
+}
+.plan-detail-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.plan-detail-titles { flex: 1; min-width: 0; }
+.plan-detail-titles h2 { font-size: 18px; font-weight: 700; line-height: 1.3; word-break: break-word; }
+.plan-detail-sub { display: flex; gap: 8px; align-items: center; margin-top: 6px; flex-wrap: wrap; }
+.plan-detail-period {
+  font-size: 11px; font-weight: 700; color: var(--primary); background: var(--primary-bg);
+  padding: 2px 8px; border-radius: 5px;
+}
+.plan-detail-statusbadge {
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 5px;
+  background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border2);
+}
+.plan-detail-statusbadge.done { color: var(--low); border-color: var(--low); }
+.plan-detail-actions { flex-shrink: 0; }
+.plan-detail-why {
+  font-size: 13px; line-height: 1.6; color: var(--text);
+  background: var(--surface2); border-radius: var(--radius);
+  padding: 10px 12px; margin-bottom: 14px; white-space: normal;
+}
+.plan-detail-progress { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+
+/* ── Child task groups ── */
+.plan-group { margin-bottom: 16px; }
+.plan-group-label {
+  font-size: 12px; font-weight: 700; color: var(--text-muted);
+  margin-bottom: 8px; text-transform: uppercase; letter-spacing: .4px;
+  display: flex; align-items: center; gap: 6px;
+}
+.plan-group-label .count {
+  background: var(--bg); color: var(--text-muted);
+  border-radius: 10px; padding: 0 7px; font-size: 11px; font-weight: 600;
+}
+.plan-child-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: 8px; padding: 9px 12px; margin-bottom: 6px;
+  cursor: pointer; transition: box-shadow .15s, border-color .15s;
+}
+.plan-child-row:hover { box-shadow: var(--shadow); border-color: var(--border2); }
+.plan-child-row.urgency-high { border-left-color: var(--high); }
+.plan-child-row.urgency-medium { border-left-color: var(--medium); }
+.plan-child-row.urgency-low { border-left-color: var(--low); }
+.plan-child-title { flex: 1; font-size: 13px; font-weight: 500; word-break: break-word; }
+.plan-child-est { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.plan-child-btn {
+  flex-shrink: 0; font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 14px; cursor: pointer;
+  border: 1px solid var(--border2); background: var(--surface); color: var(--text);
+  transition: all .15s;
+}
+.plan-child-btn.schedule { background: var(--primary); color: #fff; border-color: var(--primary); }
+.plan-child-btn.schedule:hover { background: var(--primary-hover); }
+.plan-child-btn.unschedule:hover { border-color: var(--primary); color: var(--primary); }
+/* C 主題 primary 是黑/白，排入今日鈕需要對比文字 */
+body[data-theme="c-light"] .plan-child-btn.schedule { background: #0A0A0A; color: #fff; }
+body[data-theme="c-dark"]  .plan-child-btn.schedule { background: #FAFAFA; color: #0D0D0D; }
+
+/* ── Add child input ── */
+.plan-add-child { display: flex; gap: 8px; margin-top: 8px; }
+.plan-add-child input {
+  flex: 1; padding: 9px 12px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--bg); color: var(--text);
+  font-size: 13px; font-family: var(--font-body);
+}
+.plan-add-child input:focus { outline: none; border-color: var(--primary); }
+
+/* ── Plan badge on kanban card ── */
+.plan-badge {
+  font-size: 9px; font-weight: 700; letter-spacing: .2px;
+  padding: 1px 5px; border-radius: 3px;
+  color: var(--primary); background: var(--primary-bg);
+  border: 1px solid var(--border2);
+  max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  line-height: 1.6;
+}
+
+/* ── Plan modal fields ── */
+.plan-field { margin-bottom: 14px; }
+.plan-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 5px; }
+.plan-field input, .plan-field textarea, .plan-field select {
+  width: 100%; padding: 9px 11px; border: 1px solid var(--border);
+  border-radius: 8px; background: var(--bg); color: var(--text);
+  font-size: 13px; font-family: var(--font-body);
+}
+.plan-field textarea { resize: vertical; line-height: 1.5; }
+.plan-field input:focus, .plan-field textarea:focus, .plan-field select:focus { outline: none; border-color: var(--primary); }
+
+/* ── PDCA: status + plan two-column row ── */
+.pdca-status-plan-row { display: flex; gap: 12px; }
+.pdca-status-plan-row > div { flex: 1; min-width: 0; }
+.pdca-status-plan-row label { display: block; }
+.pdca-status-plan-row select { width: 100%; }
+
+/* ── RWD: stack plan view on small screens ── */
+@media (max-width: 767px) {
+  .plan-view-body { flex-direction: column; }
+  .plan-list {
+    width: 100%;
+    border-right: none; border-bottom: 1px solid var(--border);
+    max-height: 38vh;
+  }
+  .plan-detail { padding: 16px; }
+  .pdca-status-plan-row { flex-direction: column; gap: 0; }
+  .pdca-status-plan-row > div { margin-bottom: 12px; }
+}
 body[data-theme="b-dark"] .btn-danger:hover,
 body[data-theme="c-dark"] .btn-danger:hover { background: rgba(255,68,68,.2); }
 

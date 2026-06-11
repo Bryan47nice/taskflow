@@ -128,6 +128,7 @@ const Kanban = {
 
     const sourceIcon = this._sourceIcon(task.source?.type);
     const hasPDCA = task.pdca && Object.values(task.pdca).some(v => v?.trim());
+    const planBadge = this._planBadge(task.planId);
 
     div.innerHTML = `
       <div class="card-header">
@@ -137,6 +138,7 @@ const Kanban = {
       </div>
       <div class="card-meta">
         ${sourceIcon || ''}
+        ${planBadge}
         <span class="estimate">${this._esc(task.estimate || '')}</span>
         <span class="deadline ${task.deadline === 'today' ? 'deadline-today' : ''}">${deadlineLabel}</span>
       </div>
@@ -148,6 +150,15 @@ const Kanban = {
     this._addSwipe(div, task);
 
     return div;
+  },
+
+  // 屬於某長期規劃的任務，卡片上顯示規劃徽章
+  _planBadge(planId) {
+    if (!planId || typeof App === 'undefined' || !App.plans) return '';
+    const plan = App.plans.find(p => p.id === planId);
+    if (!plan) return '';
+    const name = (plan.title || '規劃').slice(0, 8);
+    return `<span class="plan-badge" title="${this._esc(plan.title)}">◇ ${this._esc(name)}</span>`;
   },
 
   _sourceIcon(type) {

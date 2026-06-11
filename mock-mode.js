@@ -89,6 +89,46 @@
       createdAt: new Date().toISOString(),
       completedAt: null,
       dayKey: today
+    },
+    // ── 長期規劃「上架 Chrome Web Store」的子單（planId: pl-mock-1）──
+    {
+      id: 'mock-6', title: '準備商店截圖素材', body: '', links: [],
+      urgency: 'medium', estimate: '1h', deadline: 'backlog',
+      status: 'planned', done: false, source: null,
+      pdca: { plan: '', do: '', check: '', act: '' },
+      createdAt: new Date().toISOString(), completedAt: null, dayKey: today,
+      actualMinutes: 0, planId: 'pl-mock-1'
+    },
+    {
+      id: 'mock-7', title: '撰寫隱私權政策頁', body: '', links: [],
+      urgency: 'high', estimate: '2h', deadline: 'backlog',
+      status: 'planned', done: false, source: null,
+      pdca: { plan: '', do: '', check: '', act: '' },
+      createdAt: new Date().toISOString(), completedAt: null, dayKey: today,
+      actualMinutes: 0, planId: 'pl-mock-1'
+    },
+    {
+      id: 'mock-8', title: '研究商店審核規則', body: '', links: [],
+      urgency: 'low', estimate: '30m', deadline: 'today',
+      status: 'done', done: true, source: null,
+      pdca: { plan: '', do: '', check: '', act: '' },
+      createdAt: new Date().toISOString(), completedAt: new Date().toISOString(), dayKey: today,
+      actualMinutes: 0, planId: 'pl-mock-1'
+    }
+  ];
+
+  // ── 樣本長期規劃（母單）────────────────────────────────────
+  const PLANS_KEY = 'mock_plans';
+  const DEFAULT_PLANS = [
+    {
+      id: 'pl-mock-1',
+      title: '上架 Chrome Web Store',
+      why: '把 TaskFlow Capture 擴充功能正式上架，讓更多人能一鍵擷取任務。\n需完成商店素材、隱私權政策與通過審核。',
+      status: 'active',
+      targetPeriod: '2026-Q3',
+      order: null,
+      createdAt: new Date().toISOString(),
+      completedAt: null
     }
   ];
 
@@ -105,18 +145,24 @@
   if (!localStorage.getItem(STORAGE_KEY)) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_TASKS));
   }
+  if (!localStorage.getItem(PLANS_KEY)) {
+    localStorage.setItem(PLANS_KEY, JSON.stringify(DEFAULT_PLANS));
+  }
 
   // ── Patch GitHubAPI 同步執行（在 App.init DOMContentLoaded 之前套上）──
+  // 依 path 分流：plans.json → mock_plans；其餘 → mock_tasks
   GitHubAPI.getJSON = async function (_pat, _repo, path) {
     console.log('[Mock] getJSON', path);
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const tasks = raw ? JSON.parse(raw) : [];
-    return { content: tasks, sha: 'mock-sha-001' };
+    const key = path.includes('plans.json') ? PLANS_KEY : STORAGE_KEY;
+    const sha = path.includes('plans.json') ? 'mock-sha-plans' : 'mock-sha-001';
+    const raw = localStorage.getItem(key);
+    return { content: raw ? JSON.parse(raw) : [], sha };
   };
 
   GitHubAPI.saveJSON = async function (_pat, _repo, path, data, _sha, _msg) {
-    console.log('[Mock] saveJSON', path, data.length, 'tasks');
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    console.log('[Mock] saveJSON', path, Array.isArray(data) ? data.length : 0, 'items');
+    const key = path.includes('plans.json') ? PLANS_KEY : STORAGE_KEY;
+    localStorage.setItem(key, JSON.stringify(data));
     return { sha: 'mock-sha-' + Date.now() };
   };
 
@@ -129,12 +175,14 @@
     return { content, sha: 'mock-raw-sha-001' };
   };
 
-  // Patch putRaw — used by journal upload
+  // Patch putRaw — tasks.json/plans.json 寫回各自 key（reload 後可還原）；其餘走 journal
   GitHubAPI.putRaw = async function (_pat, _repo, path, content, _sha, _msg) {
     console.log('[Mock] putRaw', path);
+    if (path.includes('plans.json')) { localStorage.setItem(PLANS_KEY, content); return 'mock-sha-plans-' + Date.now(); }
+    if (path.includes('tasks.json')) { localStorage.setItem(STORAGE_KEY, content); return 'mock-sha-' + Date.now(); }
     const journalKey = 'mock_journal_' + path.replace(/\//g, '_');
     localStorage.setItem(journalKey, content);
-    return { sha: 'mock-raw-sha-' + Date.now() };
+    return 'mock-raw-sha-' + Date.now();
   };
 
   // Patch listDir — used by review journal list

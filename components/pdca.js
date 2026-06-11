@@ -77,6 +77,9 @@ const PDCA = {
     // Status selector
     document.getElementById('pdca-status').value = task.status || 'todo';
 
+    // 所屬規劃 下拉
+    this._renderPlanSelect(task.planId);
+
     m.classList.remove('hidden');
     if (highlightQ) this._applyMatchHighlight(highlightQ);
   },
@@ -145,6 +148,25 @@ const PDCA = {
       if (s) frag.appendChild(document.createTextNode(s));
       textNode.parentNode.replaceChild(frag, textNode);
     }
+  },
+
+  // 所屬規劃下拉：列出 active 規劃；若目前歸屬的規劃已 done/封存也補上以免遺失
+  _renderPlanSelect(planId) {
+    const sel = document.getElementById('pdca-plan-select');
+    if (!sel) return;
+    const plans = (typeof App !== 'undefined' && App.plans) ? App.plans : [];
+    const opts = ['<option value="">無</option>'];
+    const seen = new Set();
+    plans.filter(p => p.status === 'active').forEach(p => {
+      seen.add(p.id);
+      opts.push(`<option value="${p.id}">${this._esc(p.title)}</option>`);
+    });
+    if (planId && !seen.has(planId)) {
+      const cur = plans.find(p => p.id === planId);
+      if (cur) opts.push(`<option value="${cur.id}">${this._esc(cur.title)}（${cur.status === 'done' ? '已完成' : '封存'}）</option>`);
+    }
+    sel.innerHTML = opts.join('');
+    sel.value = planId || '';
   },
 
   // ── Estimate helpers ──────────────────────────────────────────────
@@ -239,6 +261,7 @@ const PDCA = {
       estimate: this._getEstimate(),
       deadline: deadlineSave,
       title: titleRaw || this._task.title,
+      planId: document.getElementById('pdca-plan-select').value || null,
       done: newStatus === 'done',
       completedAt: newStatus === 'done' && !this._task.completedAt ? new Date().toISOString() : this._task.completedAt
     };
@@ -421,8 +444,8 @@ const PDCA = {
     ['pdca-title','pdca-plan','pdca-do','pdca-check','pdca-act'].forEach(id => {
       document.getElementById(id).addEventListener('input', () => this._setDirty(true));
     });
-    // Status and urgency selects
-    ['pdca-status','pdca-urgency'].forEach(id => {
+    // Status, urgency and plan selects
+    ['pdca-status','pdca-urgency','pdca-plan-select'].forEach(id => {
       document.getElementById(id).addEventListener('change', () => this._setDirty(true));
     });
     // Estimate select — show/hide custom wrap

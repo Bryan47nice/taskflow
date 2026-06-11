@@ -1,11 +1,14 @@
 // === TaskFlow App — main state management ===
-const APP_VERSION = 'v1.10.0';
+const APP_VERSION = 'v1.11.0';
 
 const App = {
   tasks: [],
   tasksSha: null,
+  plans: [],
+  plansSha: null,
   settings: {},
   _saveTimer: null,
+  _planSaveTimer: null,
 
   // ── Init ──────────────────────────────────────────────────────────
   async init() {
@@ -21,6 +24,7 @@ const App = {
     Timer.init();
     StatsPanel.init();
     MobileNav.init();
+    if (typeof Plan !== 'undefined') Plan.init();
 
     if (!this.settings.pat || !this.settings.repo) {
       Settings.show(() => this.init());
@@ -30,6 +34,7 @@ const App = {
     this._showLoading(true);
     try {
       await this._loadTasks();
+      await this._loadPlans();
     } catch (e) {
       this.showToast(`載入失敗：${e.message}`, 'error');
     } finally {
@@ -184,6 +189,108 @@ const App = {
     }, 1200);
   },
 
+  // ── Plans (GitHub-backed, separate file) ──────────────────────────
+  async _loadPlans() {
+    const { content, sha } = await GitHubAPI.getJSON(
+      this.settings.pat, this.settings.repo, 'taskflow/plans.json'
+    );
+    this.plans = content || [];
+    this.plansSha = sha;
+  },
+
+  async _persistPlans() {
+    try {
+      this.plansSha = await GitHubAPI.putJSON(
+        this.settings.pat, this.settings.repo, 'taskflow/plans.json',
+        this.plans, this.plansSha, `TaskFlow: update plans ${this.getTodayKey()}`
+      );
+    } catch (e) {
+      if (!e.message.includes('409')) throw e;
+      // SHA 過期 — 重抓後重試一次
+      const { sha } = await GitHubAPI.getJSON(
+        this.settings.pat, this.settings.repo, 'taskflow/plans.json'
+      );
+      this.plansSha = sha;
+      this.plansSha = await GitHubAPI.putJSON(
+        this.settings.pat, this.settings.repo, 'taskflow/plans.json',
+        this.plans, this.plansSha, `TaskFlow: update plans ${this.getTodayKey()}`
+      );
+    }
+  },
+
+  // Debounced save for plans (separate timer/file from tasks)
+  _schedulePlanSave() {
+    if (this._planSaveTimer) clearTimeout(this._planSaveTimer);
+    const ind = document.getElementById('save-indicator');
+    ind.classList.remove('hidden', 'error');
+    ind.textContent = '同步中…';
+    this._planSaveTimer = setTimeout(async () => {
+      try {
+        await this._persistPlans();
+        ind.textContent = '已同步';
+        setTimeout(() => ind.classList.add('hidden'), 1500);
+      } catch (e) {
+        ind.textContent = '同步失敗';
+        ind.classList.add('error');
+        this.showToast(`同步失敗：${e.message}`, 'error');
+      }
+    }, 1200);
+  },
+
+  generatePlanId() {
+    return `pl_${Date.now()}_${Math.random().toString(16).slice(2,5)}`;
+  },
+
+  createPlan(data) {
+    return {
+      id: this.generatePlanId(),
+      title: data.title || '',
+      why: data.why || '',
+      status: 'active',
+      targetPeriod: data.targetPeriod || '',
+      order: null,
+      createdAt: new Date().toISOString(),
+      completedAt: null
+    };
+  },
+
+  async addPlan(plan) {
+    this.plans.push(plan);
+    this._schedulePlanSave();
+    if (typeof Plan !== 'undefined') Plan.render();
+  },
+
+  async updatePlan(id, updates) {
+    const idx = this.plans.findIndex(p => p.id === id);
+    if (idx === -1) return;
+    const prev = this.plans[idx];
+    this.plans[idx] = { ...prev, ...updates };
+    if (updates.status === 'done' && prev.status !== 'done') {
+      this.plans[idx].completedAt = new Date().toISOString();
+    }
+    this._schedulePlanSave();
+    if (typeof Plan !== 'undefined') Plan.render();
+  },
+
+  async deletePlan(id) {
+    this.plans = this.plans.filter(p => p.id !== id);
+    // 解除子任務歸屬，不連坐刪除；未排程(planned)者轉回一般 backlog todo，避免變孤兒
+    let tasksChanged = false;
+    this.tasks.forEach(t => {
+      if (t.planId === id) {
+        t.planId = null;
+        if (t.status === 'planned') { t.status = 'todo'; t.deadline = 'backlog'; }
+        tasksChanged = true;
+      }
+    });
+    this._schedulePlanSave();
+    if (tasksChanged) {
+      this._scheduleSave();
+      Kanban.render(this.tasks);
+    }
+    if (typeof Plan !== 'undefined') Plan.render();
+  },
+
   // ── CRUD ──────────────────────────────────────────────────────────
   async addTask(task) {
     this.tasks.push(task);
@@ -206,6 +313,7 @@ const App = {
     Kanban.render(this.tasks);
     this._updateHeader();
     if (typeof StatsPanel !== 'undefined') StatsPanel.refresh();
+    if (typeof Plan !== 'undefined' && Plan.isOpen()) Plan.render();
   },
 
   _recordDailyLog(event) {
@@ -215,7 +323,8 @@ const App = {
     if (event === 'done') log[today].done++;
     // Update scheduled count from current tasks
     log[today].scheduled = this.tasks.filter(t =>
-      t.status !== 'parked' && (t.deadline === 'today' || t.dayKey === today || t.deadline === today)
+      t.status !== 'parked' && t.status !== 'planned' &&
+      (t.deadline === 'today' || t.dayKey === today || t.deadline === today)
     ).length;
     localStorage.setItem('taskflow_daily_log', JSON.stringify(log));
   },
@@ -234,6 +343,7 @@ const App = {
     this._scheduleSave();
     Kanban.render(this.tasks);
     this._updateHeader();
+    if (typeof Plan !== 'undefined' && Plan.isOpen()) Plan.render();
   },
 
   // ── Task factory ──────────────────────────────────────────────────
@@ -255,14 +365,15 @@ const App = {
       urgency: data.urgency || 'medium',
       estimate: data.estimate || '30m',
       deadline: data.deadline || 'today',
-      status: 'todo',
+      status: data.status || 'todo',
       done: false,
       source: data.source || null,
       pdca: { plan: '', do: '', check: '', act: '' },
       createdAt: new Date().toISOString(),
       completedAt: null,
       dayKey: this.getTodayKey(),
-      actualMinutes: 0
+      actualMinutes: 0,
+      planId: data.planId || null
     };
   },
 
@@ -272,7 +383,7 @@ const App = {
     document.getElementById('header-date').textContent = today;
 
     const stats = { ...this.getStats(), dailyHours: this.settings.dailyHours || 8 };
-    const todayTasks = this.tasks.filter(t => t.deadline === 'today' || t.dayKey === today || t.deadline === today);
+    const todayTasks = this.tasks.filter(t => t.status !== 'planned' && (t.deadline === 'today' || t.dayKey === today || t.deadline === today));
     let available = HonestLimit.calculateAvailable(todayTasks, stats);
     const meetMin = Calendar.getMeetingMinutes();
     if (meetMin > 0) available = Math.max(0, available - meetMin);
