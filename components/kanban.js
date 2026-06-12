@@ -111,7 +111,12 @@ const Kanban = {
 
   _card(task, today) {
     const div = document.createElement('div');
-    div.className = `task-card urgency-${task.urgency || 'medium'}`;
+
+    // 落後於時程：截止日是「具體日期且早於今天」、且尚未完成 → 逾期天數
+    const daysOverdue = this._daysOverdue(task, today);
+    const isOverdue = daysOverdue > 0;
+
+    div.className = `task-card urgency-${task.urgency || 'medium'}${isOverdue ? ' overdue' : ''}`;
     div.dataset.id = task.id;
     div.draggable = true;
 
@@ -130,17 +135,24 @@ const Kanban = {
     const hasPDCA = task.pdca && Object.values(task.pdca).some(v => v?.trim());
     const planBadge = this._planBadge(task.planId);
 
+    // 逾期卡片：截止標籤改成醒目的「落後 N 天」紅色警示
+    const deadlineCls = isOverdue
+      ? 'deadline deadline-overdue'
+      : `deadline ${task.deadline === 'today' ? 'deadline-today' : ''}`;
+    const deadlineText = isOverdue ? `⚠ 落後 ${daysOverdue} 天` : deadlineLabel;
+
     div.innerHTML = `
       <div class="card-header">
         <span class="urgency-dot"></span>
         <span class="card-title">${this._esc(task.title)}</span>
+        ${isOverdue ? '<span class="overdue-badge">逾期</span>' : ''}
         ${hasPDCA ? '<span class="pdca-badge">PDCA</span>' : ''}
       </div>
       <div class="card-meta">
         ${sourceIcon || ''}
         ${planBadge}
         <span class="estimate">${this._esc(task.estimate || '')}</span>
-        <span class="deadline ${task.deadline === 'today' ? 'deadline-today' : ''}">${deadlineLabel}</span>
+        <span class="${deadlineCls}">${deadlineText}</span>
       </div>
     `;
 
@@ -150,6 +162,17 @@ const Kanban = {
     this._addSwipe(div, task);
 
     return div;
+  },
+
+  // 計算逾期天數：只有「具體日期 YYYY-MM-DD 且早於今天」且未完成/未擱置/未規劃的任務才算落後
+  _daysOverdue(task, today) {
+    const dl = task.deadline || '';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dl)) return 0;
+    if (['done', 'parked', 'planned'].includes(task.status)) return 0;
+    if (dl >= today) return 0;
+    const [y1, m1, d1] = dl.split('-').map(Number);
+    const [y2, m2, d2] = today.split('-').map(Number);
+    return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000);
   },
 
   // 屬於某長期規劃的任務，卡片上顯示規劃徽章
