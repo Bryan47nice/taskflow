@@ -228,7 +228,12 @@ const PDCA = {
 
     const inp = document.getElementById('pdca-deadline-input');
     inp.classList.toggle('hidden', !showInput);
-    if (isCustomDate && this._dlPicker) this._dlPicker.setDate(val, false);
+    if (this._dlPicker) {
+      // 逾期任務的截止日早於今天：暫時放寬 picker 的 minDate，否則 flatpickr 會拒絕顯示
+      // 導致日期欄位空白、看起來像截止日不見了。新選日期時仍維持不能選過去。
+      this._dlPicker.set('minDate', (isCustomDate && val < todayKey) ? val : 'today');
+      if (isCustomDate) this._dlPicker.setDate(val, false);
+    }
   },
 
   hide(force = false) {
