@@ -14,6 +14,32 @@ const PDCA = {
     if (dot) dot.classList.toggle('visible', val);
   },
 
+  // PDCA 四欄 textarea 是跨任務共用的同一組 DOM，拖拉 resize 會在元素上留下 inline height，
+  // 換下一張卡時會殘留 → 看起來像高度互相干擾。以下把高度存進各自的 task，開卡時各自還原。
+  _FIELD_KEYS: { plan: 'pdca-plan', do: 'pdca-do', check: 'pdca-check', act: 'pdca-act' },
+
+  // 開卡時：有存高度就套用，沒存就清掉 inline height 回到 CSS 預設（避免殘留上一張卡的高度）
+  _applyFieldHeights(task) {
+    const h = (task && task.pdcaHeights) || {};
+    this._suppressResizeDirty = true;
+    for (const [key, id] of Object.entries(this._FIELD_KEYS)) {
+      const el = document.getElementById(id);
+      if (el) el.style.height = h[key] || '';
+    }
+    // 套用高度本身會觸發 ResizeObserver，等它跑完再解除抑制，才不會誤標 dirty
+    requestAnimationFrame(() => { this._suppressResizeDirty = false; });
+  },
+
+  // 存檔時：讀出目前各欄的 inline height（使用者拖過才有值）
+  _captureFieldHeights() {
+    const out = {};
+    for (const [key, id] of Object.entries(this._FIELD_KEYS)) {
+      const el = document.getElementById(id);
+      if (el && el.style.height) out[key] = el.style.height;
+    }
+    return out;
+  },
+
   show(task, highlightQ) {
     this._task = task;
     this._setDirty(false);
@@ -73,6 +99,9 @@ const PDCA = {
     document.getElementById('pdca-do').value = p.do || '';
     document.getElementById('pdca-check').value = p.check || '';
     document.getElementById('pdca-act').value = p.act || '';
+
+    // 各欄高度：套用此任務自己存的高度（無則回預設），與其他卡互不干擾
+    this._applyFieldHeights(task);
 
     // Status selector
     document.getElementById('pdca-status').value = task.status || 'todo';
@@ -260,6 +289,7 @@ const PDCA = {
     const titleRaw = document.getElementById('pdca-title').value.trim();
     const updates = {
       pdca,
+      pdcaHeights: this._captureFieldHeights(),
       links: this._links.slice(),
       status: newStatus,
       urgency: document.getElementById('pdca-urgency').value,
@@ -453,6 +483,26 @@ const PDCA = {
     ['pdca-status','pdca-urgency','pdca-plan-select'].forEach(id => {
       document.getElementById(id).addEventListener('change', () => this._setDirty(true));
     });
+    // 拖拉 resize 任一 PDCA 欄 → 標記 dirty，讓使用者能存下這張卡自己的高度。
+    // 只在「高度」真的改變且非程式套用時觸發，避免視窗寬度變動誤標。
+    if (window.ResizeObserver) {
+      this._roHeights = {};
+      const ro = new ResizeObserver(entries => {
+        if (this._suppressResizeDirty) return;
+        for (const entry of entries) {
+          const id = entry.target.id;
+          const h = Math.round(entry.contentRect.height);
+          if (this._roHeights[id] !== undefined && this._roHeights[id] !== h) {
+            this._setDirty(true);
+          }
+          this._roHeights[id] = h;
+        }
+      });
+      Object.values(this._FIELD_KEYS).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) ro.observe(el);
+      });
+    }
     // Estimate select — show/hide custom wrap
     document.getElementById('pdca-estimate').addEventListener('change', () => {
       const isCustom = document.getElementById('pdca-estimate').value === '_custom';
