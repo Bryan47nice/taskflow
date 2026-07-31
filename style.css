@@ -1489,7 +1489,7 @@ body[data-theme="c-dark"]  .plan-child-btn.schedule { background: #FAFAFA; color
 }
 .plan-add-child input:focus { outline: none; border-color: var(--primary); }
 
-/* ── Plan badge on kanban card ── */
+/* ── Plan badge on kanban card（可點：開規劃快選）── */
 .plan-badge {
   font-size: 9px; font-weight: 700; letter-spacing: .2px;
   padding: 1px 5px; border-radius: 3px;
@@ -1497,6 +1497,20 @@ body[data-theme="c-dark"]  .plan-child-btn.schedule { background: #FAFAFA; color
   border: 1px solid var(--border2);
   max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   line-height: 1.6;
+  cursor: pointer; font-family: inherit; transition: opacity .15s, border-color .15s;
+}
+.plan-badge:hover { border-color: var(--primary); }
+/* 未歸屬：留一個淡的 ◇ 佔位，桌面 hover 卡片才浮現 */
+.plan-badge-empty {
+  background: transparent; border-color: transparent;
+  color: var(--text-muted); opacity: 0; padding: 1px 4px;
+}
+.task-card:hover .plan-badge-empty { opacity: .45; }
+.plan-badge-empty:hover { opacity: 1 !important; color: var(--primary); border-color: var(--border2); }
+/* 沒有 hover 的裝置、或走手機版面時，改成常駐低透明度才點得到
+   （寬度條件與其餘 RWD 斷點一致，不能只靠 hover:none —— 觸控筆電會回報有 hover） */
+@media (hover: none), (max-width: 1023px) {
+  .plan-badge-empty { opacity: .3; }
 }
 
 /* ── Plan modal fields ── */
@@ -1647,3 +1661,129 @@ body[data-theme="c-dark"] .flatpickr-day.today { border-color: var(--primary); }
 /* 卡片編輯器內的搜尋命中：每個命中欄位持久光環 + 內文反白 */
 .search-hit { box-shadow: 0 0 0 2px var(--primary); border-radius: 6px; }
 #pdca-body mark { background: var(--primary); color: var(--surface); padding: 0 2px; border-radius: 2px; }
+
+/* ============================================================ */
+/* v1.12.0 — 長期規劃 ↔ 看板雙向綁定                            */
+/* ============================================================ */
+
+/* ── 封存資料載入狀態提示 ── */
+.plan-arch-notice {
+  font-size: 12px; color: var(--text-muted);
+  background: var(--surface2); border-radius: var(--radius);
+  padding: 7px 11px; margin-bottom: 12px;
+}
+.plan-arch-notice.warn { color: var(--high); }
+
+/* ── 已存檔（歷史）子單 ── */
+.plan-group-archived .plan-group-label { opacity: .8; }
+.plan-child-row.archived { background: var(--bg); cursor: pointer; }
+.plan-child-row.archived .plan-child-title { font-weight: 400; color: var(--text-muted); }
+.plan-child-row.archived:hover .plan-child-title { color: var(--text); }
+.plan-arch-caret {
+  flex-shrink: 0; font-size: 10px; color: var(--text-muted);
+  transition: transform .15s; display: inline-block;
+}
+.plan-arch-caret.open { transform: rotate(90deg); }
+.plan-arch-date { font-size: 11px; color: var(--text-muted); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+
+/* 展開的當天日誌全文（純文字，不做 markdown 渲染） */
+.plan-journal-dump {
+  font-size: 12px; line-height: 1.7; color: var(--text);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; margin: -2px 0 8px 0;
+  max-height: 340px; overflow: auto;
+  white-space: pre-wrap; word-break: break-word;
+  font-family: var(--font-body);
+}
+.plan-journal-dump.loading, .plan-journal-dump.warn {
+  color: var(--text-muted); white-space: normal; max-height: none;
+}
+.plan-journal-dump.warn { color: var(--high); }
+
+/* ── 規劃快選 popover（看板 ◇ 徽章）── */
+.plan-quick-pick {
+  position: fixed; z-index: 1200;
+  min-width: 208px; max-width: 280px;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 10px; box-shadow: var(--shadow-lg);
+  padding: 6px; font-family: var(--font-body);
+}
+.plan-quick-pick.hidden { display: none; }
+.pqp-head {
+  font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+  color: var(--text-muted); padding: 4px 8px 6px;
+}
+.pqp-rows { max-height: 260px; overflow: auto; }
+.pqp-row {
+  display: flex; align-items: center; gap: 7px; width: 100%;
+  background: transparent; border: none; cursor: pointer;
+  padding: 7px 8px; border-radius: 6px;
+  font-size: 13px; color: var(--text); text-align: left;
+  font-family: inherit;
+}
+.pqp-row:hover { background: var(--surface2); }
+.pqp-row.current { color: var(--primary); font-weight: 600; }
+.pqp-check { flex-shrink: 0; width: 12px; font-size: 11px; color: var(--primary); }
+.pqp-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pqp-empty { font-size: 12px; color: var(--text-muted); padding: 8px; }
+.pqp-foot { border-top: 1px solid var(--border); margin-top: 5px; padding-top: 5px; }
+.pqp-action {
+  display: block; width: 100%; text-align: left;
+  background: transparent; border: none; cursor: pointer;
+  padding: 7px 8px; border-radius: 6px;
+  font-size: 12px; color: var(--text-muted); font-family: inherit;
+}
+.pqp-action:hover { background: var(--surface2); color: var(--text); }
+
+/* ── 加入既有單 modal ── */
+.plan-pick-box { max-width: 620px; width: 100%; }
+.plan-pick-body-wrap { display: flex; flex-direction: column; gap: 12px; }
+.plan-pick-search {
+  width: 100%; padding: 9px 12px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg); color: var(--text);
+  font-size: 13px; font-family: var(--font-body);
+}
+.plan-pick-search:focus { outline: none; border-color: var(--primary); }
+.plan-pick-list { max-height: 52vh; overflow: auto; }
+.pp-group { margin-bottom: 16px; }
+.pp-group-label {
+  font-size: 12px; font-weight: 700; color: var(--text-muted);
+  margin-bottom: 8px; text-transform: uppercase; letter-spacing: .4px;
+  display: flex; align-items: center; gap: 6px;
+}
+.pp-group-label .count {
+  background: var(--bg); color: var(--text-muted);
+  border-radius: 10px; padding: 0 7px; font-size: 11px; font-weight: 600;
+}
+.pp-row {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: 8px; padding: 8px 12px; margin-bottom: 6px;
+  cursor: pointer; transition: border-color .15s, background .15s;
+}
+.pp-row:hover { border-color: var(--border2); }
+.pp-row.checked { border-color: var(--primary); background: var(--primary-bg); }
+.pp-row.urgency-high { border-left-color: var(--high); }
+.pp-row.urgency-medium { border-left-color: var(--medium); }
+.pp-row.urgency-low { border-left-color: var(--low); }
+/* checkbox 純顯示，事件一律交給整列處理（見 plan-pick.js _row 的註解） */
+.pp-row input[type="checkbox"] { flex-shrink: 0; pointer-events: none; accent-color: var(--primary); }
+.pp-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.pp-title { flex: 1; font-size: 13px; font-weight: 500; word-break: break-word; }
+.pp-note { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+.pp-note.moving { color: var(--primary); }
+.pp-empty, .pp-hint { font-size: 12px; color: var(--text-muted); padding: 6px 2px; }
+.pp-hint.warn { color: var(--high); }
+
+/* ── 設定頁：歷史資料區塊 ── */
+.settings-section {
+  border-top: 1px solid var(--border);
+  margin-top: 16px; padding-top: 14px;
+}
+.settings-section code {
+  background: var(--surface2); padding: 1px 4px; border-radius: 3px; font-size: 10px;
+}
+.settings-hint.ok { color: var(--low); }
+.settings-hint.error, .settings-hint.warn { color: var(--high); }

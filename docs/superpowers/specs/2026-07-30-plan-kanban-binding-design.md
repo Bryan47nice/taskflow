@@ -47,7 +47,7 @@ v1.11.0 加了「長期規劃」（母子單 / Epic）視圖，但使用者實�
 
 ```js
 {
-  id: 't_1750000000_abc',        // 沿用原任務 id（匯入產生的用 'a_' 前綴，見下）
+  id: 't_1750000000_abc',        // 沿用原任務 id（匯入產生的另有規則，見「日誌解析規則」）
   title: '把 Chrome extension 上架',
   planId: 'pl_1749000000_x1y',   // null = 未歸屬任何規劃
   estimate: '2h',                // 可能為 ''
@@ -106,7 +106,7 @@ _archiveSaveTimer: null,
 
 - `_planBadge(planId)` 改成回傳 `<button class="plan-badge" data-action="pick-plan">◇ 名稱</button>`。
 - `planId` 為空時不再回空字串，改回傳 `<button class="plan-badge plan-badge-empty" data-action="pick-plan" title="歸到長期規劃">◇</button>`。
-- CSS：`.plan-badge-empty { opacity: 0 }`、`.task-card:hover .plan-badge-empty { opacity: .45 }`；`@media (hover: none)` 下改為常駐 `opacity: .3`（手機沒有 hover）。
+- CSS：`.plan-badge-empty { opacity: 0 }`、`.task-card:hover .plan-badge-empty { opacity: .45 }`；`@media (hover: none), (max-width: 1023px)` 下改為常駐 `opacity: .3`。條件要含寬度而不能只看 `hover: none` —— 觸控筆電會回報自己有 hover，只靠它會讓手機版面上的佔位徽章永遠看不見；寬度斷點也與專案其餘 RWD 一致。
 - 事件：在既有的卡片 `click` handler 之前處理 —— `data-action="pick-plan"` 命中時 `e.stopPropagation()` 並開 `PlanPick.openQuick(taskId, badgeEl)`，避免誤開 PDCA。同時對徽章 `mousedown` 也 `stopPropagation()`，避免觸發卡片拖曳。
 - 手機 swipe（`_addSwipe`）不受影響，因為 swipe 判定在卡片層、徽章事件已攔下。
 
@@ -124,6 +124,7 @@ _archiveSaveTimer: null,
 **B. 加入既有單 modal（規劃端）**
 
 - `openPicker(planId)` —— 開 `#modal-plan-pick`：頂部搜尋框，下方兩區清單，底部「加入 N 張」。
+- 每一列是 `<div role="checkbox">` 而非 `<label>` 包 checkbox：label 會把 click 轉發給內層 checkbox，委派 handler 因此觸發兩次（開→關），列勾不起來。checkbox 設 `pointer-events: none` 純顯示，狀態一律由 `_checked` 集合驅動。
 - **看板中** 區：`App.tasks` 中 `planId !== 目前規劃` 的單。已屬於別的規劃者右側標示現規劃名（「現屬：X」），勾選代表搬家。
 - **已完成（歷史）** 區：`App.archiveList()` 中 `planId !== 目前規劃` 的記錄，顯示 `標題 · M/D`。
 - **預設只列近 90 天的歷史單**（避免一開就幾百列），區塊標題顯示「已完成（歷史）· 近 90 天，共 N 筆；搜尋可找全部」。搜尋框有字時改為全時間範圍過濾。
@@ -179,7 +180,8 @@ _archiveSaveTimer: null,
 2. 逐行取 `/^- \[x\] (.+)$/` 的捕獲組。（`- [ ]` 的明日計畫不在此區段，不會誤抓。）
 3. 跳過 `（無）` 這一行（無完成項目時的佔位）。
 4. 尾綴估時：`/\s*\((\d+(?:\.\d+)?[mh]\+?)\)\s*$/` 命中才剝掉當 `estimate`，否則 `estimate: ''`、標題原樣保留。（標題本身含括號時不會被誤剝，因為必須符合 `數字＋m/h` 格式。）
-5. 產生記錄：`id: 'a_<date>_<index>'`（`a_` 前綴標示來自匯入、非原始 task id）、`planId: null`、`urgency: 'medium'`、`completedAt: '<date>T12:00:00.000Z'`（日誌只有日期精度，中午當代表值）、`journalDate: <date>`。
+5. 產生記錄：`planId: null`、`urgency: 'medium'`、`completedAt: '<date>T12:00:00.000Z'`（日誌只有日期精度，中午當代表值）、`journalDate: <date>`。
+6. id 為 `a_<date>_<hash>`，hash 由「日期＋標題」推導（`a_` 前綴標示來自匯入、非原始 task id）。**刻意不用行序號**：序號會因為部分匯入（前面的項目被去重跳過）或日誌事後被編輯而位移，兩筆不同的歷史單可能拿到同一個 id，之後 `updateArchive(id)` 就會改到錯的那筆，歸屬跑到別張單上。實作時另用一個 `taken` 集合防禦性處理雜湊碰撞。
 
 ## 邊界情況
 

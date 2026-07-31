@@ -158,6 +158,16 @@ const Kanban = {
 
     div.addEventListener('click', () => PDCA.show(task));
 
+    // ◇ 徽章 → 長期規劃快選。攔下 click 免得開 PDCA，攔下 mousedown 免得起拖曳
+    const badge = div.querySelector('.plan-badge');
+    if (badge) {
+      badge.addEventListener('mousedown', e => e.stopPropagation());
+      badge.addEventListener('click', e => {
+        e.stopPropagation();
+        if (typeof PlanPick !== 'undefined') PlanPick.openQuick(task.id, badge);
+      });
+    }
+
     // Swipe to change status on mobile
     this._addSwipe(div, task);
 
@@ -175,13 +185,16 @@ const Kanban = {
     return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86400000);
   },
 
-  // 屬於某長期規劃的任務，卡片上顯示規劃徽章
+  // 長期規劃徽章。已歸屬顯示規劃名；未歸屬留一個淡的 ◇ 佔位（hover 才浮現，
+  // 手機沒 hover 所以常駐低透明度），兩者都可點開快選。
   _planBadge(planId) {
-    if (!planId || typeof App === 'undefined' || !App.plans) return '';
-    const plan = App.plans.find(p => p.id === planId);
-    if (!plan) return '';
+    if (typeof App === 'undefined' || !App.plans) return '';
+    const plan = planId ? App.plans.find(p => p.id === planId) : null;
+    if (!plan) {
+      return `<button type="button" class="plan-badge plan-badge-empty" title="歸到長期規劃">◇</button>`;
+    }
     const name = (plan.title || '規劃').slice(0, 8);
-    return `<span class="plan-badge" title="${this._esc(plan.title)}">◇ ${this._esc(name)}</span>`;
+    return `<button type="button" class="plan-badge" title="${this._esc(plan.title)}">◇ ${this._esc(name)}</button>`;
   },
 
   _sourceIcon(type) {

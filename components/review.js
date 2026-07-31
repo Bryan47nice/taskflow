@@ -496,6 +496,16 @@ const Review = {
       }
 
       if (typeof Reminder !== 'undefined') Reminder.markJournalDone(today);
+
+      // 先封存再刪除：長期規劃要看得到這些歷史貢獻。封存失敗就整批不刪，
+      // 任務留在完成欄可重試上傳 —— 寧可重複也不要讓成果憑空消失。
+      try {
+        await App.archiveTasks(this._journalDoneTasks, today);
+      } catch (e) {
+        App.showToast(`日誌已上傳，但封存失敗：${e.message}；任務保留在看板上`, 'error');
+        return;
+      }
+
       // 清除已完成任務（日誌送出即代表該任務週期結束）
       for (const t of this._journalDoneTasks) {
         if (t.id) await App.deleteTask(t.id);

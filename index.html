@@ -302,6 +302,12 @@
         <input type="text" id="s-cal-id" placeholder="xxxxxx.apps.googleusercontent.com">
       </div>
       <p class="settings-status" id="s-status"></p>
+      <div class="settings-section">
+        <label>歷史資料</label>
+        <button class="btn btn-secondary" id="btn-import-history">從日誌匯入歷史完成單</button>
+        <p class="settings-hint">掃描 <code>taskflow/journal</code> 全部日誌，把「今日完成」的項目建成封存記錄，之後就能在長期規劃裡歸屬。可重複執行，不會產生重複資料。</p>
+        <p class="settings-hint" id="s-import-history-status" aria-live="polite"></p>
+      </div>
       <p class="settings-hint" style="text-align:right;margin-top:8px" id="app-version-display"></p>
     </div>
     <div class="modal-footer" style="justify-content: space-between;">
@@ -655,6 +661,33 @@
   </div>
 </div>
 
+<!-- ======================================== -->
+<!-- Modal: Plan Pick (把既有單加進長期規劃)   -->
+<!-- ======================================== -->
+<div id="modal-plan-pick" class="modal hidden">
+  <div class="modal-box plan-pick-box">
+    <div class="modal-header">
+      <h2>加入既有單</h2>
+      <button class="btn-icon" id="btn-plan-pick-close" title="關閉">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body plan-pick-body-wrap">
+      <input type="text" id="plan-pick-search" class="plan-pick-search"
+             placeholder="搜尋標題…（搜尋時會找全部歷史單）" autocomplete="off">
+      <div id="plan-pick-body" class="plan-pick-list"></div>
+    </div>
+    <div class="modal-footer">
+      <div style="flex:1"></div>
+      <button class="btn btn-secondary" id="btn-plan-pick-cancel">取消</button>
+      <button class="btn btn-primary" id="btn-plan-pick-confirm" disabled>加入</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 看板卡片 ◇ 徽章的規劃快選 popover ── -->
+<div id="plan-quick-pick" class="plan-quick-pick hidden"></div>
+
 <!-- ── Bottom Nav (mobile only) ── -->
 <nav class="bottom-nav" id="bottom-nav">
   <button class="bnav-btn active" data-tab="board">
@@ -680,6 +713,7 @@
 <script src="components/settings.js"></script>
 <script src="components/kanban.js"></script>
 <script src="components/plan.js"></script>
+<script src="components/plan-pick.js"></script>
 <script src="components/triage.js"></script>
 <script src="components/pdca.js"></script>
 <script src="components/review.js"></script>
