@@ -178,7 +178,7 @@ const Review = {
     const file = `${start}_${end}.md`;
     const path = `taskflow/weekly/${file}`;
     const { pat, repo, obsidianRepo, obsidianFolder } = App.settings;
-    const folder = (obsidianFolder || '02-Areas/CMoney-流量/07-工作日誌').replace(/^\/+|\/+$/g, '');
+    const folder = (obsidianFolder || DEFAULT_OBSIDIAN_FOLDER).replace(/^\/+|\/+$/g, '');
     const obsidianPath = `${folder}/週報/${file}`;
 
     // 先抓 SHA 當「已存在」判斷（沿用 v1.6.0 防覆蓋）
@@ -270,11 +270,12 @@ const Review = {
     const todo       = tasks.filter(t => t.status === 'todo' &&
       (t.deadline === 'today' || t.dayKey === today || t.deadline === today));
 
-    // 今日完成（只有 done）
+    // 今日完成（只有 done）。planId 帶在 chip 上，產 md 時才依規劃分組
     const doneList = document.getElementById('jf-done-list');
     doneList.innerHTML = '';
-    done.map(t => `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`)
-        .forEach(text => this._addDoneChip(text));
+    done.forEach(t => this._addDoneChip(
+      `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`, doneList, t.planId
+    ));
 
     // 明日計畫（todo + in-progress 未完成的繼續排）
     const upcoming = [...inProgress, ...todo];
@@ -288,7 +289,7 @@ const Review = {
     // PDCA tabs — done + in-progress，有任何 PDCA 資料的才顯示
     this._pdcaTasks = [...done, ...inProgress]
       .filter(t => t.pdca && Object.values(t.pdca).some(v => v?.trim()))
-      .map(t => ({ id: t.id, title: t.title, plan: t.pdca.plan || '', do: t.pdca.do || '', check: t.pdca.check || '', act: t.pdca.act || '', links: t.links || [] }));
+      .map(t => ({ id: t.id, title: t.title, planId: t.planId || null, plan: t.pdca.plan || '', do: t.pdca.do || '', check: t.pdca.check || '', act: t.pdca.act || '', links: t.links || [] }));
     this._pdcaActive = null;
     this._renderPdcaTabs();
 
@@ -309,7 +310,7 @@ const Review = {
       const mainRes = await GitHubAPI.getRaw(pat, repo, mainPath);
       let exists = !!mainRes.sha;
       if (!exists && obsidianRepo) {
-        const folder = (obsidianFolder || '02-Areas/CMoney-流量/07-工作日誌').replace(/^\/+|\/+$/g, '');
+        const folder = (obsidianFolder || DEFAULT_OBSIDIAN_FOLDER).replace(/^\/+|\/+$/g, '');
         const obRes = await GitHubAPI.getRaw(pat, obsidianRepo, `${folder}/${date}.md`);
         exists = !!obRes.sha;
       }
@@ -330,11 +331,20 @@ const Review = {
     this.showEditor(dateStr);
   },
 
-  _addDoneChip(text, list = document.getElementById('jf-done-list')) {
+  _addDoneChip(text, list = document.getElementById('jf-done-list'), planId = null) {
     const chip = document.createElement('div');
     chip.className = 'jf-done-chip';
+    if (planId) chip.dataset.planId = planId;
     chip.innerHTML = `<span title="${this._esc(text)}">${this._esc(text)}</span>`;
     list.appendChild(chip);
+  },
+
+  // 規劃名稱。查不到（規劃已被刪）就回空字串，該單併回「未歸屬」，
+  // 不要寫出一個孤兒 id 當標題。
+  _planTitle(planId) {
+    if (!planId || typeof App === 'undefined' || !App.plans) return '';
+    const p = App.plans.find(x => x.id === planId);
+    return p ? (p.title || '').trim() : '';
   },
 
   _renderPdcaTabs() {
@@ -403,19 +413,38 @@ const Review = {
   _formToMarkdown(dateStr) {
     this._savePdcaFields(); // 儲存目前編輯中的 tab
     const today = dateStr || App.getTodayKey();
-    const doneChips = [...document.querySelectorAll('#jf-done-list .jf-done-chip span')]
-      .map(s => s.textContent.trim()).filter(Boolean);
+    const doneChips = [...document.querySelectorAll('#jf-done-list .jf-done-chip')]
+      .map(c => ({
+        text: c.querySelector('span').textContent.trim(),
+        plan: this._planTitle(c.dataset.planId)
+      }))
+      .filter(c => c.text);
     const todoChips = [...document.querySelectorAll('#jf-todo-list .jf-done-chip span')]
       .map(s => s.textContent.trim()).filter(Boolean);
     const notes = document.getElementById('jf-notes').value.trim();
 
     let md = `# ${today} 工作日誌\n\n`;
 
+    // 今日完成：有任何一張歸屬到規劃時才分組，全部未歸屬就維持原本的扁平清單
+    // （不要讓從來沒用規劃的日子憑空多一層小標）。標題字串一律原樣不動 ——
+    // settings.js 的歷史匯入以「日期＋標題」去重，動到標題會長出重複封存記錄。
     md += `## 今日完成\n`;
-    if (doneChips.length) {
-      doneChips.forEach(l => { md += `- [x] ${l}\n`; });
-    } else {
+    if (!doneChips.length) {
       md += `- （無）\n`;
+    } else if (!doneChips.some(c => c.plan)) {
+      doneChips.forEach(c => { md += `- [x] ${c.text}\n`; });
+    } else {
+      const groups = new Map();   // 規劃名 → 標題陣列；'' = 未歸屬
+      doneChips.forEach(c => {
+        if (!groups.has(c.plan)) groups.set(c.plan, []);
+        groups.get(c.plan).push(c.text);
+      });
+      const named = [...groups.keys()].filter(Boolean);   // 依完成欄出現順序
+      const keys = groups.has('') ? [...named, ''] : named;   // 未歸屬永遠殿後
+      keys.forEach(k => {
+        md += `\n### ${k ? '◇ ' + k : '未歸屬'}\n`;
+        groups.get(k).forEach(t => { md += `- [x] ${t}\n`; });
+      });
     }
 
     const activePdca = this._pdcaTasks.filter(t =>
@@ -425,6 +454,10 @@ const Review = {
       md += `\n## PDCA 覆盤\n`;
       activePdca.forEach(t => {
         md += `\n### ${t.title}\n`;
+        // 歸屬寫成獨立欄位而非接在標題後面：標題是週覆盤彙整的識別字串，
+        // 保持乾淨；這行也剛好能被既有的 **欄位**：值 解析法讀到
+        const planName = this._planTitle(t.planId);
+        if (planName)       md += `**所屬規劃**：${planName}\n`;
         if (t.plan.trim())  md += `**Plan**：${t.plan.trim()}\n`;
         if (t.do.trim())    md += `**Do**：${t.do.trim()}\n`;
         if (t.check.trim()) md += `**Check**：${t.check.trim()}\n`;
@@ -462,7 +495,7 @@ const Review = {
 
     const path = `taskflow/journal/${today}.md`;
     const { pat, repo, obsidianRepo, obsidianFolder } = App.settings;
-    const folder = (obsidianFolder || '02-Areas/CMoney-流量/07-工作日誌').replace(/^\/+|\/+$/g, '');
+    const folder = (obsidianFolder || DEFAULT_OBSIDIAN_FOLDER).replace(/^\/+|\/+$/g, '');
     const obsidianPath = `${folder}/${today}.md`;
 
     // ── 先抓 SHA（順便當「已存在」判斷）：任一倉已有日誌就先提醒，避免靜默覆蓋 ──

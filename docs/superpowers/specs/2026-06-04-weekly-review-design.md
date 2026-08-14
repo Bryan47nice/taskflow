@@ -76,7 +76,7 @@
 
 - 檔名：`{start}_{end}.md`（例：`2026-06-01_2026-06-04.md`）
 - GitHub 主倉：`taskflow/weekly/{start}_{end}.md`
-- Obsidian：`{obsidianFolder}/週報/{start}_{end}.md`（`obsidianFolder` 預設 `02-Areas/CMoney-流量/07-工作日誌`，前後斜線清掉後接 `/週報/`）
+- Obsidian：`{obsidianFolder}/週報/{start}_{end}.md`（`obsidianFolder` 未填時用內建預設，前後斜線清掉後接 `/週報/`）
 
 ### 週覆盤 Markdown 結構
 

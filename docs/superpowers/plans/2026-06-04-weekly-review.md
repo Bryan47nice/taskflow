@@ -397,7 +397,7 @@ git commit -m "feat(v1.8.0): 週覆盤區間彙整完成總覽與 PDCA"
     const file = `${start}_${end}.md`;
     const path = `taskflow/weekly/${file}`;
     const { pat, repo, obsidianRepo, obsidianFolder } = App.settings;
-    const folder = (obsidianFolder || '02-Areas/CMoney-流量/07-工作日誌').replace(/^\/+|\/+$/g, '');
+    const folder = (obsidianFolder || DEFAULT_OBSIDIAN_FOLDER).replace(/^\/+|\/+$/g, '');
     const obsidianPath = `${folder}/週報/${file}`;
 
     // 先抓 SHA 當「已存在」判斷（沿用 v1.6.0 防覆蓋）
@@ -452,7 +452,7 @@ reload 後 `preview_eval`，先驗 markdown 結構，再驗「已存在 → conf
   Review._weeklyDone  = [{ date:'2026-06-03', label:'三', items:['整理 iOS QA (30m)'] }];
   Review._weeklyPdca  = [{ date:'2026-06-03', title:'挖看發文限制', plan:'查規則', do:'讀文件', check:'', act:'' }];
   document.getElementById('wk-reflection').value = '本週節奏偏慢';
-  document.getElementById('wk-nextweek').value = '建立飛輪\n同學會埋點確認';
+  document.getElementById('wk-nextweek').value = '建立飛輪\n埋點確認';
   const md = Review._weeklyToMarkdown();
 
   // 驗防覆蓋：stub getRaw 回傳已存在 sha、攔截 confirm 回傳 false（取消）

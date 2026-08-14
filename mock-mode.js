@@ -111,9 +111,18 @@
       id: 'mock-8', title: '研究商店審核規則', body: '', links: [],
       urgency: 'low', estimate: '30m', deadline: 'today',
       status: 'done', done: true, source: null,
-      pdca: { plan: '', do: '', check: '', act: '' },
+      pdca: { plan: '', do: '', check: '請商店政策頁確認 host_permissions 寫法', act: '' },
       createdAt: new Date().toISOString(), completedAt: new Date().toISOString(), dayKey: today,
       actualMinutes: 0, planId: 'pl-mock-1'
+    },
+    // 未歸屬的已完成單 —— 讓日誌的「未歸屬」分組在 mock 模式下也驗得到
+    {
+      id: 'mock-9', title: '回覆客服信件', body: '', links: [],
+      urgency: 'medium', estimate: '15m', deadline: 'today',
+      status: 'done', done: true, source: null,
+      pdca: { plan: '', do: '', check: '', act: '' },
+      createdAt: new Date().toISOString(), completedAt: new Date().toISOString(), dayKey: today,
+      actualMinutes: 0
     }
   ];
 
