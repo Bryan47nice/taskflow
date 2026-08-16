@@ -698,6 +698,18 @@ input.journal-editor-date-input:focus { border-color: var(--primary); color: var
 .settings-status.ok { color: var(--low); }
 .settings-hint { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
 
+.settings-firstrun {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--primary-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  margin-bottom: 4px;
+}
+.settings-firstrun a { color: var(--primary); font-weight: 600; text-decoration: none; }
+.settings-firstrun a:hover { text-decoration: underline; }
+
 /* ── Triage modal ── */
 .triage-step { display: flex; flex-direction: column; gap: 14px; }
 .triage-step.hidden { display: none; }

@@ -269,6 +269,13 @@
       <h2>設定</h2>
     </div>
     <div class="modal-body">
+      <!-- 沒設定過的人開 App 第一眼就是這個視窗，沒有這行連結會直接卡在 PAT 欄位 -->
+      <p class="settings-firstrun">
+        第一次使用？
+        <a href="https://github.com/Bryan47nice/taskflow#第一次設定約-15-分鐘" target="_blank" rel="noopener">
+          看設定教學（約 15 分鐘）→
+        </a>
+      </p>
       <div>
         <label>GitHub Personal Access Token（必填）</label>
         <input type="password" id="s-pat" placeholder="ghp_xxxxxxxxxxxx">
@@ -276,12 +283,12 @@
       </div>
       <div>
         <label>GitHub Repo（必填）</label>
-        <input type="text" id="s-repo" placeholder="Bryan47nice/My-Obsidian">
+        <input type="text" id="s-repo" placeholder="your-name/my-notes">
         <p class="settings-hint">任務將存到此 repo 的 taskflow/tasks.json</p>
       </div>
       <div>
         <label>Obsidian Repo（選填，工作日誌雙推用）</label>
-        <input type="text" id="s-obsidian-repo" placeholder="Bryan47nice/My-Obsidian">
+        <input type="text" id="s-obsidian-repo" placeholder="your-name/my-obsidian">
         <p class="settings-hint">日誌同步寫入此 repo 的下方資料夾</p>
       </div>
       <div>
