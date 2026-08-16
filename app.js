@@ -1,5 +1,5 @@
 // === TaskFlow App — main state management ===
-const APP_VERSION = 'v1.13.1';
+const APP_VERSION = 'v1.14.0';
 
 // Obsidian 日誌資料夾。設定頁留空時的內建預設；要放在別的路徑就到設定頁填。
 const DEFAULT_OBSIDIAN_FOLDER = '工作日誌';
@@ -476,6 +476,8 @@ const App = {
     this._updateHeader();
     if (typeof StatsPanel !== 'undefined') StatsPanel.refresh();
     if (typeof Plan !== 'undefined' && Plan.isOpen()) Plan.render();
+    // 日誌編輯器開著時改歸屬（◇ 徽章快選 / ＋新規劃）要就地反映，兩條路徑都走這裡
+    if ('planId' in updates && typeof Review !== 'undefined') Review.refreshPlanBadges();
   },
 
   _recordDailyLog(event) {

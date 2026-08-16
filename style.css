@@ -904,7 +904,18 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
   border-radius: 20px; font-size: 12px; color: var(--primary);
   max-width: 280px;
 }
-.jf-done-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jf-done-chip .jf-chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 日誌編輯器裡的 ◇ 徽章：未歸屬要常駐看得見（看板那顆靠 .task-card:hover
+   浮現，這裡沒有那個祖先），因為挑出漏歸屬的單就是這個編輯器的用途 */
+.jf-done-chip .jf-plan-badge { margin-left: 7px; flex-shrink: 0; max-width: 110px; }
+.jf-done-chip .jf-plan-badge-empty {
+  opacity: .75; background: transparent;
+  border-color: var(--border2); color: var(--text-muted);
+}
+.jf-done-chip .jf-plan-badge-empty:hover {
+  opacity: 1; color: var(--primary); border-color: var(--primary);
+}
 
 /* PDCA task tabs */
 .journal-pdca-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }

@@ -270,11 +270,12 @@ const Review = {
     const todo       = tasks.filter(t => t.status === 'todo' &&
       (t.deadline === 'today' || t.dayKey === today || t.deadline === today));
 
-    // 今日完成（只有 done）。planId 帶在 chip 上，產 md 時才依規劃分組
+    // 今日完成（只有 done）。planId 帶在 chip 上，產 md 時才依規劃分組；
+    // 帶 taskId 才掛得上 ◇ 徽章，讓漏歸屬的單在這裡就能補
     const doneList = document.getElementById('jf-done-list');
     doneList.innerHTML = '';
     done.forEach(t => this._addDoneChip(
-      `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`, doneList, t.planId
+      `${t.title}${t.estimate ? ' (' + t.estimate + ')' : ''}`, doneList, t.planId, t.id
     ));
 
     // 明日計畫（todo + in-progress 未完成的繼續排）
@@ -331,12 +332,63 @@ const Review = {
     this.showEditor(dateStr);
   },
 
-  _addDoneChip(text, list = document.getElementById('jf-done-list'), planId = null) {
+  _addDoneChip(text, list = document.getElementById('jf-done-list'), planId = null, taskId = null) {
     const chip = document.createElement('div');
     chip.className = 'jf-done-chip';
     if (planId) chip.dataset.planId = planId;
-    chip.innerHTML = `<span title="${this._esc(text)}">${this._esc(text)}</span>`;
+    if (taskId) chip.dataset.taskId = taskId;
+    chip.innerHTML = `<span class="jf-chip-text" title="${this._esc(text)}">${this._esc(text)}</span>`;
+    if (taskId) {
+      chip.insertAdjacentHTML('beforeend', this._chipPlanBadge(planId));
+      this._wireChipBadge(chip);
+    }
     list.appendChild(chip);
+  },
+
+  // 日誌編輯器的規劃徽章。沿用看板的 .plan-badge 外觀，但未歸屬一律顯示成
+  // 看得見的「◇ 未歸屬」—— 看板那顆是 opacity:0、靠 .task-card:hover 才浮現，
+  // 這裡沒有 .task-card 祖先，照抄會變成看不見也點不到，而「把漏歸屬的單挑出來」
+  // 正是這個編輯器要做的事。
+  _chipPlanBadge(planId) {
+    const name = this._planTitle(planId);
+    return name
+      ? `<button type="button" class="plan-badge jf-plan-badge" title="${this._esc(name)}｜點擊改歸屬">◇ ${this._esc(name)}</button>`
+      : `<button type="button" class="plan-badge jf-plan-badge jf-plan-badge-empty" title="點擊歸到長期規劃">◇ 未歸屬</button>`;
+  },
+
+  _wireChipBadge(chip) {
+    const badge = chip.querySelector('.plan-badge');
+    if (!badge) return;
+    badge.addEventListener('click', e => {
+      e.stopPropagation();
+      if (typeof PlanPick !== 'undefined') PlanPick.openQuick(chip.dataset.taskId, badge);
+    });
+  },
+
+  // 由 App.updateTask 在編輯器開著時呼叫：歸屬一改就地更新，不用關掉重開。
+  // 快選 popover 與「＋ 新規劃…」兩條路徑最後都走 updateTask，所以一個接點全包。
+  refreshPlanBadges() {
+    const modal = document.getElementById('modal-journal-editor');
+    if (!modal || modal.classList.contains('hidden')) return;
+    const tasks = (typeof App !== 'undefined' && App.tasks) ? App.tasks : [];
+
+    document.querySelectorAll('#jf-done-list .jf-done-chip[data-task-id]').forEach(chip => {
+      const task = tasks.find(t => t.id === chip.dataset.taskId);
+      if (!task) return;
+      const planId = task.planId || '';
+      if (planId) chip.dataset.planId = planId;
+      else delete chip.dataset.planId;
+      chip.querySelector('.plan-badge')?.remove();
+      chip.insertAdjacentHTML('beforeend', this._chipPlanBadge(planId));
+      this._wireChipBadge(chip);
+    });
+
+    // PDCA 區塊的「所屬規劃」是開窗當下的快照，不同步的話同一份日誌
+    // 上半段（今日完成分組）跟下半段（PDCA）會對不起來
+    this._pdcaTasks.forEach(t => {
+      const task = tasks.find(x => x.id === t.id);
+      if (task) t.planId = task.planId || null;
+    });
   },
 
   // 規劃名稱。查不到（規劃已被刪）就回空字串，該單併回「未歸屬」，
@@ -415,11 +467,11 @@ const Review = {
     const today = dateStr || App.getTodayKey();
     const doneChips = [...document.querySelectorAll('#jf-done-list .jf-done-chip')]
       .map(c => ({
-        text: c.querySelector('span').textContent.trim(),
+        text: c.querySelector('.jf-chip-text').textContent.trim(),
         plan: this._planTitle(c.dataset.planId)
       }))
       .filter(c => c.text);
-    const todoChips = [...document.querySelectorAll('#jf-todo-list .jf-done-chip span')]
+    const todoChips = [...document.querySelectorAll('#jf-todo-list .jf-chip-text')]
       .map(s => s.textContent.trim()).filter(Boolean);
     const notes = document.getElementById('jf-notes').value.trim();
 
