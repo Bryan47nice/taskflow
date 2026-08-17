@@ -861,6 +861,28 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
 .wk-day-block { margin-bottom: 8px; }
 .wk-day-head { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px; }
 
+/* 本週規劃推進：擺在逐日清單之前，先回答「哪些長期目標往前走了」 */
+.wk-plan-summary {
+  background: var(--bg); border: 1px solid var(--border2);
+  border-radius: var(--radius); padding: 8px 10px; margin-bottom: 10px;
+}
+.wk-plan-summary-head {
+  font-size: 11px; font-weight: 700; color: var(--text-muted);
+  letter-spacing: .3px; margin-bottom: 6px;
+}
+.wk-plan-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 2px 0; font-size: 12px;
+}
+.wk-plan-row .plan-badge { max-width: none; cursor: default; }
+.wk-plan-count { color: var(--text-muted); font-size: 11px; }
+.wk-plan-none-label {
+  font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
+  color: var(--text-muted); border: 1px solid var(--border2); line-height: 1.6;
+}
+/* 逐日清單裡的規劃標記：純顯示，不可點 */
+.jv-item-plan { margin-left: 7px; cursor: default; vertical-align: middle; }
+
 /* ── Journal editor modal ── */
 .journal-editor-box { max-width: 600px; width: 96vw; }
 .journal-editor-box .modal-header { gap: 8px; }

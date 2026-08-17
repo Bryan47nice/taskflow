@@ -43,6 +43,11 @@ const Review = {
     const d = new Date(dateStr + 'T00:00:00');
     return ['日','一','二','三','四','五','六'][d.getDay()];
   },
+  // YYYY-MM-DD → M/D。規劃推進那一節每列都帶日期，寫全長會太吵。
+  _mdDate(dateStr) {
+    const p = String(dateStr || '').split('-');
+    return p.length === 3 ? `${parseInt(p[1])}/${parseInt(p[2])}` : String(dateStr || '');
+  },
   _datesInRange(start, end) {
     const out = [];
     const e = new Date(end + 'T00:00:00');
@@ -82,41 +87,107 @@ const Review = {
     const token = `${start}~${end}`;
     this._aggToken = token;
 
-    const byDay = [];   // { date, label, items: [] }
+    const byDay = [];   // { date, label, items: [{ text, plan }] }
     const pdca  = [];   // { date, title, plan, do, check, act }
     let coverage = 0;
 
-    for (const date of dates) {
-      let content = null;
+    // 封存記錄拿來補規劃歸屬。它比日誌 md 的小標更新 —— 事後用規劃頁
+    // 「加入既有單」改過的歸屬只寫進封存記錄，日誌不會回頭改；v1.13.0
+    // 之前的日誌也根本沒有小標。載入失敗就只靠小標，不要讓整個彙整掛掉。
+    try { if (App.ensureArchivesLoaded) await App.ensureArchivesLoaded(); } catch (_) {}
+    if (this._aggToken !== token) return;
+
+    // 平行抓。PDCA 內文只存在 md 裡，抓的次數省不掉，但沒有理由一天一個
+    // round trip 慢慢等 —— 區間拉長時差別很明顯。
+    const fetched = await Promise.all(dates.map(async date => {
       try {
         const res = await GitHubAPI.getRaw(pat, repo, `taskflow/journal/${date}.md`);
-        content = res.content; // 404 → res.content === null（getRaw 不丟錯）
-      } catch (_) { content = null; }
-      if (this._aggToken !== token) return; // race 保護：區間已被改掉就放棄
+        return { date, content: res.content }; // 404 → content === null（getRaw 不丟錯）
+      } catch (_) { return { date, content: null }; }
+    }));
+    if (this._aggToken !== token) return; // race 保護：區間已被改掉就放棄
+
+    const archIdx = this._archivePlanIndex();
+
+    for (const { date, content } of fetched) {
       if (!content) continue;
       coverage++;
       const parsed = this._parseJournalMd(content);
-      if (parsed.done.length) byDay.push({ date, label: this._weekdayLabel(date), items: parsed.done });
+      const items = parsed.done.map(it => ({
+        text: it.text,
+        // 封存記錄優先，日誌小標次之
+        plan: this._planTitle(archIdx.get(`${date}|${this._stripEstimate(it.text)}`)) || it.plan
+      }));
+      if (items.length) byDay.push({ date, label: this._weekdayLabel(date), items });
       parsed.pdca.forEach(t => pdca.push({ date, ...t }));
     }
-    if (this._aggToken !== token) return;
 
     this._weeklyDone = byDay;
     this._weeklyPdca = pdca;
     this._renderAggregation(byDay, pdca, coverage, dates.length);
   },
 
+  // 「journalDate|標題」→ planId。只收有歸屬的，查不到就讓呼叫端退回日誌小標。
+  _archivePlanIndex() {
+    const idx = new Map();
+    const list = (typeof App !== 'undefined' && App.archiveList) ? App.archiveList() : [];
+    list.forEach(r => {
+      if (r.planId && r.journalDate) idx.set(`${r.journalDate}|${r.title}`, r.planId);
+    });
+    return idx;
+  },
+
+  // 剝掉日誌條目尾巴的估時，還原成封存記錄裡的標題。規則與 settings.js
+  // 的歷史匯入一致：只有「數字＋m/h」才算估時，標題自帶括號不會被誤剝。
+  _stripEstimate(text) {
+    const m = String(text || '').match(/\s*\((\d+(?:\.\d+)?[mh]\+?)\)$/);
+    return m ? text.slice(0, m.index).trim() : String(text || '').trim();
+  },
+
+  // 規劃名 → 該規劃本週完成的項目。未歸屬的另外計數，用來看有多少工作
+  // 沒有掛在任何長期目標底下。
+  _planSummary(byDay) {
+    const byPlan = new Map();
+    let unassigned = 0;
+    byDay.forEach(d => d.items.forEach(i => {
+      if (!i.plan) { unassigned++; return; }
+      if (!byPlan.has(i.plan)) byPlan.set(i.plan, []);
+      byPlan.get(i.plan).push({ date: d.date, text: i.text });
+    }));
+    return { byPlan, unassigned };
+  },
+
   _renderAggregation(byDay, pdca, coverage, totalDays) {
     const doneEl = document.getElementById('wk-done');
     const pdcaEl = document.getElementById('wk-pdca');
     const totalItems = byDay.reduce((n, d) => n + d.items.length, 0);
+    const { byPlan, unassigned } = this._planSummary(byDay);
+
+    // 規劃推進放在逐日清單之前：「這週把哪些長期目標往前推了」比
+    // 「星期三做了什麼」更接近週覆盤要回答的問題
+    const planBlock = byPlan.size ? `
+      <div class="wk-plan-summary">
+        <div class="wk-plan-summary-head">本週規劃推進</div>
+        ${[...byPlan.entries()].map(([name, items]) => `
+          <div class="wk-plan-row">
+            <span class="plan-badge">◇ ${this._esc(name)}</span>
+            <span class="wk-plan-count">${items.length} 項</span>
+          </div>`).join('')}
+        ${unassigned ? `<div class="wk-plan-row wk-plan-row-none">
+          <span class="wk-plan-none-label">未歸屬</span>
+          <span class="wk-plan-count">${unassigned} 項</span>
+        </div>` : ''}
+      </div>` : '';
 
     doneEl.innerHTML = `
       <div class="wk-agg-meta">共 ${totalItems} 項・本週 ${coverage}/${totalDays} 天有日誌</div>
+      ${planBlock}
       ${byDay.length ? byDay.map(d => `
         <div class="wk-day-block">
           <div class="wk-day-head">${d.date}（週${d.label}）</div>
-          ${d.items.map(i => `<div class="jv-item">${this._esc(i)}</div>`).join('')}
+          ${d.items.map(i => `<div class="jv-item">${this._esc(i.text)}${
+            i.plan ? `<span class="plan-badge jv-item-plan">◇ ${this._esc(i.plan)}</span>` : ''
+          }</div>`).join('')}
         </div>`).join('') : '<div class="jv-empty">（無）</div>'}`;
 
     pdcaEl.innerHTML = pdca.length ? pdca.map(t => `
@@ -136,12 +207,25 @@ const Review = {
       .split('\n').map(s => s.trim()).filter(Boolean);
     const totalItems = byDay.reduce((n, d) => n + d.items.length, 0);
 
+    const { byPlan, unassigned } = this._planSummary(byDay);
+
     let md = `# ${start} ~ ${end} 週覆盤\n\n`;
+
+    if (byPlan.size) {
+      md += `## 本週規劃推進\n`;
+      byPlan.forEach((items, name) => {
+        md += `\n### ◇ ${name}（${items.length} 項）\n`;
+        items.forEach(i => { md += `- ${i.text}（${this._mdDate(i.date)}）\n`; });
+      });
+      if (unassigned) md += `\n未歸屬：${unassigned} 項\n`;
+      md += `\n`;
+    }
+
     md += `## 本週完成總覽（共 ${totalItems} 項）\n`;
     if (byDay.length) {
       byDay.forEach(d => {
         md += `### ${d.date}（週${d.label}）\n`;
-        d.items.forEach(i => { md += `- [x] ${i}\n`; });
+        d.items.forEach(i => { md += `- [x] ${i.text}\n`; });
       });
     } else {
       md += `- （無）\n`;
@@ -224,9 +308,22 @@ const Review = {
       const heading = lines[0].trim();
       const body = lines.slice(1).join('\n');
       if (heading.startsWith('今日完成')) {
-        result.done = body.split('\n')
-          .filter(l => /^- \[.\]/.test(l.trim()))
-          .map(l => l.replace(/^- \[.\]\s*/, '').trim());
+        // v1.13.0 起這一段可能被 `### ◇ 規劃名` / `### 未歸屬` 小標分組；
+        // 更早的日誌是扁平清單，跑起來就是 group 一路是空字串。
+        let group = '';
+        result.done = [];
+        body.split('\n').forEach(line => {
+          const t = line.trim();
+          const h = t.match(/^###\s+(.+)$/);
+          if (h) {
+            const name = h[1].trim();
+            group = name === '未歸屬' ? '' : name.replace(/^◇\s*/, '').trim();
+            return;
+          }
+          if (/^- \[.\]/.test(t)) {
+            result.done.push({ text: t.replace(/^- \[.\]\s*/, '').trim(), plan: group });
+          }
+        });
       } else if (heading.startsWith('明日計畫')) {
         result.todo = body.split('\n')
           .filter(l => /^- \[.\]/.test(l.trim()))

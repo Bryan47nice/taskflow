@@ -1,5 +1,5 @@
 // === TaskFlow App — main state management ===
-const APP_VERSION = 'v1.14.0';
+const APP_VERSION = 'v1.15.0';
 
 // Obsidian 日誌資料夾。設定頁留空時的內建預設；要放在別的路徑就到設定頁填。
 const DEFAULT_OBSIDIAN_FOLDER = '工作日誌';
