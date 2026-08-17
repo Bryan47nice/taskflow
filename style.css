@@ -861,14 +861,11 @@ body[data-theme="c-dark"]  .btn-link-save { background: #FAFAFA; color: #0D0D0D;
 .wk-day-block { margin-bottom: 8px; }
 .wk-day-head { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 3px; }
 
-/* 本週規劃推進：擺在逐日清單之前，先回答「哪些長期目標往前走了」 */
+/* 本週規劃推進：自成一段擺在逐日清單之前，先回答「哪些長期目標往前走了」。
+   容器樣式對齊 .wk-agg，但不設 max-height —— 規劃數量有限，不需要捲動 */
 .wk-plan-summary {
-  background: var(--bg); border: 1px solid var(--border2);
-  border-radius: var(--radius); padding: 8px 10px; margin-bottom: 10px;
-}
-.wk-plan-summary-head {
-  font-size: 11px; font-weight: 700; color: var(--text-muted);
-  letter-spacing: .3px; margin-bottom: 6px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px;
 }
 .wk-plan-row {
   display: flex; align-items: center; gap: 8px;

@@ -220,6 +220,8 @@ PAT（Personal Access Token）是讓 App 代表你讀寫那個 repo 的鑰匙。
 
 ### 週五：週覆盤
 
+![週覆盤](docs/images/weekly-review.png)
+
 按「週覆盤」，它會去抓這週每一天的日誌自動彙整，你只要補「本週反思」和「下週重點」（下週重點會自動帶入目前待辦清單當草稿）。
 
 產出三段：

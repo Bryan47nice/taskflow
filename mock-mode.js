@@ -138,6 +138,17 @@
       order: null,
       createdAt: new Date().toISOString(),
       completedAt: null
+    },
+    // 第二個規劃：週覆盤的「本週規劃推進」要有兩組才看得出分組
+    {
+      id: 'pl-mock-2',
+      title: '開發流程優化',
+      why: '把開單到發版的流程收斂，減少來回確認。',
+      status: 'active',
+      targetPeriod: '2026-Q3',
+      order: null,
+      createdAt: new Date().toISOString(),
+      completedAt: null
     }
   ];
 
@@ -209,6 +220,55 @@
   Object.entries(SAMPLE_JOURNALS).forEach(([date, md]) => {
     const key = 'mock_journal_taskflow_journal_' + date + '.md';
     if (!localStorage.getItem(key)) localStorage.setItem(key, md);
+  });
+
+  // ── 近幾天的日誌，讓「週覆盤」離線也彙整得出東西 ──────────
+  // 上面那兩份是固定日期的歷史樣本（給規劃頁展開日誌用），落在任何一週的
+  // 區間外，所以週覆盤看不到。這裡改用相對日期產生，並刻意混三種樣態：
+  // 依規劃分組（v1.13.0 格式）、未歸屬、以及一份 v1.13.0 之前的扁平舊格式，
+  // 好在離線就驗到「舊日誌不會因為沒有 ### 小標而變空」。
+  const RECENT_JOURNAL_DAYS = [
+    { back: 1, plan: '上架 Chrome Web Store', items: ['整理商店送審清單 (1h)'],
+      loose: ['回覆客服信件 (15m)'], pdca: null },
+    { back: 2, plan: '開發流程優化', items: ['收斂開單到發版的流程圖 (2h)'],
+      loose: ['每日站會準備 (15m)'],
+      pdca: { title: '收斂開單到發版的流程圖', plan: '開發流程優化',
+              check: '畫出來才發現 code review 沒有獨立階段，難怪常卡住',
+              act: '看板加一欄 code review，下週試跑' } },
+    { back: 3, plan: '上架 Chrome Web Store', items: ['撰寫隱私權政策頁 (2h)', '準備商店截圖素材 (1h)'],
+      loose: [], pdca: null },
+    // 舊格式：扁平、沒有 ### 小標
+    { back: 4, plan: null, items: [], loose: ['修掉時間軸在手機上的溢出 (30m)', '更新 README 部署段落 (30m)'],
+      pdca: null }
+  ];
+  const dateBack = n => {
+    const d = new Date();
+    d.setDate(d.getDate() - n);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  };
+  RECENT_JOURNAL_DAYS.forEach(day => {
+    const date = dateBack(day.back);
+    const key = 'mock_journal_taskflow_journal_' + date + '.md';
+    if (localStorage.getItem(key)) return;
+    const L = [`# ${date} 工作日誌`, '', '## 今日完成'];
+    if (day.plan) {
+      L.push('', `### ◇ ${day.plan}`);
+      day.items.forEach(i => L.push(`- [x] ${i}`));
+      if (day.loose.length) {
+        L.push('', '### 未歸屬');
+        day.loose.forEach(i => L.push(`- [x] ${i}`));
+      }
+    } else {
+      day.loose.forEach(i => L.push(`- [x] ${i}`));   // 舊格式：不分組
+    }
+    if (day.pdca) {
+      L.push('', '## PDCA 覆盤', '', `### ${day.pdca.title}`,
+        `**所屬規劃**：${day.pdca.plan}`,
+        `**Check**：${day.pdca.check}`,
+        `**Act**：${day.pdca.act}`);
+    }
+    L.push('', '## 明日計畫', '- [ ] 接著往下做 (1h)', '');
+    localStorage.setItem(key, L.join('\n'));
   });
 
   // ── 注入假設定，讓 App 跳過設定視窗 ──────────────────────

@@ -537,6 +537,12 @@
       </button>
     </div>
     <div class="modal-body">
+      <!-- 規劃推進獨立於下方的捲動區：#wk-done 有 max-height，塞在裡面會
+           吃掉逐日清單本來就不多的可視高度 -->
+      <div class="journal-section" id="wk-plans-section">
+        <div class="journal-section-label">本週規劃推進</div>
+        <div id="wk-plans"></div>
+      </div>
       <div class="journal-section">
         <div class="journal-section-label">本週完成總覽</div>
         <div id="wk-done" class="wk-agg"></div>

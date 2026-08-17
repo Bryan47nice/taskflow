@@ -65,12 +65,20 @@ const Review = {
     ta.value = todos.join('\n');
   },
 
+  // 規劃推進區塊：沒東西就整段（含標題）收起來，不要留一塊空殼
+  _hidePlanSection() {
+    document.getElementById('wk-plans-section')?.classList.add('hidden');
+    const el = document.getElementById('wk-plans');
+    if (el) el.innerHTML = '';
+  },
+
   async _aggregateRange(start, end) {
     const doneEl = document.getElementById('wk-done');
     const pdcaEl = document.getElementById('wk-pdca');
     if (start > end) { // YYYY-MM-DD 字串比較即等同日期比較
       doneEl.innerHTML = '<div class="jv-empty wk-warn">⚠ 結束日不能早於開始日</div>';
       pdcaEl.innerHTML = '';
+      this._hidePlanSection();
       this._weeklyDone = []; this._weeklyPdca = [];
       return;
     }
@@ -78,10 +86,12 @@ const Review = {
     if (!pat || !repo) {
       doneEl.innerHTML = '<div class="jv-empty">請先設定 GitHub 連線</div>';
       pdcaEl.innerHTML = '';
+      this._hidePlanSection();
       return;
     }
     doneEl.innerHTML = '<p class="loading">彙整中…</p>';
     pdcaEl.innerHTML = '';
+    this._hidePlanSection();
 
     const dates = this._datesInRange(start, end);
     const token = `${start}~${end}`;
@@ -163,25 +173,28 @@ const Review = {
     const totalItems = byDay.reduce((n, d) => n + d.items.length, 0);
     const { byPlan, unassigned } = this._planSummary(byDay);
 
-    // 規劃推進放在逐日清單之前：「這週把哪些長期目標往前推了」比
-    // 「星期三做了什麼」更接近週覆盤要回答的問題
-    const planBlock = byPlan.size ? `
-      <div class="wk-plan-summary">
-        <div class="wk-plan-summary-head">本週規劃推進</div>
-        ${[...byPlan.entries()].map(([name, items]) => `
-          <div class="wk-plan-row">
-            <span class="plan-badge">◇ ${this._esc(name)}</span>
-            <span class="wk-plan-count">${items.length} 項</span>
-          </div>`).join('')}
-        ${unassigned ? `<div class="wk-plan-row wk-plan-row-none">
-          <span class="wk-plan-none-label">未歸屬</span>
-          <span class="wk-plan-count">${unassigned} 項</span>
-        </div>` : ''}
-      </div>` : '';
+    // 規劃推進渲染到自己的區塊，不塞進 #wk-done —— 那裡是 max-height 200px
+    // 的捲動區，多一塊就等於逐日清單少一半可視高度。整段沒東西就連標題一起收掉。
+    const plansSection = document.getElementById('wk-plans-section');
+    const plansEl = document.getElementById('wk-plans');
+    if (plansEl && plansSection) {
+      plansSection.classList.toggle('hidden', !byPlan.size);
+      plansEl.innerHTML = !byPlan.size ? '' : `
+        <div class="wk-plan-summary">
+          ${[...byPlan.entries()].map(([name, items]) => `
+            <div class="wk-plan-row">
+              <span class="plan-badge">◇ ${this._esc(name)}</span>
+              <span class="wk-plan-count">${items.length} 項</span>
+            </div>`).join('')}
+          ${unassigned ? `<div class="wk-plan-row wk-plan-row-none">
+            <span class="wk-plan-none-label">未歸屬</span>
+            <span class="wk-plan-count">${unassigned} 項</span>
+          </div>` : ''}
+        </div>`;
+    }
 
     doneEl.innerHTML = `
       <div class="wk-agg-meta">共 ${totalItems} 項・本週 ${coverage}/${totalDays} 天有日誌</div>
-      ${planBlock}
       ${byDay.length ? byDay.map(d => `
         <div class="wk-day-block">
           <div class="wk-day-head">${d.date}（週${d.label}）</div>
